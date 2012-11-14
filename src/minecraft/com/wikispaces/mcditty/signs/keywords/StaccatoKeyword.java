@@ -28,7 +28,12 @@ import org.jfugue.factories.NoteFactory;
 import org.jfugue.factories.NoteFactory.NoteContext;
 
 /**
+ * Keyword format:
  * 
+ * Staccato [eighths] [duration]
+ * 
+ * [eighths]: 0-8 Int
+ * [duration]: JFugue duration
  */
 public class StaccatoKeyword extends ParsedKeyword {
 
