@@ -1,0 +1,5 @@
+Volume [0 to 100]
+
+Sets the volume for the current voice. At low volumes (less than about 20 for my ears), you can barely hear the instruments.
+
+SFX also obeys this keyword (0.9.6).

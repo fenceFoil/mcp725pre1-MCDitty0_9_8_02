@@ -1,0 +1,15 @@
+Area [width] [depth] [optional height]
+
+Area creates an invisible field outwards from this sign. If someone enters, they activate this sign.
+
+If height isn't specified, the pad is 1 block high.
+
+Width is the length of the pad left and right facing the sign (centered on the sign): depth goes towards you out from (and including) the sign. Height is centered on the sign like width.
+
+Areas on diagonal sign posts currently do not work reliably; expect this to change someday.
+
+Area songs automatically have OneAtATime added.
+
+ProTip: To make something like dialog which you want someone to see just once, put "Repeat 100 / Rwwww" at the end of the ditty. Otherwise it's easy to trip the Area multiple times.
+
+§bSee:§r OneAtATime, Area

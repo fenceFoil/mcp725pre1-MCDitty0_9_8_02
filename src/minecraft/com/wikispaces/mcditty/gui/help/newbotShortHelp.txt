@@ -1,0 +1,13 @@
+NewBot name up
+type
+
+WORK IN PROGRESS: AVOID USING. WILL BE FINISHED IN THE FUTURE.
+
+NewBot creates a new bot right on this sign or above it if [above] is given. 
+
+FIRST LINE:
+[name] can be letters, numbers, underscores.
+[up] is optional: how many blocks above sign to put entity. Default is the first suitably-sized space above the sign.
+
+SECOND LINE:
+[type] can only be villager for now.

@@ -1,0 +1,70 @@
+Emitter [Type]
+[Options follow]
+
+Must be on the first line of a sign, and no music or keywords can follow (although comments are allowed).
+
+Emitters create a particle every time a note is played in their ditty. You can customize the particles that it emits and how it emits them with options.
+
+[Type]s available:
+- Note
+- Heart
+(Many more to come)
+
+On the lines after, you can specify options:
+
+Options available:
+- Voice [0-15] [0-15], etc.
+- Rate [1-99]
+- Color [0-23]
+- Up [-99 to 99]
+- Life [1-99]
+- Time [1-99]
+- Multi [0-5]
+- Stream [w, h, q, i, s, t, x, or o]
+
+Options can be abbreviated as well:
+- Voice = V
+- Rate = R
+- Color = C
+- Up = U
+- Life = L
+- Time = T
+- Multi = M
+- Stream = S
+
+Option descriptions:
+- Voice: Particles emit in time with notes from given voices. Can follow with multiple numbers.
+- Rate: Max particles may appear at one time, for example in the case of chords.
+- Color: The color for note particles.
+- Up: How far above the sign to emit particles at. Default 0.
+- Life: How many particles to emit before stopping.
+- Time: How many quarter-notes to emit for before stopping.
+- Multi: Multiplies the number of particles emitted. For example, if Multi is 5, a single note will cause the emitter to emit 5 particles at once. Life is only decreased 1.
+- Stream: Emit a continuous stream of particles for the duration of a a note. Follow with the frequency.
+
+EXAMPLE SIGN:
+
+---------------
+Emitter Note
+Voice 1 Rate 1
+Stream i Up 9
+#Emitter1
+---------------
+
+OR
+
+---------------
+Emitter Note
+V 1 R 1 C 6 U 9
+S i
+#Emitter1
+---------------
+
+Another example:
+
+---------------
+Emitter Note
+V 1 2 3
+U -3
+#Emitter2
+---------------

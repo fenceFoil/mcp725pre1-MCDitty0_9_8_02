@@ -1,0 +1,5 @@
+MCDittyLand contains several rousing tunes and demos in a tiny floating castle.
+
+Once MCDittyLand is downloaded (less than 0.25 MB), it is placed in your /saves/ folder automatically.
+
+You can also re-download MCDittyLand here if it burns down.

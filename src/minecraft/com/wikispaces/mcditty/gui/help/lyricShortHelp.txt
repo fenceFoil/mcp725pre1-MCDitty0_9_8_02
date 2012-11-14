@@ -1,0 +1,27 @@
+Lyric [name] [number]
+
+Sets the text of a lyric named [name] when it is played the [number]-th time.
+Below Lyric, write the text to be shown.
+
+Name:
+	- To show the lyric, use a lyric token in your musicstring: if your lyric is named "verse", use Yverse to show it.
+	
+Number:
+	- When Yverse is played the [x]-th time, it shows the text from "Lyric verse [x]". Once all lyrics are displayed, they go back to the beginning and are read off again. If "Lyric verse 1" was "Hello!", "Lyric verse 2" was "I'm Jon!", and "Lyric verse 4" was "I adore cheese!", and Yverse were played 6 times, it would show this:
+	
+	Hello!
+	I'm Jon!
+	I'm Jon!
+	I adore cheese!
+	Hello!
+	I'm Jon!
+
+In Text:
+	- You can insert color codes with &[code] (e.g. &1 turns text blue, &r resets color, &c makes red text)
+	- You can write long words with hyphens at the end.
+		lyric verse 1
+		&dSupercalafra-
+		dulistic.
+		
+		Results in "Supercalafradulistic." in pink.
+	- To make even longer text, add another Lyric sign with the same name and number: it's text will be added to the first's.

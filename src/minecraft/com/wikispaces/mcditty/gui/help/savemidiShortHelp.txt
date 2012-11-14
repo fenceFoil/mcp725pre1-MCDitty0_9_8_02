@@ -1,0 +1,10 @@
+SaveMIDI
+Next line contains the filename
+
+Saves the ditty as a MIDI file in your .minecraft/midi folder. Only one SaveMIDI keyword is heeded per ditty.
+
+The filename should be letters and numbers, with no symbols or spaces. ".mid" is automatically added to the end when saving.
+
+§oThis keyword replaces the old keyword "MIDI".§r
+
+§dSee:§r PlayMIDI

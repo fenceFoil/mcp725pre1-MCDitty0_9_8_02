@@ -1,0 +1,19 @@
+GoTo [Comment]
+
+Instead of naturally flowing to the next sign, skip to the nearest sign containing the given comment.
+
+Example:
+
+Sign 1: 
+"#Tune / A B C"
+
+Sign 2 is a long ways away:
+"GoTo Tune"
+
+Wherever Sign 2 is, clicking it will play the nearest #Tune sign. (Note that Minecraft unloads chunks about a hundred blocks from where you are).
+
+Similar to In, Out, Up, Down, Left, and Right.
+
+TODO: Determine result of jumping to unlocatable comment, define result of jumping to matching comments.
+
+§bSee:§r In, Out, Up, Down, Left, Right, Pattern

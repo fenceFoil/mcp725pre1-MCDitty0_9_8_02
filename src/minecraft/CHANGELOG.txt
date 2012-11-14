@@ -1,0 +1,814 @@
+FUTURE Late October, 2012: Version 0.9.7 +
+
+- Added external MCDitty Book editor
+
+
+      
+
+- Theatre lights
+- Emitter improvements
+    - Specify color by pitch
+    - Mo' particles
+- Signs controlling skulls
+- Signs naming skulls
+- Signs with animated faces, rotations, etc.
+- Skinned signs?
+- Sign note particles color coded by pitch, voice
+Show emitter stats in sign editor keyword help
+
+- Keywords: staccato, accelerate, crescendo, decrescendo, decellerate, transpose, octaves, autochord, triplet, appregiator?
+
+- Added an assortment of particles to Emitter
+
+November 13, 2012: Version 0.9.7.04 for Minecraft 1.4.4
+
+- New Keywords: Staccato / StaccatoOff
+    - Applies a staccato effect to the current voice's notes
+    
+- Fixed signs blanking in SSP
+
+November 12, 2012: Version 0.9.7.03 for Minecraft 1.4.4
+
+- Code: Commented and checked copyright/licenses on every source file.
+
+- LIBRARY: Added PulpCore: pulpcore.animation.* and pulpcore.animation.event.*
+
+    Copyright (c) 2008, Interactive Pulp, LLC
+    All rights reserved.
+    
+    Redistribution and use in source and binary forms, with or without 
+    modification, are permitted provided that the following conditions are met:
+
+        * Redistributions of source code must retain the above copyright 
+          notice, this list of conditions and the following disclaimer.
+        * Redistributions in binary form must reproduce the above copyright 
+          notice, this list of conditions and the following disclaimer in the 
+          documentation and/or other materials provided with the distribution.
+        * Neither the name of Interactive Pulp, LLC nor the names of its 
+          contributors may be used to endorse or promote products derived from 
+          this software without specific prior written permission.
+    
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+    POSSIBILITY OF SUCH DAMAGE.
+
+- Tech: Adding Bots
+    - Converted lyrics and LyricStorage to the new Cue system under CueScheduler
+    - Added bots
+    - Added NewBot keyword
+    
+- Removed Minecraft 1.3.1 "Blank Signs on logging into a server" bugfixes
+
+- Retained and improved 1.3.1 SSP "intermittent blinking after editing a sign" bugfixes
+	- Just as bad as before, and there's a new debug message in NetClientHandler to the chat that ruins my old solution.
+    
+- TEST: disco floor palettes renamed to fix misspelling
+
+October 29, 2012: Version 0.9.7.02 for Minecraft 1.4.2
+
+- Fixed signs blinking and blanking after editing in SSP
+    - Again
+    
+- Fixed a spelling error in the SoundFont settings Gui
+- Clarified button names in the MCDitty Gui
+
+October 26, 2012: Version 0.9.7.01 for Minecraft 1.4.2
+
+- Fixed tuplet notes
+    - Were too short, caused sync issues 
+    - Written in sheet music as notes with a little "3" or other number over them
+    - Written in MusicStrings as either Ci* (for a triplet) or explicitly as Ci*2:3 (also a triplet in this case)
+
+- Tinted signs
+    - Tint signs any of 15 colors.
+    - Puts a color code (%6 etc.) on the 3rd line of the sign
+    
+- Emitters
+    - Added "stream" option
+        - Emits particles for entire lengths of notes
+
+
+October 23 2012: Version 0.9.7.00 for Minecraft 1.4.0, .2
+
+- Updated mod to Minecraft 1.4.0, .2
+    - 1.3.2 is now unsupported
+    - 1.4.0, 1.4.1 also unsupported
+    
+- Added custom SoundFont instrument support
+    - Files ending in .sf2 are supported
+    - Can toggle between SoundFont instruments and the default
+
+- Added Ditty Books
+    - Music is stored in one or more writable books, in XML.
+    - Supports ditties spread over multiple held books.
+    - See MCDittyLand 0.9.7 for a tutorial book on all the features implemented so far.
+    - Press "Ctrl+B" while holding a book to play it
+    
+- Added import and export to file buttons to book editor.   
+
+- Fixed Ctrl key shortcuts not working with Mac OSX Metakeys. 
+    
+- Fixed menus not appearing and the MCDitty button disappearing from the options menu in worlds with no signs. Sad worlds.
+- Fixed the letters "ad" being output to the console every time a ditty has an error (debug feature left in)
+    - Also got rid of disco floor messages
+- Fixed crash when opening the Sound Test (ironically) with no saved MIDI files
+- Fixed multiple MCDittyTickUpdateHookEntities from appearing in crash reports
+    - Test? 
+
+-- TEST:
+- Fixed autoupdater copying MCDitty source files and licenses into minecraft.jar
+- Put all source files into a .zip in the mod's .zip, reducing the number of files for MCPatcher and other mod installers 
+
+October 10, 2012: Version 0.9.6.03
+
+- Fixed Java 6 compatibility issue introduced 0.9.6.02
+
+October 9, 2012: Version 0.9.6.02
+
+- Added "Silent Mode": clicking a sign (such as a sign shop on a server) never shows errors on sign or in chat (Default key: Ctrl+S)
+- Added particles when you start a ditty; smoke when there is an error
+
+- Made the "Ctrl" parts of key commands optional in the Keyboard Settings
+
+- Cleaned up the Settings Menu and the Keyboard Menu
+
+- Reduced mod loading time at game load/login significantly (by over 8 sec on my 2.5Ghz laptop w/4 GB RAM)
+- Fixed the sign highlight color slider in the settings menu to remember its position
+- Fixed signs blinking and disappearing in the sign editor
+- Fixed the contextual help for SFXInst in the sign editor displaying incorrect default tunings for multiples of a SFX
+
+October 5, 2012: Version 0.9.6.01
+
+- Added (Awesome) Keyword: SFXInst
+    - Replaces an instrument's sound with the given Minecraft sound effect.
+    - Example sign:
+        SFXInst 100
+        NotePiano F#3
+        Cmaj
+        I100 Cmaj
+        
+        - Plays a chord on the midi piano, then with the note block piano effect
+          
+    - 100 is the instrument that will be replaced by the sound effect TODO: (Defaults to the current)
+    - NotePiano is the name of the Minecraft SFX to use
+        - If sound effect does not exist, silence is used instead
+        - If using a SFX like "skeleton", you add a number to the end to specify a particular "skeleton" sound of the random clatters that Minecraft chooses from (e.g. skeleton1, skeleton2, skeleton3).
+        - If a number is not added to the end of the name, the first sound effect is used (e.g. 'meow' results in meow1.ogg being used).
+        - If a number is added, and the sound effect does not exist, the 1st sound effect is used. (e.g. bark9 results in bark1 being used anyway)
+    - F#3 is the "original pitch" of the sound effect: the sound will be played higher on higher notes, and lower on lower.
+        - Optional; a default tuning is provided for some SFX.
+        - The tuning note is unaffected by key signature tokens that came before
+        - Numbers also work: in semitones; C5 = 60.
+    - Currently only supports some SFX
+        - Not working include:
+            - Thunder effects
+            - Nether portal effects
+            - Pigman effects
+            - Piston effects
+            - Noteblock Snare effect
+- Added Keyword: SFXInstOff
+    - Turns off a SFX instrument set with SFXInst
+    
+- Added new SFX from noteblocks: bass, hihat, drum, snare, piano, pling
+    - Alternatives: notebass, notehihat, notedrum, notesnare, notepiano, notepling
+    - "pling" is never used in the game; it is a clearer, louder version of "piano".
+    - In case you're wondering, the pitch of the "notes" is F#3
+- Removed SFX:
+    - piston1, piston2 (pistonIn and pistonOut already exist)
+    - magma1, magma2
+- Replaced SFX:
+    - MagmaSmall ---> MagmaTiny
+
+- Added option to always play MCDitty music at full volume
+- Added PlayMidi context help to sign editor (with a list of matching midi files)
+
+- Fixed lyrics and particles "building up" when you are in a GUI and all being "released" at once when the gui is closed.
+- Hopefully fixed multiple MCDittyUpdateTickHookEntities existing after one or more becomes inactive.
+- Fixed a potential crash bug where an error downloading MCDittyLand's version in the MCDittyLand GUI feeds the error message into CompareVersions
+- Fixed SFX effects zombieDie and skeleDie.
+
+- Added synthesizer library, Gervill
+    - First use is SFXInst
+    - Overrides the assorted different synthesizers in different Java versions
+- Added Ogg Vorbis decoder library, J-Ogg
+    - Used for decoding SFX
+
+September 18, 2012: Version 0.9.6
+
+- Added MCDittyLand, an example world with a tiny floating castle
+    - Has a screen in the MCDitty Menu
+    - Can be downloaded, updated, and reset if you enjoy burning all the wool too much. (Like me).
+
+- Added Keyword: "Emitter"
+    - Usage: Emitter [Particle Type]
+        - Following lines contain options
+    - Shoots particles on each note played. Can be limited by voice, shoot different types of particles, etc.
+    - Will be expanded greatly in the future: stay tuned for fireworks.
+- Added Keyword: "GoTo"
+    - Usage: GoTo [Label]
+        - Label is the text of a comment on the sign you want to jump to
+    - Easier than using "In 6, Left 4, Up 5"
+    - Example:
+        - 1st sign: "#Badger / E Ri G Ri A"
+        - 2nd sign, far away: "Pattern 6 / GoTo #Badger"
+- Added Keyword: "SaveMidi"
+    - Replaces "Midi"
+- Added Keyword: "PlayMidi"
+    - Plays a midi file in the MCDitty midi folder
+    - No guarantee it will sync properly with the rest of the ditty
+    - BUG: Does not respect Minecraft volume like ditties do
+       
+- Tweaked how ends of lines of signs are handled:
+    - OLD: Ditty flowed to the sign below the FIRST sign in a line.
+    - NEW: Ditty flows to the FIRST SIGN IN THE LEFTMOST LINE BELOW THE CURRENT LINE.
+        - Specificly, the leftmost sign in the leftmost row of signs facing the same way below and adjacent to the current row.
+    - This may break some old ditties which rely on the old, stricter newline system.
+
+- Added a Sound Test screen
+    - Accessible from MCDitty menu
+        - Tests all SFX keyword sound effects
+        - Plays a short MusicString sample
+        - Plays midis from the /.minecraft/mcditty/midi/ folder
+       
+- Added "picking" signs for testing with a pickaxe
+    - Lets you test individual signs in the middle of a song without playing others.
+    - To use:
+        - Right click a sign to pick or unpick it
+        - Click a picked sign with something else to play it
+        - Click any other block holding a pick to clear your picked signs.
+        
+- Sign editor no longer treats the second lines of the following keywords as MusicStrings:
+    - PlayMIDI, MIDI, SaveMIDI, Emitter, and Lyric
+- Sign editor warns you if put a 'pattern', 'midi', 'emitter', 'playmidi', or 'savemidi' keyword after the first line of a sign
+- Sign editor warns you if you put a keyword beneath a Repeat keyword
+- Fixed sign editor highlighting a perfectly good line of tokens red if there was a double-space between tokens.
+- Fixed the sign editor "remembering" things like key changes and constants, causing weird readouts in the "Equivalant to:" note token help display.
+- Moved the keyword error message at the bottom of the sign editor from underneath the help mode button.
+- Ctrl+Left and Ctrl+Right now also move by notes in a chord, as well as by words
+
+- The "Open MIDI Folder" button in the MCDitty menu works under Mac OSX.
+
+- Added "Fast Signs" rendering: limits sign rendering, speeding up the game if there are a large number of signs around.
+
+- SFX Keyword sounds now respect Volume keyword
+- Wall signs appear to shrink when damaged by the player, like signposts  
+
+- Fixed warped background on text displays in the Sign Editor, its guide, the changelog, and other screens.
+
+- TEST: DOES DISABLING PARTICLES STILL WORK???
+- TODO: Mutex keyword
+- TODO: Cut the number of junk objects used for particle requests ESPECIALLY if particles are turned off
+
+- Added EXPERIMENTAL keyword: Disco
+    - Follow with voices to pulse to
+    - Place on any flat, horizontal wool surface.
+    - May cause light lag.
+        - WILL CHANGE DRASTICALLY IN FUTURE VERSIONS!!!
+
+- TODO: Picking and testing: Let there be a key and tempo selection before playback
+
+- TODO: Fix triplets being too fast by a slight amount (see Behold the Lord High... example)
+- TODO: Auto-suggest on playmidi
+- TODO: Close sequencers generated by PlayMIDI?  
+- TODO: Remove silent errors like this        
+Error: The constant INSBACC (INSBACC) has no definition.  Define this constant before using it.
+    at org.jfugue.Environment.dictionaryLookup(Environment.java:261)
+    at org.jfugue.Environment.getByteFromDictionary(Environment.java:100)
+    at org.jfugue.parsers.Parser.getByteFromDictionary(Parser.java:99)
+    at org.jfugue.parsers.MusicStringParser.getByteValueOfToken(MusicStringParser.java:319)
+    at org.jfugue.parsers.MusicStringParser.parseInstrumentElement(MusicStringParser.java:368)
+    at org.jfugue.parsers.MusicStringParser.parseToken(MusicStringParser.java:188)
+    at org.jfugue.parsers.MusicStringParser.parseTokens(MusicStringParser.java:160)
+    at org.jfugue.parsers.MusicStringParser.parse(MusicStringParser.java:150)
+    at org.jfugue.Player.getSequence(Player.java:709)
+    at org.jfugue.Player.play(Player.java:243)
+    at org.jfugue.Player.play(Player.java:395)
+    at com.wikispaces.mcditty.JFuguePlayerThread.run(JFuguePlayerThread.java:107)
+
+September 6, 2012: Version 0.9.5.11 & 0.9.5.12 & 0.9.5.13
+
+- Added a show no errors option
+- Added a list of tokens that disqualify a ditty as a valid ditty (for sign shops, iConomy, etc.)
+
+- MCDitty version numbers in the upper left corner of MCDitty GUIs are clickable and show if version is outdated
+- Changelog is now shown in-game, instead of in a text editor
+- Shifted locations of buttons in settings menu
+
+0.9.5.12 fixes not detecting no play tokens if there is a color code in front
+0.9.5.13 fixes auto-update closing the zip file too early
+
+TODO: Separate update checking logic into its own class 
+TODO: Create general "guide" text screen, and sub SignEditorGuide and Changelog screens from it OR use it for both cases
+
+August 23, 2012: Version 0.9.5.10
+
+- Fixed a ConcurrentModification crash involving MCDitty.signIndex on loading a new part of a world with many signs
+
+- Added sign shrinking/darkening when breaking
+
+August 20, 2012: Version 0.9.5.09
+
+- Fixed an insidious bug where signs would blank out on world load in SSP, and possibly any sign blanking bugs in SMP as well.
+    - Don't recommend my fix to Mojang :P
+        - Involves adding a flag to TileEntitySign; when a sign is created the flag is off. When it is first rendered, the renderer will effectively press the "recall" button like in the sign editor and recall the correct, non-blanked out text of the sign.
+            - The sign editor is the only place this causes a complication; it needs to turn off the flag before it renderers the new, BLANK, sign.
+
+(.08 was a fast port to 1.3.2 with no new features)
+
+August 9, 2012: Version 0.9.5.07
+
+- Fixed all Areas / ProxPads / Proximity signs pointing north and west being off by one block in front of or behind the sign
+
+- Added rudimentary contextual help for MusicStrings
+- Added error highlighting in sign editor for MusicStrings
+- Added sign recall button to sign editor
+- Added clear text button to sign editor
+- Added an assortment of other functionality to sign editor
+
+- Changed the key command of "recall a previous sign from the same location" in the sign editor from Ctrl+E to Ctrl+R 
+- Made MCDitty's good ditty detector very slightly less sensitive
+- Added scrollwheel support to the sign editor help area
+
+- Possible tiny performance increases when starting any ditty.
+
+TODO: Make scrolling text area wrap color codes as well as words
+    
+- TODO: Let there be a key and tempo selection before testing a sign in the Sign Editor 
+
+August 8 2012: Version 0.9.5.06
+
+- REALLY Fixed clicking out of a menu that isn't the sign editor activating the sign you were looking at when the menu was opened
+- Fixed Sign Editor showing help for "area" instead of proximity's
+- Fixed areas activating on both entry and exit
+- Fixed crash in sign editor: using Ctrl+E on a block with no previous sign
+
+- Separated most MCDitty resources (non .java and .class files) away from code and classes
+    - Exceptions:
+        - /org/jfugue/messages.properties
+		
+- Bug: SFX occasionally does not play :(
+
+August 7 2012: Version 0.9.5.05
+
+- Added a test sign button to the sign editor
+    - BUG: Has failed and "leaked" to other signs
+- Added a graphical background to text areas in sign editor
+- Added an optional message when you save a midi (enable in the settings menu)
+
+- New Keyword: Area
+    - Same as ProxPad, but more intuitively named
+
+- Changed Keyword: Lyric
+    - Trims extra spaces off of the end of a line, and ignores lines consisting entirely of spaces. 
+    - Still leaves excess spaces at the beginning of text (in case you want to indent, for example)
+   
+- Hid keyword ProxPad (it still works, however).
+    - Area is the exact same as proxpad, just with a shorter and clearer name.
+
+- Fixed Proximity generally acting broken
+- Fixed midi saving... they now REALLY save to .minecraft/MCDitty/midi/ instead of .minecraft/midi/
+- Fixed goto errors truncating a letter at the end of their description of the offending sign.
+- Fixed clicking out of a menu that isn't the sign editor activating the sign you were looking at when the menu was opened
+    - BUG: Fails on held clicks
+
+- Moved a couple dozen *ShortHelp.txt files out of the root folder of minecraft.jar to cut clutter
+
+August 6 2012: Version 0.9.5.04
+
+- Added option to use either the MC music or sound volume for MCDitty's volume
+
+- Changed Lyrics:
+    - Will repeat ALL defined lyrics over again once you hit end of repetitions
+        - Example: Define the lyric "A" to be "Happy!" "Happier!" "Happiest!" on the 1st, 2nd, and 3rd repetition.
+            - If you play lyric A 5 times, the result will be "Happy! Happier! Happiest! Happy! Happier!"
+            - Before it would have been the strange "Happy! Happier! Happiest! Happiest! Happiest!"
+
+- Fixed ends of note ties emitting a separate note particle
+- Fixed uppercase letters confusing the sign editor's keyword help
+- Fixed highlighting only appearing on lines of a sign as you scroll through them
+- Fixed uppercase letters confusing SFX keyword
+- Fixed enderman SFX
+
+August 4 2012: Version 0.9.5.03
+
+- Fixes "format error" messages during perfectly fine auto-updates
+- Fixes clicking while in menus triggering mcditty signs
+    
+- Added open midi folder button to main menu
+
+August 3 2012: Version 0.9.5.01
+
+- Proximity signs are now treated as 1x1 proxpads
+- There is a MCDitty button in the Minecraft Options menu
+- MCDitty now obeys Minecraft's volume settings
+- When a new MCDitty update becomes available, you are shown a chat message just once until the version increments again.
+
+- New Keyword: Volume
+    - Volume 100 is the highest volume for a voice, Volume 0 is the lowest.
+    
+- Assorted bug fixes
+    
+- Bug: If there are no signs in the world, MCDitty ignores keystrokes and does not show a button in the options menu
+- Bug: Options button appears after a delay
+
+August 3 2012: Version 0.9.5.00
+
+- Updated for Minecraft 1.3.1
+
+- Reorganized things, improved auto-update
+- Midis will now be saved into the MCDitty folder (.minecraft/MCDitty/midi/)
+
+- TODO: Move more resources (read: .txt files) to the MCDitty packages
+
+- Added to sign editor: hint where goto keywords point
+    
+CANCELLED, will add in next version.
+- Adding keyword: disco
+- Bug potential: disco floors which intersect
+- Bug: Placing signs on other signs causes no sign editor to appear
+
+June 27 - July 3 2012: Version 0.9.3.00
+
+- Improved sign particles
+    - Now display as notes play
+- Added live sign highlighting
+    - Custom color in settings
+- Made sign reader multithreaded
+
+- Removed all concept of a TileEntityMCDittySign -- modified base class TileEntitySign to have all functions.
+    - Large performance improvements ensued due to not tampering with TileEntities in the world.
+    - Fixed crash caused by quickly moving away from and back towards (as by /warp or /tp - ing in SMP) signs activated in MCDitty.
+
+- SUGGESTION by a FRIEND: New Keyword: SFX [name] plays a given Minecraft sound effect
+    - Like a note, but it has no "length" like a normal note.
+    - Really cool when combined with lyrics.
+    
+- New Keyword: ProxPad [width] [depth] [optional height]: If a player walks into the area of a ProxPad sign, the sign starts. Like proximity, but less clumsy.
+
+- Keyword Tweak: Lyric
+    - Put color codes in the text like this: "&eEponine:&r One more day all on my own..."
+        - (The word Eponine is yellow)
+    
+- Sign Editor Overhaul:
+    - Changed sign editor end of line sound to a MC sound effect
+
+    - Added a caret/cursor to the sign editor
+         - Move with the left and right arrow keys
+         
+    - Added delete, home, end, and insert key commands
+        - Works (almost) like a normal text field
+        - Included lots of standard Windows tricks:
+            - Ctrl + L/R Arrow moves by whole words
+            - Ctrl + Home/End warps to top and bottom corners of sign
+            - Ctrl + Backspace removes whole words 
+            - Shift Up and Down rearrange lines
+        
+    - Temporarily removed sign import, sign export, open sign folder, and clear sign buffer buttons
+        - Will be moved into a new gui of their own
+
+    - Added context-sensitive help for keywords to sign editor
+        - Added keyword and comment highlighting to the sign editor
+
+    - Added sign editor guide
+
+    - Added a mode button
+        - MCDitty Mode: Shows the keyword help area, highlights keywords, and displays any keyword notes at the bottom of the screen.
+        - Normal Mode: Like a normal MC sign editor, but with better text editing left in place.
+        - InvisiMode: Peek at the world or other signs, then go back to another mode and continue writing. 
+
+- Bug: Sometimes signs do not become un-highlighted, or de-highlight early
+    - Associated with voice and layer changes on a sign, especially with the "syncwith" keyword on it
+    - Cause: Highlight on and highlight off cues get mixed up
+        - Solution: ID sign hightlight calls
+
+June 26 2012: Updated to Version 0.9.2.01
+
+- Removed Alt+Place Sign placing a "Rw" sign.
+- Fixed, once and for all, lyric sync issues.
+- Fixed tempo tokens only working in voice 0
+
+June 25 2012: Updated to Version 0.9.2.00
+
+- Removed the custom end of line ding; replaced with a Windows (or default OS) beep
+    - Custom beep had terrible, terrible performance!
+- Removed corresponding setting in settings gui
+- Relabeled all buttons in settings gui to be clearer
+- Recolored buttons in keyboard gui to be more legible
+- Keyword RESET improved:
+    - No longer plays multiple musicstrings in sequence; rather, simulates the effects of doing such within the musicstring
+    - Uses SyncVoices
+- Fixed performance issue: used to print all particle locations in a song to stdout.
+- New Keyword: SyncVoices
+    - Aligns all voices and layers so that their next notes are all played in unison again next note, like at the start of a ditty.
+- New Keyword: SyncWith
+    - Aligns the current voice and layer's current time with the given voice and layer's
+        - Like SyncVoices, but more specific
+    - Usage: SyncWith (Voice #) (Optional Layer #)
+    - Examples: SyncWith 0, SyncWith 2 3
+- Sign editor shows number of letters left on current line
+- Placing a sign while holding Ctrl places a blank sign
+    - Placing a sign while cholding Alt places a "Rw" sign.
+    
+- NEW BUG [FIXED]: Lyrics lag after a number of tempo changes (even 3 or 4).
+
+June 23 2012: Updated to Version 0.9.1.01
+
+June 19-21 2012: Updated to Version 0.9.1
+
+NEW FEATURES
+- Auto updating: how much cooler does it get than that?
+- The sign editor dings to tell you you've hit the end of a line.
+    - You can change the ding tune in the settings.
+
+06-11-2012 - 06-18-2012: UPDATED TO 0.9.0
+
+NEW FEATURES
+- MCDitty Now Requires ModLoader
+
+- Added a Mute Key (Ctrl+M by default)
+- Added a Settings Menu (Ctrl+D by default)
+	- Can change settings, keys, and check for updates
+
+- New Keyword: OneAtATime: The Ditty must end before it can be started again.
+- New Keyword: IsDitty: Forces MCDitty to read a sign even if there are so many errors that MCDitty thinks a sign isn't a ditty.
+- New Keyword: LYRIC: Creates a new lyric
+	= Arguments: LYRIC [lyric label] [repetition] [an '&' followed by a color code (&2, for example)]
+		Example Sign: (The fourth time "YJavert" is hit in a song, show "Men like you can never change."
+		---------------		
+		LYRIC javert 4
+		Men like you
+		can never ch-
+		ange.
+		---------------
+	- Colors don't currently work
+	- To make longer lyrics, add another lyrics sign with the same label and repetition
+		Example Signs: Long lyric
+		---------------
+		LYRIC Valjean 4
+		You now have
+		the dowry of
+		the elect. It
+		---------------
+		LYRIC Valjean 4
+		is thus that
+		men are made
+		angels.
+		---------------
+
+- Added a new MusicString token: Y[lyric label]
+	- Example signs:
+			---------------
+			Repeat 4
+			YMark
+			C E G
+			
+			---------------
+			LYRIC Mark 2
+			Anything but
+			that!
+
+			---------------
+			LYRIC Mark 3
+			This is
+			weird; very
+			weird.
+			---------------
+			
+- Merged Improved Sign Editor into MCDitty
+	- All the old features are there, and several new ones
+	- Use a shovel to save text on a sign ("scoop" it off)
+	- ESC exits the sign editing screen (By popular demand)
+	- Added a rudimentary way to Import and Export signs with text files 
+
+- Keyword Tweak: Goto keywords (Up, Down, ect.) show an error if they point into the middle of nowhere.	
+- Keyword Tweak: Proximity: Ditties started by proximity are automatically "OneAtATime"
+	
+- JFugue Update: Added something called "Collected" notes
+    - Example: (C+E+G)q instead of Cq+Eq+Gq
+- JFugue Update: Tuplets fixed (numerator and denominator had been swapped)
+
+- Lots of performance tweaks	
+- Added a welcome message & achievements
+
+BUG FIXES:
+
+- Clicking and holding a sign no longer repeats the ditty
+	- Especially affected slow computers
+- Fixed signs looking "sparkly" when they blink
+- "ParticlesEnabled" in the config file works again
+- Added hidden "debug" settings (in settings menu: type "debug")
+
+NEW BUGS:
+
+- Starting your first ditty is laggy (no clue why)
+- Lyrics don't all reset on "reset" keywords
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ OLD VERSIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+05-25-2012 - 06-02-2012:
+- Updating to version 0.8.6
+
+New Features / Changes:
+- Improved error highlighting
+- Added infinite loop highlighting
+- Improved token error messages (added token in blue before the error text)
+- Added range check to tempo tokens; before they failed silently 
+- Added some keyword and comment highlighting
+    - Off by default: Turn it on in the config file
+- Now saves midis in a folder (.minecraft\midi\)
+    - Clears old midi files of the same song if they exist
+    
+
+Technical:
+- Updated JFugue to the latest as of the current date (A 4.1 SVN capture on May 25, 2012: SVN Revision 199).
+    - Copied in files, replacing old ones from 0.8.5
+    - Added library to build: log4j
+    - Removed MusicXML classes
+    
+    - Re-adding MCDitty's changes to library
+        - Method (parseTokenStrict()) in MusicStringParser
+            - It turns out that the range checks + exception throws I added in this class manually were added in the JFugue update, so I did not change any other methods.
+        - Messages ect. in JFugueException
+            - JFUGUE BUG (Fixed): In JFugueException (String, String, String), replaced all instances of '*' with "%s".
+            - Replaced various "*"s lying around in messages with proper %s
+            - Fixed messages to match old messages where applicable
+                - Did the same in the new file, messages.properties
+    - This did not fix Bug 11
+- Refactored ridiculously overgrown code in playTune method.
+    - Moved lots of code from main method to smaller methods
+    - Changed carraige return code from top of sign read loop in single step increments
+        - Put next to other "natural sign flow" methods, and made it work all at once, instead of running the sign read loop over and over.
+- Gave up refactoring playTune: removed, and rewrote the method into "PlayDittyFromSigns" and "ReadPattern"
+    - Error checking, infinite loop detection, and patterns are built into the new code from the start
+    - The new code has fewer ambiguous variables and statements 
+- Created an official testing area in MC
+    - Contains numbered, immutable tests that for the first time let me impartially test MCDitty's capabilities
+- Removed a "println" statement that added perceptibly to ditty processing time
+- Fixed bug in sign rendering: colored text is shifted as though the color codes are part of a string's length
+- Keyword Reset was changed, so that internally the word "reset" is added to the MusicString as a private token (~RESET : this doesn't confuse JFugue like "RESET" did).
+- Infinite loop timeout setting removed from config file (loop detection is now instant)
+- Changed midi saving to fix how it ignored resets: saves multiple midi files
+- Added mutex to midi saving, preventing most crashes related to saving midis
+
+04-30-2012 to 05-03-2012:
+- Updating to Version 0.8.5:
+
+New Features/Changes:
+
+- Error checking and help:
+    - Signs blink any lines of text MCDitty can't understand
+    - Optionally (in the config file), the whole signs themselves can blink multi-colors for more visibility
+    - Shows messages to player if a song being played has mistakes 
+    - Removed infinite loop dialog. Replaced it with a chat message.
+
+- Non-musical sign detection
+    - Note particles do not appear & song isn't started if song is 0 notes long
+    - Does not play song / emit particles if OVER HALF of a song is invalid tokens
+        - Note: Counts repeated notes multiple times towards this figure. Bug?
+        - Note: If a short song is too error-ridden, it look like a non-musical sign too.
+
+- Config file        
+    - Added new options (default setting in parenthesis)
+        - OnlyOneParticleEmitted (false): only the first sign in a song shoots a note when it is clicked.
+        - BlinkSignsTextureEnabled (false): if a sign has errors on it, blink the whole sign for a bit instead of just blinking the text
+        - OnlyFirstErrorShown (true): if false, every single error in a song is shown on the chat at once.
+        - SignBlinkMS (6000): time to blink signs (1000 = 1 second)
+    - Will update an old version's config file automatically
+    
+- Keyword Tweak: end and endline
+    - No music or keywords after these keywords, on the same sign, will be played.
+        - Ex: [A B C / end / Cmaj] will only play the notes at the beginning.
+- Keyword Tweak: pattern:
+    - Anything can put on a pattern sign to be repeated.
+    
+- Bug fixed: Empty pattern signs do not cause an infinite loop anymore.
+    
+- Bug Fixed: Pattern keywords not on first line of sign now do not cause error
+    - Keyword is simply ignored, and a message is shown on chat
+    
+Technical:
+- Modified MusicStringParser and JFugueException extensively
+    - Exception messages are more helpful and useful for MCDitty
+    - Parser now tries to catch more errors more exactly (such as layer and voice tokens being out of range)
+- Added MusicString token parsing as song is processed
+    - We are now basically aware what music is being read, as it's read
+- Added blink code to TileEntitySignRenderer
+    - Signs with errors can blink
+    - Lines of text with errors can blink
+- Lessened reliance on lineBeingEdited in the game's TileEntitySign (by making a new tile entity):
+    - lineBeingEdited in a regular TileEntitySign is set to -100 if it has a TileEntityMCDittySign equivalent somewhere
+    - Data that used to be stored here is now stored in a TileEntityMCDittySign
+        - Regular TileEntitySigns can be replaced with this alternative as needed
+        - Acts like a normal TileEntitySign
+- TODO: Break up playTuneFromSigns() into smaller methods that each do one thing. (I.E. Reorganize a bit)
+
+Known Bugs:
+- BUG 10: An empty "param" given to a JFugueException will result in a confusing error message, with a space where a word should be.
+- BUG 11: Starting a song with or without errors repeatedly over a short time causes any song played later, to make no sound
+    - Fix: restart game.
+
+04-15-2012:
+- Updating to Version 0.8:
+- Added Keyword: reset
+    - Resets the JFugue player before playing anything after the keyword
+        - Can be put anywhere in a line -- technically this treated as a musical token in MCDitty
+    - BUG: CRASH: Muting a song with the reset keyword in it causes JVM crash
+        - CHECK: Fixed?
+    - Causes short pause on my computer -- on another computer it might cause a longer pause.
+- Added Keyword: oneline
+    - Mashes all lines below this keyword into one unbroken line.
+    - Preserves any spaces at the beginnings and ends of lines
+- Code Improvement: More try/catch blocks around calls to JFugue player (which threw exceptions that crashed the game)
+- Fixed Bug: Too many JFugue players beginning or muting ect. conflict and crash JVM
+    - Added proper multithreading accommodations to JFuguePlayerThread (JFugue is not multithreaded naturally)
+    - Especially in songs that have a reset, this bug may still exist; don't start a gazillion songs at once.
+- Added redstone activation; identical to noteblock's
+    - Does not modify class: TileEntitySign (squeezed the redstone state flag into the preexisting field lineBeingEdited)
+    - Only works in SSP
+- Visual Effect: Particles
+- Added Keyword: repeat
+    - Repeats all MUSIC (music only) on lines below a default of 2 times
+        - Argument: a number; number of repetitions
+- New object that does not activate tune on signs: wooden axe (for convenience with WorldEdit)
+- Added config file in the .minecraft folder:
+    - Can turn off note particles with it, as well as change the infinite loop timeout settings
+- Fixed non right-angled signposts
+
+04-09-2012:
+- Updating to Version 0.7.1:
+- Added a feature to make working with the SignEdit mod easier:
+     - Clicking a sign while holding a shovel will not start a song
+- No other changes: all songs play the same as in 0.7 
+
+04-06-2012:
+- Updating to Version 0.7:
+- Removed loud sign receiver code (NetPacketHandler class now unnecessary once again for mod)
+- Changed keyword: loud: Keyword does nothing
+     - Removed all code for chatting and receiving chats from loud signs and songs
+        - Maintained backwards compatibility to 0.6; a loud keyword is ignored, but does not cause error
+        - However, MCDitty 0.6 "McDiTtY:xx:xx:xx:" chats sent by other players will now show up as normal chats.
+- Removed undocumented keyword: halt (synonym for "end")
+    - No backwards compatiblity maintained
+- Cleaned code, removing commented out functions
+- Changed keyword: pattern:
+    - MUST CHECK: Any keywords and music are allowed on a pattern sign. Every line of the sign will be read on each repetition.
+    - Keyword still must be on first line
+    - NEW GLITCH: Pattern signs without gotos, only music, cause infinite loop
+- Changed keywords: left right up down in out: 
+    - Music & other keywords are allowed on sign
+- Changed keywords: "end" and "end line":
+    - Music & other keywords are allowed on sign
+- Changed keyword: "mute"
+    - Music & other keywords are allowed on sign
+    - Note: Mute stops music immediately when read; not when music starts playing. 
+        - For ex. If placed in an infinite loop, music will stop as the infinite loop is read
+- UNchanged keyword: "proximity"
+    - Turns out it always allowed music & other keywords on sign. Fixed comments in code stating otherwise.
+- Changed keyword: "midi"
+    - Still must use first and second lines
+    - Music and other keywords allowed on other lines
+
+03-24-2012:
+- In a MCP Prelease #3: (Later made final)
+- Updated to MC 1.2.4
+
+04-05-2012:
+- Updated to MC 1.2.5: again, no changes.
+
+03-21-2012 - 3-23-2012: Version 0.6 Released (Minecraft 1.2.3)
+- Fixed memory leak: didn't close org.jfugue.player object after song is done playing
+- Trimmed excess spaces from read-in music
+- Removed glitch with signposts where if they weren't at a cardinal angle, they created infinite loop
+    - NEW GLITCH: Signs at non-cardinal angles act as though they face north.
+- Added keyword: end line: instead of ending song or pattern, causes a "rewind" to beginning of line of signs and look down for the next line, in effect forcing the end of a line
+- Added keyword: mute: stops all playing music. If part of a larger song, makes other songs quiet before the new one plays.
+    - Other keywords can be on sign BEFORE this keyword, but not after
+- Added keyword: proximity: if this sign's block is entered by the player, it starts the song the same way clicking on it does. Allows for gotos (Example text: proximity/up 6/right/in 16) and some other keywords (mute, end, and others), OR music on the sign.
+    - Sign will only activate once -- to reset, enter another sign's block.
+- Added keyword: midi: (must be on first line) saves a midi file of this song with the filename specified on the second line into the .minecraft folder on your computer. 
+    - Only letters and numbers are allowed in the filename (prevents hacking). No spaces. Maximum length is 15 characters. A ".mid" is automatically added to the end.
+    - Only the first midi sign in a song will be obeyed (prevents spamming).
+    - No music or other keywords on the sign will be read
+    - Overwrites any existing .mid file of the same name automatically.
+- Added keyword: loud: Broadcasts a chat to other players in SMP, which will cause them to hear the tune as well if they are nearby.
+    - A tune with an infinite loop will not be chatted.
+    - Music and other keywords can be on other lines of the sign with "loud" on it.
+- Fixed bug: "min" minor chords are seen as "in" goto keywords
+    - Now using "startsWith" in leiu of "contains" to check a line for keywords
+- Fixed proximity signs:
+    - Sign will now activate whenever a player enters its block
+    - NEW GLITCH: The player being two blocks high, only the lower proximity sign will activate if two are entered at once
+
+03-20-2012: Version 0.5 Released (Minecraft 1.2.3)

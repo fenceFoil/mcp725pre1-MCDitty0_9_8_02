@@ -1,0 +1,5 @@
+StaccatoOff
+
+Turns off the Staccato keyword for the current voice.
+
+See: Staccato

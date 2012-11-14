@@ -1,0 +1,5 @@
+ProxPad [width] [depth] [optional height]
+
+This keyword is the same as §bArea§r, but obsolete.
+
+§bSee:§r Area

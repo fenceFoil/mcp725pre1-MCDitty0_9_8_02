@@ -1,0 +1,6 @@
+Left [distance]
+Goto Keyword
+
+Instead of naturally flowing to the next sign, skip to a sign [distance] left of the sign.
+
+Can be combined with other goto keywords.

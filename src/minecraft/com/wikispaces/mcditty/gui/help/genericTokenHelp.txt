@@ -1,0 +1,27 @@
+§dBasic Tokens:§r
+
+Notes: §dA§r, §dB§r, §dC§r, §dD§r, §dE§r, §dF§r, §dG§r
+Rest: §dR
+Voice: §dV
+Tempo: §dT
+Key: §dK
+Instrument: §dI
+Lyric: §dY
+
+
+
+
+§dAdvanced Tokens (Help):§r
+Layer: §dL
+
+§dAdvanced Tokens (No Help Yet):§r
+
+Number Notes: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 or [Number]
+Polyphonic Pressure: *
+Channel Pressure: +
+Time: @
+Measure: |
+Pitch Bend: &
+Controller Message: X
+Set Constant: $
+Collection: §d(§r, §d)§r

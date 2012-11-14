@@ -1,0 +1,7 @@
+SFXInstOff [Inst]
+
+Removes a SFX (sound effect) instrument from a given instrument number.
+
+NOTE: Not immediate: if notes are played right after this keyword, they might still be played with an SFX instrument until the normal one is reloaded. Also note that this keyword starts removing the isntrument one 32nd of a beat BEFORE the keyword's location in the ditty (to lessen the load time before it takes effect).
+
+See: SFX, SFXInst

@@ -1,0 +1,58 @@
+Reading Books:
+
+In Player's Hand
+- Load the book in the player's hand into a book parser thingy
+- If the parser thingy says the book is part of a set
+	- THEN load other books the player is carrying until the whole set is found
+	- ELSE do nothing further.
+- Combine the keywords of the set of books
+- Parse the music keywords of the books and other keywords
+- Play the resulting DittyProperties
+
+NOTE that there should be two book parsers: one to determine whether the book is part of a set and its version, another to convert all keywords to a DittyProperties
+OR a parser that notes all top-level keywords in the book (checking for errors) and a parser that processes the keywords (also checking for errors).
+
+Parsing Books lvl 1:
+- input is a long string of all of book's text
+- create tree of keyword objects
+- output root of tree
+
+Parsing Books lvl 2:
+// TO DO: Save text within keywords
+// TO DO: Handle comments that appear anywhere
+- input is a long string of all of book's text
+- Loop until out of "<"s
+	- Look for "<", reading all text before into the current keyword level
+	- Read following word as keyword type
+		- If keyword type starts with "/" or "End "
+			- THEN go down a level in the keyword tree
+			- ELSE
+				- Read arguments in as individual words until ">"
+				- Create a keyword object
+				- If the keyword is the start of a pair
+					- THEN increase level in the keyword tree
+					
+Parsing Books lvl 3: This code results in a tree of book keywords
+- currLevel = 0
+- currChar (position within input currently reading) = 0
+- input is the book's text
+- currKeyword is the highest level unclosed keyword at currChar
+- rootKeyword is the book (not the mcditty keyword; it should have them as children though)
+
+- loop a:
+	- skip to the next "<"
+		- if it is not found, break a:
+		- all text from last position to this "<" should be added to the contents of currKeyword
+	- get word following "<"
+	- if word is "end" or starts with "/", this is the closing of currKeyword
+		- if the word after "end" or "/" is not the same as currKeyword, there is an error
+		- if there is no word, don't sweat it. (?)
+		- move position to after next ">"
+			- if next ">" is not found, there is an open tag error
+		- continue a: 
+	- arguments are all words until the next ">"
+		- if next ">" is not found, there is an open tag error
+	- put new keyword into currKeyword as a child
+	- if the keyword is the start of a pair, set it as currKeyword
+- if there are any unclosed keyword pairs, there is an error
+

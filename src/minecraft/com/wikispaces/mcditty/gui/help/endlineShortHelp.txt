@@ -1,0 +1,8 @@
+EndLine
+
+Instead of reading the sign to the right of this sign, skips to the start of the next line of signs.
+
+Anything after EndLine is ingored.
+
+§bSee:§r
+End

@@ -1,0 +1,7 @@
+Mute
+
+If part of a ditty, stops all other playing ditties before this one starts.
+
+You can do the same thing by pressing Ctrl+M.
+
+§bSee:§r OneAtATime

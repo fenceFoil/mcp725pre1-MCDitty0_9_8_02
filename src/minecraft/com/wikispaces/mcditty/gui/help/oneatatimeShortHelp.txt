@@ -1,0 +1,5 @@
+OneAtATime:
+
+When a ditty with this keyword is played, you cannot start it again from the same sign until it ends.
+
+§bSee:§r Mute

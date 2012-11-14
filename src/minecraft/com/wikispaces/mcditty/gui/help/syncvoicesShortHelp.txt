@@ -1,0 +1,5 @@
+SyncVoices:
+
+Lets all music play out before anything after this keyword plays. Like reset, except it only affects timing and not instruments, tempo, ect.
+
+§bSee:§r Reset, SyncWith
