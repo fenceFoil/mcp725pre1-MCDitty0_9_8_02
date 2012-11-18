@@ -35,47 +35,33 @@ import org.lwjgl.opengl.GL11;
  * Version of GuiSlider that does away with the unbreakable link with Minecraft
  * settings. Obviously this mod's guis don't alter Minecraft settings, so this
  * link was removed here.
- * 
  */
 public class GuiMCDittySlider extends GuiButton {
 
-	/** The value of this slider control. */
+	// Slider value
 	public float sliderValue;
 
-	/** Is this slider control being dragged. */
-	public boolean dragging;
+	public boolean dragging = false;
 
-	public GuiMCDittySlider(int par1, int par2, int par3, String par5Str, float par6) {
-		super(par1, par2, par3, 120, 20, par5Str);
-		sliderValue = 1.0F;
-		dragging = false;
-		sliderValue = par6;
+	/**
+	* Sets up a slider.
+	*/
+	public GuiMCDittySlider(int buttonID, int x, int y, String label, float initialValue) {
+		super(buttonID, x, y, 120, 20, label);		
+		sliderValue = initialValue;
 	}
 
 	/**
 	 * Fired when the mouse button is dragged. Equivalent of
 	 * MouseListener.mouseDragged(MouseEvent e).
 	 */
-	protected void mouseDragged(Minecraft par1Minecraft, int par2, int par3) {
+	protected void mouseDragged(Minecraft par1Minecraft, int x, int y) {
 		if (!drawButton) {
 			return;
 		}
 
 		if (dragging) {
-			sliderValue = (float) (par2 - (xPosition + 4)) / (float) (width - 8);
-
-			if (sliderValue < 0.0F) {
-				sliderValue = 0.0F;
-			}
-
-			if (sliderValue > 1.0F) {
-				sliderValue = 1.0F;
-			}
-
-			// par1Minecraft.gameSettings.setOptionFloatValue(idFloat,
-			// sliderValue);
-			// displayString =
-			// par1Minecraft.gameSettings.getKeyBinding(idFloat);
+			sliderValue = limitToRange((float) (x - (xPosition + 4)) / (float) (width - 8));
 		}
 
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -87,22 +73,10 @@ public class GuiMCDittySlider extends GuiButton {
 	 * Returns true if the mouse has been pressed on this control. Equivalent of
 	 * MouseListener.mousePressed(MouseEvent e).
 	 */
-	public boolean mousePressed(Minecraft par1Minecraft, int par2, int par3) {
-		if (super.mousePressed(par1Minecraft, par2, par3)) {
-			sliderValue = (float) (par2 - (xPosition + 4)) / (float) (width - 8);
-
-			if (sliderValue < 0.0F) {
-				sliderValue = 0.0F;
-			}
-
-			if (sliderValue > 1.0F) {
-				sliderValue = 1.0F;
-			}
-
-			// par1Minecraft.gameSettings.setOptionFloatValue(idFloat,
-			// sliderValue);
-			// displayString =
-			// par1Minecraft.gameSettings.getKeyBinding(idFloat);
+	public boolean mousePressed(Minecraft mc, int x, int y) {
+		if (super.mousePressed(mc, x, y)) {
+			sliderValue = limitToRange((float) (x - (xPosition + 4)) / (float) (width - 8));
+			
 			dragging = true;
 			return true;
 		} else {
@@ -124,5 +98,15 @@ public class GuiMCDittySlider extends GuiButton {
 	 */
 	protected int getHoverState(boolean par1) {
 		return 0;
+	}
+	
+	private float limitToRange (float value) {
+		if (value < 0) {
+			return 0;
+		} else if (value > 1) {
+			return 1;
+		} else {
+			return value
+		}
 	}
 }
