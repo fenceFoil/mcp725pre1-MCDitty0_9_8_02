@@ -74,7 +74,8 @@ public class GuiMCDittyTutorial extends GuiScreen {
 				height - 130, false, fontRenderer, false);
 
 		// Load guide text
-		textPanel.setText(MCDittyResourceManager.loadCachedResource("help/tutorialWorldGuide.txt"));
+		textPanel.setText(MCDittyResourceManager
+				.loadCachedResource("help/tutorialWorldGuide.txt"));
 
 		downloadButton = new GuiButton(200, width / 2 - 100, height - 60,
 				"Download");
@@ -90,15 +91,15 @@ public class GuiMCDittyTutorial extends GuiScreen {
 	public void drawScreen(int par1, int par2, float par3) {
 		int mcDittyLandPictureNumber = mc.renderEngine
 				.getTexture("/com/wikispaces/mcditty/resources/textures/MCDittyLand1.png");
-		
+
 		drawDefaultBackground();
-		//GL11.glColor4f(1.0F, 0F, 1.0F, 0.5f);
+		// GL11.glColor4f(1.0F, 0F, 1.0F, 0.5f);
 		mc.renderEngine.bindTexture(mcDittyLandPictureNumber);
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.5f);
 		drawTexturedModalRect(width - 10 - (width / 2 - 20), 60, 0, 0,
 				Math.min(width / 2 - 20, 256), Math.min(height - 130, 133));
-//		drawTexturedModalRect(width - 10 - (width / 2 - 20), 60, 0, 0,
-//				256, 133);
+		// drawTexturedModalRect(width - 10 - (width / 2 - 20), 60, 0, 0,
+		// 256, 133);
 
 		// Draw label at top of screen
 		drawCenteredString(fontRenderer, title, width / 2, 15, 0xaaaaff);
@@ -126,9 +127,9 @@ public class GuiMCDittyTutorial extends GuiScreen {
 				isUpToDateColor);
 
 		// Draw sliding panel o' text
-		
+
 		textPanel.draw(par1, par2);
-		
+
 		super.drawScreen(par1, par2, par3);
 	}
 
