@@ -65,6 +65,7 @@ import net.minecraft.src.WorldClient;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.xml.sax.SAXException;
 
 import com.wikispaces.mcditty.books.WrappedBook;
 import com.wikispaces.mcditty.bot.Bot;
@@ -187,7 +188,7 @@ public class MCDitty {
 	 */
 	private boolean firstTick = true;
 
-	//public static DecoySignManager decoySignManager;
+	// public static DecoySignManager decoySignManager;
 
 	/**
 	 * 
@@ -1135,7 +1136,15 @@ public class MCDitty {
 
 		// Init the SFX table
 		startTime = System.currentTimeMillis();
-		SFXManager.load();
+		try {
+			SFXManager.load();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (SAXException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		long sfxLoadTime = System.currentTimeMillis() - startTime;
 
 		// Init the Sign Renderer Trig Tables
@@ -1171,8 +1180,8 @@ public class MCDitty {
 
 		// Start the decoy sign manager used in the bugfix for 1.4.4 SSP signs
 		// blanking after an edit
-		//decoySignManager = new DecoySignManager();
-		//decoySignManager.start();
+		// decoySignManager = new DecoySignManager();
+		// decoySignManager.start();
 
 		// Load the config file
 		MCDittyConfig.checkConfig(null);
@@ -1404,6 +1413,10 @@ public class MCDitty {
 					i--;
 				}
 			}
+			
+			// Kill any bots
+			// Don't tell PETE (People for the Ethical Treatment of Entities)
+				executeBotAction(new DestroyAction("*", nextEventToFire.getDittyID()));
 		} else if (nextEventToFire instanceof SFXMCDittyEvent) {
 			if (((SFXMCDittyEvent) nextEventToFire).getSoundEffect() != null) {
 				double x = player.posX;

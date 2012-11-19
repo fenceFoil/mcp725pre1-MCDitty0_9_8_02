@@ -24,24 +24,41 @@
  */
 package com.wikispaces.mcditty.test;
 
+import java.io.IOException;
+
+import org.xml.sax.SAXException;
+
 import com.wikispaces.mcditty.sfx.SFXManager;
 
 /**
  * Testing for SFXManager.
- *
+ * 
  */
 public class TestSFXManager {
 
 	/**
 	 * @param args
+	 * @throws SAXException 
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) {
-		System.out.println (SFXManager.getEffectFilename("mob.creeperdeath", 1));
-		System.out.println ("Testing all effects.");
-		
+	public static void main(String[] args) throws IOException, SAXException {
+		System.out.println(
+				SFXManager.getEffectFilename("mob.creeperdeath", 1,
+						SFXManager.getLatestSource()));
+		System.out.println("Testing all effects.");
+
 		SFXManager.load();
-		for (String sfx:SFXManager.getAllEffects().keySet()) {
-			System.out.println (sfx+" ("+SFXManager.getEffectForShorthandName(sfx)+"): Exists? "+SFXManager.doesEffectExist(SFXManager.getEffectForShorthandName(sfx), 1));
+		for (String sfx : SFXManager
+				.getAllEffects(SFXManager.getLatestSource()).keySet()) {
+			System.out.println(sfx
+					+ " ("
+					+ SFXManager.getEffectForShorthandName(sfx,
+							SFXManager.getLatestSource())
+					+ "): Exists? "
+					+ SFXManager.doesEffectExist(SFXManager
+							.getEffectForShorthandName(sfx,
+									SFXManager.getLatestSource()), 1,
+							SFXManager.getLatestSource()));
 		}
 	}
 

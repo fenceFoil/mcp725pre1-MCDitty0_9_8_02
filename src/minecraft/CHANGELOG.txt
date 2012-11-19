@@ -20,6 +20,14 @@ Show emitter stats in sign editor keyword help
 
 - Added an assortment of particles to Emitter
 
+November 19, 2012: Version 0.9.7.05
+
+- TO DO: Updated SFX for new effects
+
+- TO DO: Added Keyword: SFXInst2
+    - Uses 1.4 sound effects
+    - SFXInst uses 1.3 sound effects
+
 November 13, 2012: Version 0.9.7.04 for Minecraft 1.4.4
 
 - New Keywords: Staccato / StaccatoOff

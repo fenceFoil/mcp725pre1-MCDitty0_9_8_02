@@ -1,0 +1,6 @@
+END OF EFFECTS
+
+Classic sounds were too faint, too brief, or too noise-ish to get a pitch out of.
+
+Notes:
+- Always end a effect name with a number; if there is only one (such as liquid.lava) always say (liquid.lava1).

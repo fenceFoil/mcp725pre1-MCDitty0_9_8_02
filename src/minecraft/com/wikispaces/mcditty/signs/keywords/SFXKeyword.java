@@ -61,7 +61,7 @@ public class SFXKeyword extends ParsedKeyword {
 
 		k.setEffectShorthand(effectName);
 
-		String soundEffect = SFXManager.getEffectForShorthandName(effectName);
+		String soundEffect = SFXManager.getEffectForShorthandName(effectName, SFXManager.getLatestSource());
 		if (soundEffect == null) {
 			k.setGoodKeyword(true);
 			k.setErrorMessageType(WARNING);

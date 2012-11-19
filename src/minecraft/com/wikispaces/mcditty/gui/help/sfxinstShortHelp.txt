@@ -1,12 +1,14 @@
 SFXInst [Inst]
-[Tuning] [SFX]
+[SFX] [Tuning]
+
+Alpha-1.3 SFX
 
 SFXInst replaces the normal sound of a given instrument with a Minecraft sound effect (SFX). The SFX will be made higher or lower and stretched to play notes. Can be removed with SFXInstOff [Inst].
 
 [Inst]: 0 to 127
 Instrument to be replaced.
 
-[SFX]: A SFX name.
+[SFX]: A SFX name. The first '#' is what MC version sounds to use: options are 1 and 2. Second '#' is which variant of the SFX to play.
 
 [Tuning] (Optional): A note (As in B2). At this pitch, the SFX is sounds normal. Some SFX have a default tuning.
 

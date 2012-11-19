@@ -57,6 +57,27 @@ public class DOMUtil {
 	}
 
 	/**
+	 * Returns the first Element in the list of nodes with the given name (case
+	 * sensitive version).
+	 * 
+	 * @param name
+	 * @param nodes
+	 * @return either an Element or null
+	 */
+	public static Element findFirstElement(String name, NodeList nodes) {
+		Element found = null;
+		for (int i = 0; i < nodes.getLength(); i++) {
+			Node n = nodes.item(i);
+			if (n.getNodeType() == Node.ELEMENT_NODE
+					&& n.getNodeName().equals(name)) {
+				found = (Element) n;
+				break;
+			}
+		}
+		return found;
+	}
+
+	/**
 	 * Returns a list (possibly empty) with any Elements in the list of nodes
 	 * with the given name (case insensitive).
 	 * 
@@ -171,7 +192,7 @@ public class DOMUtil {
 	 * 
 	 * @param intString
 	 * @param defaultInt
-	 * @return the parsed int or defaultInt if parsing fails.
+	 * @return the parsed int or defaultInt if parsing fails. Never null.
 	 */
 	public static Integer parseIntStringWithDefault(String intString,
 			Integer defaultInt) {

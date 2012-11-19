@@ -371,8 +371,8 @@ public class DittyPlayerThread extends Thread implements
 		/*
 		 * Select audio file.
 		 */
-		File audioFile = SFXManager.getEffectFile(SFXManager.getAllEffects()
-				.get(timedEvent.getSfxName()), timedEvent.getSfxNumber());
+		File audioFile = SFXManager.getEffectFile(SFXManager.getAllEffects(timedEvent.getSfxSource())
+				.get(timedEvent.getSfxName()), timedEvent.getSfxNumber(), timedEvent.getSfxSource());
 		OggDecoder decoder = null;
 		try {
 			decoder = new OggDecoder(audioFile.toURI().toURL());

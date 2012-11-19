@@ -2118,7 +2118,7 @@ public class GuiEditSign extends GuiScreen implements
 				// Fill sounds auto-suggest
 				ArrayList<String> matchingEffects = new ArrayList<String>();
 				HashMap<String, String> allEffectKeys = SFXManager
-						.getAllEffects();
+						.getAllEffects(SFXManager.getLatestSource());
 				Set<String> allEffectHandles = allEffectKeys.keySet();
 				String currHandle = ((SFXKeyword) keyword).getEffectShorthand();
 				String exactMatch = null;
@@ -2311,7 +2311,7 @@ public class GuiEditSign extends GuiScreen implements
 				// Fill sounds auto-suggest
 				ArrayList<String> matchingEffects = new ArrayList<String>();
 				HashMap<String, String> allEffectKeys = SFXManager
-						.getAllEffects();
+						.getAllEffects(0);
 				Set<String> allEffectHandles = allEffectKeys.keySet();
 				String currHandle = sfxInstKeyword.getSFXNameIncomplete();
 				if (currHandle == null) {
@@ -2332,7 +2332,7 @@ public class GuiEditSign extends GuiScreen implements
 
 				// Compile matching handles into a string
 				if (exactMatch != null) {
-					if (SFXManager.isShorthandOnSFXInstBlacklist(exactMatch)) {
+					if (SFXManager.isShorthandOnSFXInstBlacklist(exactMatch, 0)) {
 						// Bad SFX; on blacklist for SFXInst
 						additionalText.append("§cOut Of Order:\n§6");
 					} else {
@@ -2348,7 +2348,7 @@ public class GuiEditSign extends GuiScreen implements
 					additionalText.append("§eOther SFX:\n");
 					for (String handle : matchingEffects) {
 						// Check for blacklist
-						if (SFXManager.isShorthandOnSFXInstBlacklist(handle)) {
+						if (SFXManager.isShorthandOnSFXInstBlacklist(handle, 0)) {
 							additionalText.append("§c");
 						}
 						additionalText.append(handle);
@@ -2357,18 +2357,18 @@ public class GuiEditSign extends GuiScreen implements
 						// SFXManager.getDefaultTuningInt(SFXManager.getEffectForShorthandName(handle),
 						// 1));
 						String sfxHandleEffect = SFXManager
-								.getEffectForShorthandName(handle);
+								.getEffectForShorthandName(handle, 0);
 						int numAlts = SFXManager
-								.getNumberOfAlternativesForEffect(sfxHandleEffect);
+								.getNumberOfAlternativesForEffect(sfxHandleEffect, 0);
 						additionalText.append(" §7(");
 						for (int i = 0; i < numAlts; i++) {
 							if (SFXManager.getDefaultTuningString(SFXManager
-									.getEffectForShorthandName(handle), i + 1) != null) {
+									.getEffectForShorthandName(handle, 0), i + 1, 0) != null) {
 								additionalText
 										.append(SFXManager.getDefaultTuningString(
 												SFXManager
-														.getEffectForShorthandName(handle),
-												i + 1));
+														.getEffectForShorthandName(handle, 0),
+												i + 1, 0));
 
 							} else {
 								additionalText.append(Integer.toString(i + 1));

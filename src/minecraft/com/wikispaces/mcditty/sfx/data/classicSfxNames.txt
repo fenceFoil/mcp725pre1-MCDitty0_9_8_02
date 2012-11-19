@@ -1,0 +1,8 @@
+grass:step.grass
+gravel:step.gravel
+stone:step.stone
+wood:step.wood
+END OF EFFECTS
+
+SFX 56789012345
+Current ideal handle length = 9 chars 

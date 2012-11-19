@@ -39,6 +39,7 @@ public class SFXInstrumentEvent extends TimedDittyEvent {
 
 	// private SFXInstKeyword keyword;
 	private long createdTime = 0;
+	private int sfxSource;
 
 	/**
 	 * @param emitterLocation
@@ -55,11 +56,12 @@ public class SFXInstrumentEvent extends TimedDittyEvent {
 		sfxNameIncomplete = keyword.getSFXNameIncomplete();
 		sfxNumber = keyword.getSFXNumber();
 		centerPitch = keyword.getCenterPitch();
+		sfxSource = keyword.getSFXSource();
 	}
 
 	public SFXInstrumentEvent(int inst, String sfxFile, String sfx,
-			String sfxIncomplete, int sfxNum, int tuning, int createdTime,
-			int dittyID) {
+			String sfxIncomplete, int sfxNum, int source, int tuning,
+			int createdTime, int dittyID) {
 		super(dittyID);
 		setCreatedTime(createdTime);
 		instrument = inst;
@@ -67,6 +69,7 @@ public class SFXInstrumentEvent extends TimedDittyEvent {
 		sfxName = sfx;
 		sfxNameIncomplete = sfxIncomplete;
 		sfxNumber = sfxNum;
+		sfxSource = source;
 		centerPitch = tuning;
 	}
 
@@ -140,6 +143,14 @@ public class SFXInstrumentEvent extends TimedDittyEvent {
 
 	public void setCenterPitch(int centerPitch) {
 		this.centerPitch = centerPitch;
+	}
+
+	public int getSfxSource() {
+		return sfxSource;
+	}
+
+	public void setSfxSource(int source) {
+		sfxSource = source;
 	}
 
 }

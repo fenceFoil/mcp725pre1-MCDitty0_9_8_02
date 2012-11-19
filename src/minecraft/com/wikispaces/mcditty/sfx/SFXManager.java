@@ -33,10 +33,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
-import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.jfugue.elements.Note;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
+import com.wikispaces.mcditty.DOMUtil;
 import com.wikispaces.mcditty.GetMinecraft;
 
 /**
@@ -52,90 +60,43 @@ import com.wikispaces.mcditty.GetMinecraft;
  * Handle: a short name, such as "dogbark", which represents...<br>
  * Effect: a full sound effect name, such as newsound.mob.dog.bark, such as
  * Minecraft uses as a sound effect name<br>
+ * Source: a number representing a set of sound effects; 0 is for the Alpha to
+ * 1.3 sound folder, while 1 represents sound3.<br>
  * SFX: Sound Effect<br>
+ * <br>
+ * To Do: Fix the potential null pointers involving blind "sources.get(source)"
+ * calls everywhere.
  * 
  */
 public class SFXManager {
 
 	private static Random rand = new Random();
 
-	private static HashMap<String, String> effectNames = new HashMap<String, String>();
-	private static HashMap<String, String> effectTuningsString = new HashMap<String, String>();
-	private static HashMap<String, Integer> effectTuningsInt = new HashMap<String, Integer>();
+	private static int latestSourceNum = 0;
 
-	private static Set<String> sfxBlackListEffects = new HashSet<String>();
+	private static HashMap<Integer, SFXSource> sources = new HashMap<Integer, SFXSource>();
 
-	private static Set<String> sfxBlackListShorthands = new HashSet<String>();
+	public static void load() throws IOException, SAXException {
+		// Load general config info
+		NodeList configNodes = parseXMLStream(SFXManager.class
+				.getResourceAsStream("data/sfxManagerConfig.xml"));
 
-	public static void load() {
-		// Load effect names
-		try {
-			// System.out.println("MCDitty: Loading sfx names");
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					SFXManager.class.getResourceAsStream("data/sfxNames.txt")));
-			while (true) {
-				String inLine = reader.readLine();
-				if (inLine == null
-						|| inLine.toLowerCase().startsWith("end of effects")) {
-					break;
-				}
-
-				// Break apart each line of sfxNames
-				String[] mapping = inLine.split(":");
-
-				// Store the effect name for the given shorthand
-				effectNames.put(mapping[0], mapping[1]);
-
-				// Check for third pard
-				if (mapping.length >= 3) {
-					// Entry has a third part
-					if (mapping[2].equals("NoSFXInst")) {
-						sfxBlackListEffects.add(mapping[1]);
-						sfxBlackListShorthands.add(mapping[0]);
-					}
-				}
-			}
-			reader.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+		// Read the number of the latest source for sound effects in this
+		// version of Minecraft
+		Element latestSourceNode = DOMUtil.findFirstElement("latestSource",
+				configNodes);
+		if (latestSourceNode != null) {
+			latestSourceNum = DOMUtil.parseIntStringWithDefault(
+					DOMUtil.getAttributeValue(latestSourceNode, "num"), 0);
 		}
 
-		// Load effect names
-		try {
-			// System.out.println("MCDitty: Loading sfx names");
-			LinkedList<String[]> values = readSeparatedList(":",
-					SFXManager.class.getResourceAsStream("data/sfxNames.txt"),
-					"end of effects");
-
-			for (String[] v : values) {
-				// Store the effect name for the given shorthand
-				effectNames.put(v[0], v[1]);
-
-				// Check for third part
-				if (v.length >= 3) {
-					// Entry has a third part
-					if (v[2].equals("NoSFXInst")) {
-						sfxBlackListEffects.add(v[1]);
-						sfxBlackListShorthands.add(v[0]);
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		// Load default center pitches
-		try {
-			LinkedList<String[]> values = readSeparatedList(":", SFXManager.class
-							.getResourceAsStream("data/effectPitches.txt"), "end of effects");
-			for (String[] v:values) {
-				// Store the effect name for the given shorthand
-				effectTuningsString.put(v[0], v[1]);
-				int pitchValue = Note.createNote(v[1]).getValue();
-				effectTuningsInt.put(v[0], pitchValue);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		// Load sfx sources
+		LinkedList<Element> sourceElements = DOMUtil.findElements("source",
+				DOMUtil.findFirstElement("sources", configNodes)
+						.getChildNodes());
+		for (Element e : sourceElements) {
+			SFXSource newSource = SFXSource.loadFromElement(e);
+			sources.put(newSource.num, newSource);
 		}
 	}
 
@@ -145,14 +106,14 @@ public class SFXManager {
 	 * @param name
 	 * @return the name, or null if not found
 	 */
-	public static String getEffectForShorthandName(String name) {
-		return effectNames.get(name.toLowerCase());
+	public static String getEffectForShorthandName(String name, int source) {
+		return sources.get(source).effectNames.get(name.toLowerCase());
 	}
 
-	public static void playEffectByShorthand(String name) {
+	public static void playEffectByShorthand(String name, int source) {
 		GetMinecraft.instance().theWorld.playSoundAtEntity(
 				GetMinecraft.instance().thePlayer,
-				getEffectForShorthandName(name), 1.0f, 1.0f);
+				getEffectForShorthandName(name, source), 1.0f, 1.0f);
 	}
 
 	public static void playEffect(String mcName) {
@@ -164,8 +125,9 @@ public class SFXManager {
 				GetMinecraft.instance().thePlayer, mcName, volume, pitch);
 	}
 
-	public static HashMap<String, String> getAllEffects() {
-		return (HashMap<String, String>) effectNames.clone();
+	public static HashMap<String, String> getAllEffects(int source) {
+		return (HashMap<String, String>) sources.get(source).effectNames
+				.clone();
 	}
 
 	/**
@@ -174,8 +136,9 @@ public class SFXManager {
 	 * @param effectName
 	 * @return
 	 */
-	public static boolean doesEffectExist(String effectName, int effectNumber) {
-		File effectFile = getEffectFile(effectName, effectNumber);
+	public static boolean doesEffectExist(String effectName, int effectNumber,
+			int source) {
+		File effectFile = getEffectFile(effectName, effectNumber, source);
 		return effectFile.exists();
 	}
 
@@ -193,9 +156,13 @@ public class SFXManager {
 	 *            The number (as in /newsound/mob/cookiemonster/nomnomnom3.ogg)
 	 *            OR -1 for a random effect (as minecraft does; returns
 	 *            nomnomnom1 2 or 3). 0 is a valid input; is replaced with 1.
+	 * @param source
+	 *            The SFX source of the effect; needed to determine whether the
+	 *            file is in newSound or sound3 etc.
 	 * @return the effect's filename or null if the effect name is bad
 	 */
-	public static String getEffectFilename(String effectName, int effectNumber) {
+	public static String getEffectFilename(String effectName, int effectNumber,
+			int source) {
 		// 0 implies the first sound effect available, but this function
 		// requires an input of -1 or 1 and up. '0's are converted to 1.
 		if (effectNumber == 0) {
@@ -206,7 +173,8 @@ public class SFXManager {
 		StringBuilder filename = new StringBuilder()
 				.append(GetMinecraft.instance().getMinecraftDir())
 				.append(File.separator).append("resources")
-				.append(File.separator).append("newsound")
+				.append(File.separator)
+				.append(sources.get(source).resourceFolder)
 				.append(File.separator);
 		// Complete filename
 		String[] effectNameParts = effectName.split("\\.");
@@ -306,8 +274,9 @@ public class SFXManager {
 	 * @param effectName
 	 * @return
 	 */
-	public static File getEffectFile(String effectName, int effectNumber) {
-		return new File(getEffectFilename(effectName, effectNumber));
+	public static File getEffectFile(String effectName, int effectNumber,
+			int source) {
+		return new File(getEffectFilename(effectName, effectNumber, source));
 	}
 
 	/**
@@ -318,11 +287,12 @@ public class SFXManager {
 	 *            >= 1; if not, it is rounded up
 	 * @return null if effect has no default center pitch
 	 */
-	public static Integer getDefaultTuningInt(String effectName, int sfxNumber) {
+	public static Integer getDefaultTuningInt(String effectName, int sfxNumber,
+			int source) {
 		if (sfxNumber < 1) {
 			sfxNumber = 1;
 		}
-		return effectTuningsInt.get(effectName + sfxNumber);
+		return sources.get(source).effectTuningsInt.get(effectName + sfxNumber);
 	}
 
 	/**
@@ -333,11 +303,13 @@ public class SFXManager {
 	 *            >= 1; if not, it is rounded up
 	 * @return null if effect has no default center pitch
 	 */
-	public static String getDefaultTuningString(String effectName, int sfxNumber) {
+	public static String getDefaultTuningString(String effectName,
+			int sfxNumber, int source) {
 		if (sfxNumber < 1) {
 			sfxNumber = 1;
 		}
-		return effectTuningsString.get(effectName + sfxNumber);
+		return sources.get(source).effectTuningsString.get(effectName
+				+ sfxNumber);
 	}
 
 	/**
@@ -348,8 +320,9 @@ public class SFXManager {
 	 *            not case sensitive
 	 * @return
 	 */
-	public static boolean isShorthandOnSFXInstBlacklist(String shorthand) {
-		for (String s : sfxBlackListShorthands) {
+	public static boolean isShorthandOnSFXInstBlacklist(String shorthand,
+			int source) {
+		for (String s : sources.get(source).sfxBlackListShorthands) {
 			if (s.equals(shorthand)) {
 				return true;
 			}
@@ -365,13 +338,23 @@ public class SFXManager {
 	 *            not case sensitive
 	 * @return
 	 */
-	public static boolean isEffectOnSFXInstBlacklist(String effect) {
-		for (String s : sfxBlackListEffects) {
+	public static boolean isEffectOnSFXInstBlacklist(String effect, int source) {
+		for (String s : sources.get(source).sfxBlackListEffects) {
 			if (s.equals(effect)) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * 
+	 * @return the number to give methods with "source" parameters that
+	 *         represents the latest source of SFX files; sound3 for Minecraft
+	 *         1.4.x
+	 */
+	public static int getLatestSource() {
+		return latestSourceNum;
 	}
 
 	/**
@@ -383,10 +366,10 @@ public class SFXManager {
 	 * @return between 0 and 9. (0 signifies none found, 9 is the maximum this
 	 *         will check for).
 	 */
-	public static int getNumberOfAlternativesForEffect(String effect) {
+	public static int getNumberOfAlternativesForEffect(String effect, int source) {
 		int found = 0;
 		for (int i = 1; i <= 9; i++) {
-			if (doesEffectExist(effect, i)) {
+			if (doesEffectExist(effect, i, source)) {
 				// Try another.
 				found++;
 			} else {
@@ -436,4 +419,138 @@ public class SFXManager {
 		// Return read values
 		return values;
 	}
+
+	public static NodeList parseXMLStream(InputStream stream)
+			throws IOException, SAXException {
+		// Parse the XML ditty data
+		// Create the document builder
+		DocumentBuilder documentBuilder = null;
+		try {
+			documentBuilder = DocumentBuilderFactory.newInstance()
+					.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			// Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// Parse
+		Document bookDocument = documentBuilder.parse(stream);
+
+		// Normalize and return the read xml document
+		if (bookDocument != null) {
+			bookDocument.getDocumentElement().normalize();
+			return bookDocument.getChildNodes();
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Returns an array of all sfx source numbers loaded
+	 * @return
+	 */
+	public static int[] getSourceNums() {
+		LinkedList<Integer> l = new LinkedList<Integer>();
+		for (Integer s : sources.keySet()) {
+			l.add(s);
+		}
+
+		int[] nums = new int[l.size()];
+		int count = 0;
+		for (int i : l) {
+			nums[count] = i;
+			count++;
+		}
+		return nums;
+	}
+	
+	public static String getSourceName (int source) {
+		return sources.get(source).displayName;
+	}
+	
+	public static boolean isValidSourceNum (int sourceNum) {
+		SFXSource ifThisIsNullThenInvalidNum = sources.get(sourceNum);
+		return (ifThisIsNullThenInvalidNum != null);
+	}
+
+	private static class SFXSource {
+
+		public int num;
+		public String displayName = "";
+		public String resourceFolder = "newsound";
+		public String dataFilePrefix = "";
+
+		public HashMap<String, String> effectNames = new HashMap<String, String>();
+		public HashMap<String, String> effectTuningsString = new HashMap<String, String>();
+		public HashMap<String, Integer> effectTuningsInt = new HashMap<String, Integer>();
+
+		public HashSet<String> sfxBlackListEffects = new HashSet<String>();
+		public HashSet<String> sfxBlackListShorthands = new HashSet<String>();
+
+		private SFXSource() {
+
+		}
+
+		public static SFXSource loadFromElement(Element element) {
+			SFXSource source = new SFXSource();
+
+			// Load settings for this source from the config
+			source.num = DOMUtil.parseIntStringWithDefault(
+					DOMUtil.getAttributeValue(element, "num"), 0);
+			source.displayName = DOMUtil.getAttributeValue(element, "name");
+			source.resourceFolder = DOMUtil
+					.getAttributeValue(element, "folder");
+			source.dataFilePrefix = DOMUtil.getAttributeValue(element,
+					"dataFilePrefix");
+
+			// Load maps' and sets' data from file
+
+			// Load effect names
+			try {
+				// System.out.println("MCDitty: Loading sfx names");
+				LinkedList<String[]> values = readSeparatedList(
+						":",
+						SFXManager.class.getResourceAsStream("data/"
+								+ source.dataFilePrefix + "SfxNames.txt"),
+						"end of effects");
+
+				for (String[] v : values) {
+					// Store the effect name for the given shorthand
+					source.effectNames.put(v[0], v[1]);
+
+					// Check for third part
+					if (v.length >= 3) {
+						// Entry has a third part
+						if (v[2].equals("NoSFXInst")) {
+							source.sfxBlackListEffects.add(v[1]);
+							source.sfxBlackListShorthands.add(v[0]);
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			// Load default center pitches
+			try {
+				LinkedList<String[]> values = readSeparatedList(
+						":",
+						SFXManager.class.getResourceAsStream("data/"
+								+ source.dataFilePrefix + "effectPitches.txt"),
+						"end of effects");
+				for (String[] v : values) {
+					// Store the effect name for the given shorthand
+					source.effectTuningsString.put(v[0], v[1]);
+					int pitchValue = Note.createNote(v[1]).getValue();
+					source.effectTuningsInt.put(v[0], pitchValue);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			return source;
+		}
+
+	}
+
 }

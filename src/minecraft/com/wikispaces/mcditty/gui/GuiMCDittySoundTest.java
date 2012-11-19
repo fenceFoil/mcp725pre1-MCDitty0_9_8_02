@@ -55,7 +55,11 @@ public class GuiMCDittySoundTest extends GuiScreen {
 
 	private GuiTextField sfxField;
 	private GuiButton testSFXButton;
+	private GuiButton changeSFXSourceButton;
 	private GuiScrollingTextPanel sfxTextPanel;
+	
+	private int currSFXSource = -1;
+	private int currSFXSourceIndex = -1;
 
 	private GuiButton testMusicStringSampleButton;
 
@@ -94,6 +98,7 @@ public class GuiMCDittySoundTest extends GuiScreen {
 		sfxTextPanel = new GuiScrollingTextPanel(panelMargins, topMargin + 30,
 				width / 3 - (2 * panelMargins), height - panelMargins
 						- topMargin - 30, false, fontRenderer, true);
+		changeSFXSourceButton = new GuiButton (2000, panelMargins, height - 20 - panelMargins, 100, 20, "Alpha to 1.3");
 
 		// Center third of screen: MusicString tests
 		testMusicStringSampleButton = new GuiButton(300, width / 2 - 50,
@@ -124,6 +129,9 @@ public class GuiMCDittySoundTest extends GuiScreen {
 
 		updateMidiTestPanel();
 		updateSFXTestPanel();
+		
+		// set up the sfx source change button
+		actionPerformed(changeSFXSourceButton);
 
 		sfxField.setFocused(true);
 	}
@@ -154,6 +162,20 @@ public class GuiMCDittySoundTest extends GuiScreen {
 			// Play SFX
 			testSFX();
 			sfxField.setFocused(true);
+		} else if (par1GuiButton.id == 2000) {
+			// Change sfx source
+			int[] sfxSourceNums = SFXManager.getSourceNums();
+			
+			currSFXSourceIndex++;
+			if (currSFXSourceIndex >= sfxSourceNums.length) {
+				currSFXSourceIndex = 0;
+			}
+			
+			currSFXSource = sfxSourceNums[currSFXSourceIndex];
+			
+			changeSFXSourceButton.displayString = SFXManager.getSourceName(currSFXSource);
+			
+			updateSFXTestPanel();
 		} else if (par1GuiButton.id == 300) {
 			// Test MusicString
 			testMusicString();
@@ -181,7 +203,7 @@ public class GuiMCDittySoundTest extends GuiScreen {
 	private void testSFX() {
 		if (currentMatchingSFX != null) {
 			MCDitty.executeTimedDittyEvent(new SFXMCDittyEvent(SFXManager
-					.getEffectForShorthandName(currentMatchingSFX), 0, 0));
+					.getEffectForShorthandName(currentMatchingSFX, currSFXSource), 0, 0));
 		}
 	}
 
@@ -269,8 +291,8 @@ public class GuiMCDittySoundTest extends GuiScreen {
 
 	private void updateSFXTestPanel() {
 		LinkedList<String> matchingSFX = new LinkedList<String>();
-		Set<String> keys = SFXManager.getAllEffects().keySet();
-		for (String key : SFXManager.getAllEffects().keySet()) {
+		Set<String> keys = SFXManager.getAllEffects(currSFXSource).keySet();
+		for (String key : SFXManager.getAllEffects(currSFXSource).keySet()) {
 			if (key.toLowerCase().startsWith(sfxField.getText().toLowerCase())) {
 				matchingSFX.add(key);
 			}

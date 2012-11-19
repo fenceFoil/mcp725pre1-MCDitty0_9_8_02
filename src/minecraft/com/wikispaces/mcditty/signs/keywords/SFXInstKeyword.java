@@ -58,7 +58,7 @@ public class SFXInstKeyword extends ParsedKeyword {
 	 * The sfx shorthand
 	 */
 	private String sfxName;
-	
+
 	/**
 	 * The sfx shorthand, even if it is not yet a valid name
 	 */
@@ -80,6 +80,8 @@ public class SFXInstKeyword extends ParsedKeyword {
 	 */
 	private int centerPitch = -1;
 
+	private int sfxSource = 0;
+
 	/**
 	 * @param wholeKeyword
 	 */
@@ -96,6 +98,19 @@ public class SFXInstKeyword extends ParsedKeyword {
 		String[] args = rawArgs.split(" ");
 		int numArgs = args.length;
 
+		if (args.length >= 1) {
+			// Decide what SFX source to use based on the SfxInst keyword
+			String rootKeyword = args[0];
+			if (rootKeyword.equalsIgnoreCase("sfxinst")) {
+				// Use Alpha-1.3 source
+				keyword.sfxSource = 0;
+			} else if (rootKeyword.equalsIgnoreCase("sfxinst2")) {
+				// use 1.4 source
+				keyword.sfxSource = 1;
+			}
+		}
+
+		// Calculate other arguments
 		if (numArgs > 2) {
 			// Too many arguments
 			keyword.setGoodKeyword(true);
@@ -147,6 +162,15 @@ public class SFXInstKeyword extends ParsedKeyword {
 	public <T extends ParsedKeyword> void parseWithMultiline(
 			ParsedSign parsedSign, int keywordLine, T k) {
 		super.parseWithMultiline(parsedSign, keywordLine, k);
+		
+		SFXInstKeyword keyword;
+		int source;
+		if (!(k instanceof SFXInstKeyword)) {
+			return;
+		} else {
+			keyword = (SFXInstKeyword) k;
+			source = keyword.getSFXSource();
+		}
 
 		// Pass along errors if they exist
 		if (!k.isGoodKeyword()) {
@@ -187,7 +211,7 @@ public class SFXInstKeyword extends ParsedKeyword {
 			} else {
 				// Check for a SFX name, or throw an error it is not one
 				// Also handle a number appended to the SFX name
-				
+
 				// Always set the incomplete sfx name, whatever else betide
 				setSFXNameIncomplete(s.replaceAll("\\d", ""));
 
@@ -195,7 +219,7 @@ public class SFXInstKeyword extends ParsedKeyword {
 				// XXX: Could cause bugs by removing digits in middle of
 				// shorthand
 				String fullSFXName = SFXManager.getEffectForShorthandName(s
-						.replaceAll("\\d", ""));
+						.replaceAll("\\d", ""), sfxSource);
 
 				if (fullSFXName == null) {
 					// No SFX by that name.
@@ -232,11 +256,11 @@ public class SFXInstKeyword extends ParsedKeyword {
 					setSFXNumber(digit);
 
 					// Get the filename of the sfx
-					File sfxFile = SFXManager.getEffectFile(fullSFXName, digit);
+					File sfxFile = SFXManager.getEffectFile(fullSFXName, digit, source);
 					if (!sfxFile.exists()) {
 						// If the sfx filename does not exist
 						// Try resetting the digit to 0
-						sfxFile = SFXManager.getEffectFile(fullSFXName, 1);
+						sfxFile = SFXManager.getEffectFile(fullSFXName, 1, source);
 						// Update the saved SFX number to reflect this
 						setSFXNumber(1);
 					}
@@ -245,13 +269,16 @@ public class SFXInstKeyword extends ParsedKeyword {
 
 				// Save original SFX name
 				setSFXName(s.replaceAll("\\d", ""));
-				
+
 				// Check that the SFX is not an out-of-order SFX
-				if (SFXManager.isShorthandOnSFXInstBlacklist(sfxName)) {
+				if (SFXManager.isShorthandOnSFXInstBlacklist(sfxName, source)) {
 					// blacklisted as out of order
 					setGoodKeyword(false);
 					setErrorMessageType(ERROR);
-					setErrorMessage("SFXInst: "+sfxName+" is out of order in "+MCDittyConfig.CURRENT_VERSION+". Try another SFX instead.");
+					setErrorMessage("SFXInst: " + sfxName
+							+ " is out of order in "
+							+ MCDittyConfig.CURRENT_VERSION
+							+ ". Try another SFX instead.");
 					return;
 				}
 			}
@@ -271,7 +298,7 @@ public class SFXInstKeyword extends ParsedKeyword {
 		if (centerPitch == -1) {
 			// Try to get the default center pitch
 			Integer defaultCenterPitch = SFXManager.getDefaultTuningInt(
-					SFXManager.getEffectForShorthandName(sfxName), sfxNumber);
+					SFXManager.getEffectForShorthandName(sfxName, source), sfxNumber, source);
 			if (defaultCenterPitch != null) {
 				setCenterPitch(defaultCenterPitch);
 			} else {
@@ -340,6 +367,14 @@ public class SFXInstKeyword extends ParsedKeyword {
 
 	public void setSFXNameIncomplete(String sfxNameIncomplete) {
 		this.sfxNameIncomplete = sfxNameIncomplete;
+	}
+
+	public int getSFXSource() {
+		return sfxSource;
+	}
+
+	public void setSFXSource(int source) {
+		sfxSource = source;
 	}
 
 }

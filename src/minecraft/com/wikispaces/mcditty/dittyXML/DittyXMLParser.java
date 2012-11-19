@@ -419,6 +419,9 @@ public class DittyXMLParser {
 						// Arbitrary
 						tuning = 64;
 					}
+					
+					// Get the SFX source folder (optional; default is alpha thru 1.3)
+					int sfxSource = DOMUtil.parseIntStringWithDefault(DOMUtil.getAttributeValue(currElement, "source"), 0);
 
 					// Get the instrument number to swap in (required)
 					String instString = DOMUtil.getAttributeValue(currElement,
@@ -454,7 +457,7 @@ public class DittyXMLParser {
 						// shorthand
 						String fullSFXName = SFXManager
 								.getEffectForShorthandName(sfxNameAttr
-										.replaceAll("\\d", ""));
+										.replaceAll("\\d", ""), sfxSource);
 
 						if (fullSFXName == null) {
 							// No SFX by that name.
@@ -489,12 +492,12 @@ public class DittyXMLParser {
 
 							// Get the filename of the sfx
 							File sfxFile = SFXManager.getEffectFile(
-									fullSFXName, digit);
+									fullSFXName, digit, sfxSource);
 							if (!sfxFile.exists()) {
 								// If the sfx filename does not exist
 								// Try resetting the digit to 0
 								sfxFile = SFXManager.getEffectFile(fullSFXName,
-										1);
+										1, sfxSource);
 								// Update the saved SFX number to reflect this
 								sfxNumber = 1;
 							}
@@ -505,7 +508,7 @@ public class DittyXMLParser {
 						sfxName = sfxNameAttr.replaceAll("\\d", "");
 
 						// Check that the SFX is not an out-of-order SFX
-						if (SFXManager.isShorthandOnSFXInstBlacklist(sfxName)) {
+						if (SFXManager.isShorthandOnSFXInstBlacklist(sfxName, sfxSource)) {
 							// blacklisted as out of order
 							ditty.addErrorMessage("A <sfxInst> element uses the sfx "
 									+ sfxName
@@ -520,8 +523,8 @@ public class DittyXMLParser {
 						// given
 						Integer defaultCenterPitch = SFXManager
 								.getDefaultTuningInt(SFXManager
-										.getEffectForShorthandName(sfxName),
-										sfxNumber);
+										.getEffectForShorthandName(sfxName, sfxSource),
+										sfxNumber, sfxSource);
 						if (defaultCenterPitch != null) {
 							tuning = defaultCenterPitch;
 						} else {
@@ -537,7 +540,7 @@ public class DittyXMLParser {
 					int eventID = ditty.addDittyEvent(new SFXInstrumentEvent(
 							instrument.intValue(), sfxFilename, sfxName,
 							sfxNameIncomplete, sfxNumber, tuning, -1, ditty
-									.getDittyID()));
+									.getDittyID(), 0));
 					BlockSign.addMusicStringTokens(musicStringBuffer, ditty,
 							BlockSign.TIMED_EVENT_TOKEN + eventID, false);
 				} else if (currNodeName.equals("sfxInstOff")) {

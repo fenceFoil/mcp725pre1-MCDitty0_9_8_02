@@ -5,3 +5,5 @@ SFX plays a Minecraft sound effect. It's like a note, except it has no length.
 Many sound effects are ramdom; if you play "ghast", for example, there are a few types of horrid ghast screams.
 
 Effect names are pre-defined from a list of shorthands; you don't have to write, for instance, "mob.silverfish.hit" on a 15 character line!
+
+This keyword always plays the latest Minecraft version's sounds.
