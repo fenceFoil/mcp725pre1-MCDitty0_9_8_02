@@ -89,7 +89,7 @@ public class GuiMCDittyTutorial extends GuiScreen {
 	@Override
 	public void drawScreen(int par1, int par2, float par3) {
 		int mcDittyLandPictureNumber = mc.renderEngine
-				.getTexture("/com/wikispaces/mcditty/textures/MCDittyLand1.png");
+				.getTexture("/com/wikispaces/mcditty/resources/textures/MCDittyLand1.png");
 		
 		drawDefaultBackground();
 		//GL11.glColor4f(1.0F, 0F, 1.0F, 0.5f);
