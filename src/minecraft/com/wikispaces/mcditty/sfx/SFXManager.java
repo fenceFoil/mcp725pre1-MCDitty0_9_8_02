@@ -26,6 +26,8 @@ package com.wikispaces.mcditty.sfx;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,7 +50,8 @@ import com.wikispaces.mcditty.GetMinecraft;
  * Glossary:<br>
  * <br>
  * Handle: a short name, such as "dogbark", which represents...<br>
- * Effect: a full sound effect name, such as newsound.mob.dog.bark, such as Minecraft uses as a sound effect name<br>
+ * Effect: a full sound effect name, such as newsound.mob.dog.bark, such as
+ * Minecraft uses as a sound effect name<br>
  * SFX: Sound Effect<br>
  * 
  */
@@ -69,7 +72,7 @@ public class SFXManager {
 		try {
 			// System.out.println("MCDitty: Loading sfx names");
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					SFXManager.class.getResourceAsStream("sfxNames.txt")));
+					SFXManager.class.getResourceAsStream("data/sfxNames.txt")));
 			while (true) {
 				String inLine = reader.readLine();
 				if (inLine == null
@@ -97,27 +100,40 @@ public class SFXManager {
 			e.printStackTrace();
 		}
 
-		// Load default center pitches
+		// Load effect names
 		try {
 			// System.out.println("MCDitty: Loading sfx names");
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					SFXManager.class.getResourceAsStream("effectPitches.txt")));
-			while (true) {
-				String inLine = reader.readLine();
-				if (inLine == null
-						|| inLine.toLowerCase().startsWith("end of effects")) {
-					break;
-				}
+			LinkedList<String[]> values = readSeparatedList(":",
+					SFXManager.class.getResourceAsStream("data/sfxNames.txt"),
+					"end of effects");
 
-				// Break apart each line of sfxNames
-				String[] mapping = inLine.split(":");
-
+			for (String[] v : values) {
 				// Store the effect name for the given shorthand
-				effectTuningsString.put(mapping[0], mapping[1]);
-				int pitchValue = Note.createNote(mapping[1]).getValue();
-				effectTuningsInt.put(mapping[0], pitchValue);
+				effectNames.put(v[0], v[1]);
+
+				// Check for third part
+				if (v.length >= 3) {
+					// Entry has a third part
+					if (v[2].equals("NoSFXInst")) {
+						sfxBlackListEffects.add(v[1]);
+						sfxBlackListShorthands.add(v[0]);
+					}
+				}
 			}
-			reader.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// Load default center pitches
+		try {
+			LinkedList<String[]> values = readSeparatedList(":", SFXManager.class
+							.getResourceAsStream("data/effectPitches.txt"), "end of effects");
+			for (String[] v:values) {
+				// Store the effect name for the given shorthand
+				effectTuningsString.put(v[0], v[1]);
+				int pitchValue = Note.createNote(v[1]).getValue();
+				effectTuningsInt.put(v[0], pitchValue);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -357,16 +373,19 @@ public class SFXManager {
 		}
 		return false;
 	}
-	
+
 	/**
-	 * Returns the number of meow1.ogg, meow2.ogg, meow3.ogg, etc. alternatives a given effect has.
-	 * Checks the filesystem, so this may be slightly expensive.
+	 * Returns the number of meow1.ogg, meow2.ogg, meow3.ogg, etc. alternatives
+	 * a given effect has. Checks the filesystem, so this may be slightly
+	 * expensive.
+	 * 
 	 * @param effect
-	 * @return between 0 and 9. (0 signifies none found, 9 is the maximum this will check for).
+	 * @return between 0 and 9. (0 signifies none found, 9 is the maximum this
+	 *         will check for).
 	 */
-	public static int getNumberOfAlternativesForEffect (String effect) {
+	public static int getNumberOfAlternativesForEffect(String effect) {
 		int found = 0;
-		for (int i=1;i<=9;i++) {
+		for (int i = 1; i <= 9; i++) {
 			if (doesEffectExist(effect, i)) {
 				// Try another.
 				found++;
@@ -376,5 +395,45 @@ public class SFXManager {
 			}
 		}
 		return found;
+	}
+
+	/**
+	 * Reads the input stream as a CSV list, but with a customizable regex
+	 * between the values. When the line containing endLineText
+	 * (non-case-sensitive) is reached, the stream is closed.
+	 * 
+	 * @param separatorRegex
+	 * @param in
+	 * @return
+	 * @throws IOException
+	 */
+	public static LinkedList<String[]> readSeparatedList(String separatorRegex,
+			InputStream in, String endLineText) throws IOException {
+		LinkedList<String[]> values = new LinkedList<String[]>();
+
+		// Set up a text file reader
+		BufferedReader listIn = new BufferedReader(new InputStreamReader(in));
+
+		// Read values
+		String readLine;
+		while (true) {
+			readLine = listIn.readLine();
+
+			if (readLine == null) {
+				break;
+			} else if (readLine.equalsIgnoreCase(endLineText)) {
+				break;
+			} else {
+				// split line by the regex
+				String[] lineValues = readLine.split(separatorRegex);
+				values.add(lineValues);
+			}
+		}
+
+		// Close stream
+		listIn.close();
+
+		// Return read values
+		return values;
 	}
 }
