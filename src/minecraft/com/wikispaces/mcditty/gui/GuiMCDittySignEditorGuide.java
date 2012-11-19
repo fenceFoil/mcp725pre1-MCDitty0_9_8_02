@@ -33,6 +33,7 @@ import net.minecraft.src.GuiScreen;
 import org.lwjgl.input.Keyboard;
 
 import com.wikispaces.mcditty.config.MCDittyConfig;
+import com.wikispaces.mcditty.resources.MCDittyResourceManager;
 
 /**
  * @author William
@@ -54,28 +55,17 @@ public class GuiMCDittySignEditorGuide extends GuiScreen {
 	 */
 	@Override
 	public void initGui() {
-		controlList.add(new GuiButton(100, width / 2 - 100, height - 30, "Done"));
+		controlList
+				.add(new GuiButton(100, width / 2 - 100, height - 30, "Done"));
 
-		textPanel = new GuiScrollingTextPanel(10, 40, width - 20, height - 80, false, fontRenderer, true);
+		textPanel = new GuiScrollingTextPanel(10, 40, width - 20, height - 80,
+				false, fontRenderer, true);
 
 		// Load guide text
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("help/signEditorGuide.txt")));
-			String guideText = "";
-			while (true) {
-				String lineIn = reader.readLine();
-				if (lineIn == null) {
-					break;
-				} else {
-					guideText += lineIn + "\n";
-				}
-			}
-			reader.close();
-			textPanel.setText(guideText);
-		} catch (IOException e) {
-			e.printStackTrace();
-			textPanel.setText("Couldn't read signEditorGuide.txt from minecraft.jar :(");
-		}
+		String guideText = MCDittyResourceManager
+				.loadCachedResource("help/signEditorGuide.txt");
+		textPanel.setText(guideText);
+
 	}
 
 	/*
@@ -88,10 +78,12 @@ public class GuiMCDittySignEditorGuide extends GuiScreen {
 		drawDefaultBackground();
 
 		// Print version
-		drawString(fontRenderer, "MCDitty Version " + MCDittyConfig.CURRENT_VERSION, 0, 0, 0x444444);
+		drawString(fontRenderer, "MCDitty Version "
+				+ MCDittyConfig.CURRENT_VERSION, 0, 0, 0x444444);
 
 		// Draw label at top of screen
-		drawCenteredString(fontRenderer, "Sign Editor Keys", width / 2, 15, 0xffff00);
+		drawCenteredString(fontRenderer, "Sign Editor Keys", width / 2, 15,
+				0xffff00);
 
 		// Draw sliding panel o' text
 		textPanel.draw(par1, par2);
@@ -155,7 +147,9 @@ public class GuiMCDittySignEditorGuide extends GuiScreen {
 		super.mouseClicked(x, y, button);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.minecraft.src.GuiScreen#keyTyped(char, int)
 	 */
 	@Override
@@ -163,7 +157,7 @@ public class GuiMCDittySignEditorGuide extends GuiScreen {
 		if (par2 == Keyboard.KEY_ESCAPE) {
 			mc.displayGuiScreen(backGui);
 		}
-		//super.keyTyped(par1, par2);
+		// super.keyTyped(par1, par2);
 	}
 
 	/*
