@@ -30,7 +30,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.wikispaces.mcditty.CueScheduler;
+import com.wikispaces.mcditty.DestroyAction;
+import com.wikispaces.mcditty.bot.action.BotAction;
 import com.wikispaces.mcditty.disco.DiscoFloor;
+import com.wikispaces.mcditty.ditty.event.CueEvent;
 import com.wikispaces.mcditty.ditty.event.TimedDittyEvent;
 
 /**
@@ -67,6 +70,9 @@ public class Ditty {
 	private int totalTokens = 0;
 
 	private String musicString = "";
+	
+	public Ditty () {
+	}
 
 	/**
 	 * Adds a new ditty event which can be recalled later when playing the ditty
