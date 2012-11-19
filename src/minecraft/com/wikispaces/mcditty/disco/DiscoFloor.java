@@ -24,11 +24,13 @@
 package com.wikispaces.mcditty.disco;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
 
 import com.wikispaces.mcditty.ditty.event.NoteStartEvent;
+import com.wikispaces.mcditty.resources.MCDittyResourceManager;
 import com.wikispaces.mcditty.sfx.SFXManager;
 
 import net.minecraft.src.Block;
@@ -44,15 +46,20 @@ public class DiscoFloor {
 	private static ArrayList<Integer[]> pulsePalettes = new ArrayList<Integer[]>();
 	static {
 		try {
-			//System.out.println("MCDitty: Loading Disco Floor Pallets");
-			BufferedReader reader = new BufferedReader(new InputStreamReader(DiscoFloor.class.getResourceAsStream("discoFloorPalettes.txt")));
+			// System.out.println("MCDitty: Loading Disco Floor Pallets");
+			// Read in the palettes file, a string, line by line with a Reader
+			// (for that ever-handy readLine method)
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					new ByteArrayInputStream(MCDittyResourceManager
+							.loadCachedResource("disco/discoFloorPalettes.txt")
+							.getBytes())));
 			while (true) {
 				String inLine = reader.readLine();
 				if (inLine == null || inLine.toLowerCase().startsWith("end")) {
 					break;
 				}
 				String[] readColors = inLine.split(":");
-				//System.out.println (readColors[0]);
+				// System.out.println (readColors[0]);
 				Integer[] readValues = new Integer[readColors.length];
 				for (int i = 0; i < readColors.length; i++) {
 					readValues[i] = Integer.parseInt(readColors[i]);
@@ -74,7 +81,8 @@ public class DiscoFloor {
 	//
 	// }
 
-	public DiscoFloor(TileEntitySign entityOfStartSign, ArrayList<Integer> voices) {
+	public DiscoFloor(TileEntitySign entityOfStartSign,
+			ArrayList<Integer> voices) {
 		anchorEntity = entityOfStartSign;
 		setVoices(voices);
 	}
@@ -142,24 +150,27 @@ public class DiscoFloor {
 	public void turnOff(World world) {
 		for (DiscoFloorBlock b : blockList) {
 			if (world.getBlockId(b.x, b.y, b.z) == Block.cloth.blockID) {
-				world.setBlockMetadataWithNotify(b.x, b.y, b.z, b.originalBlockMeta);
+				world.setBlockMetadataWithNotify(b.x, b.y, b.z,
+						b.originalBlockMeta);
 			}
 		}
 	}
 
 	private Random rand = new Random();
-	
+
 	private long lastPulseTime = -1;
 
 	public void pulse(World world, NoteStartEvent noteEvent) {
-		//System.out.println("Pulsing disco floor");
+		// System.out.println("Pulsing disco floor");
 		if (noteEvent.getTime() > lastPulseTime) {
 			lastPulseTime = noteEvent.getTime();
-			
-			Integer[] pulsePallet = pulsePalettes.get(rand.nextInt(pulsePalettes.size()));
+
+			Integer[] pulsePallet = pulsePalettes.get(rand
+					.nextInt(pulsePalettes.size()));
 			for (DiscoFloorBlock b : blockList) {
 				if (world.getBlockId(b.x, b.y, b.z) == Block.cloth.blockID) {
-					world.setBlockMetadataWithNotify(b.x, b.y, b.z, pulsePallet[rand.nextInt(pulsePallet.length)]);
+					world.setBlockMetadataWithNotify(b.x, b.y, b.z,
+							pulsePallet[rand.nextInt(pulsePallet.length)]);
 				}
 			}
 		}
