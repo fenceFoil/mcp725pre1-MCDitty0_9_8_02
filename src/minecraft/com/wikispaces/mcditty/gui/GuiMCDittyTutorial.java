@@ -38,6 +38,7 @@ import org.lwjgl.opengl.GL11;
 import com.wikispaces.mcditty.GetMinecraft;
 import com.wikispaces.mcditty.TutorialWorldDownloader;
 import com.wikispaces.mcditty.config.MCDittyConfig;
+import com.wikispaces.mcditty.resources.MCDittyResourceManager;
 
 /**
  * @author William
@@ -73,26 +74,7 @@ public class GuiMCDittyTutorial extends GuiScreen {
 				height - 130, false, fontRenderer, false);
 
 		// Load guide text
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					this.getClass().getResourceAsStream(
-							"help/tutorialWorldGuide.txt")));
-			String guideText = "";
-			while (true) {
-				String lineIn = reader.readLine();
-				if (lineIn == null) {
-					break;
-				} else {
-					guideText += lineIn + "\n";
-				}
-			}
-			reader.close();
-			textPanel.setText(guideText);
-		} catch (IOException e) {
-			e.printStackTrace();
-			textPanel
-					.setText("Couldn't read signEditorGuide.txt from minecraft.jar :(");
-		}
+		textPanel.setText(MCDittyResourceManager.loadCachedResource("help/tutorialWorldGuide.txt"));
 
 		downloadButton = new GuiButton(200, width / 2 - 100, height - 60,
 				"Download");
