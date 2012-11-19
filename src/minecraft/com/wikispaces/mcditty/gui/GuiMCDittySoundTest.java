@@ -57,9 +57,10 @@ public class GuiMCDittySoundTest extends GuiScreen {
 	private GuiButton testSFXButton;
 	private GuiButton changeSFXSourceButton;
 	private GuiScrollingTextPanel sfxTextPanel;
-	
-	private int currSFXSource = -1;
-	private int currSFXSourceIndex = -1;
+
+	private int currSFXSource = SFXManager.getLatestSource();
+	private int currSFXSourceIndex = 0;
+	private String sfxSourceName = "Change Source";
 
 	private GuiButton testMusicStringSampleButton;
 
@@ -97,8 +98,10 @@ public class GuiMCDittySoundTest extends GuiScreen {
 				width / 3 - (2 * panelMargins) - 30, 20);
 		sfxTextPanel = new GuiScrollingTextPanel(panelMargins, topMargin + 30,
 				width / 3 - (2 * panelMargins), height - panelMargins
-						- topMargin - 30, false, fontRenderer, true);
-		changeSFXSourceButton = new GuiButton (2000, panelMargins, height - 20 - panelMargins, 100, 20, "Alpha to 1.3");
+						- topMargin - 30 - 30, false, fontRenderer, true);
+		changeSFXSourceButton = new GuiButton(2000, panelMargins, height - 20
+				- panelMargins, 100, 20, "Alpha to 1.3");
+		controlList.add(changeSFXSourceButton);
 
 		// Center third of screen: MusicString tests
 		testMusicStringSampleButton = new GuiButton(300, width / 2 - 50,
@@ -129,9 +132,6 @@ public class GuiMCDittySoundTest extends GuiScreen {
 
 		updateMidiTestPanel();
 		updateSFXTestPanel();
-		
-		// set up the sfx source change button
-		actionPerformed(changeSFXSourceButton);
 
 		sfxField.setFocused(true);
 	}
@@ -165,16 +165,18 @@ public class GuiMCDittySoundTest extends GuiScreen {
 		} else if (par1GuiButton.id == 2000) {
 			// Change sfx source
 			int[] sfxSourceNums = SFXManager.getSourceNums();
-			
+
 			currSFXSourceIndex++;
 			if (currSFXSourceIndex >= sfxSourceNums.length) {
 				currSFXSourceIndex = 0;
 			}
-			
+
 			currSFXSource = sfxSourceNums[currSFXSourceIndex];
-			
-			changeSFXSourceButton.displayString = SFXManager.getSourceName(currSFXSource);
-			
+
+			changeSFXSourceButton.displayString = SFXManager
+					.getSourceName(currSFXSource);
+			sfxSourceName = changeSFXSourceButton.displayString;
+
 			updateSFXTestPanel();
 		} else if (par1GuiButton.id == 300) {
 			// Test MusicString
@@ -203,7 +205,8 @@ public class GuiMCDittySoundTest extends GuiScreen {
 	private void testSFX() {
 		if (currentMatchingSFX != null) {
 			MCDitty.executeTimedDittyEvent(new SFXMCDittyEvent(SFXManager
-					.getEffectForShorthandName(currentMatchingSFX, currSFXSource), 0, 0));
+					.getEffectForShorthandName(currentMatchingSFX,
+							currSFXSource), 0, 0));
 		}
 	}
 
