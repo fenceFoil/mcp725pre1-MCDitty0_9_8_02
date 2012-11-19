@@ -24,8 +24,8 @@ tonether:portal.travel:NoSFXInst
 whoosh:portal.trigger:NoSFXInst
 portal:portal.portal:NoSFXInst
 anvil:random.anvil_land
-anvilhit:anvil_use
-anvildie:anvil_break
+anvilhit:random.anvil_use
+anvildie:random.anvil_break
 bow:random.bow
 arrow:random.bowhit
 toolbreak:random.break
@@ -105,7 +105,7 @@ magmabig:mob.magmacube.big
 magmatiny:mob.magmacube.small
 pig:mob.pig.say
 pigdie:mob.pig.death
-pidwalk:mob.pig.step
+pigwalk:mob.pig.step
 sheep:mob.sheep.say
 sheepcut:mob.sheep.shear
 sheepwalk:mob.sheep.walk
@@ -127,7 +127,7 @@ wither:mob.wither.idle
 withernew:mob.wither.spawn
 withermad:mob.wither.shoot
 witherhit:mob.wither.hurt
-witherdie:mob.wither.die
+witherdie:mob.wither.death
 bark:mob.wolf.bark
 growl:mob.wolf.growl
 howl:mob.wolf.howl
