@@ -24,15 +24,20 @@
  */
 package com.wikispaces.mcditty.bot;
 
+import com.wikispaces.mcditty.GetMinecraft;
+
 import net.minecraft.src.EntityVillager;
 import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.World;
 
 public class EntityVillagerBot extends EntityVillager {
+	
+	private AnimatedValue headPitch = new AnimatedValue(0, GetMinecraft.instance().theWorld.getTotalWorldTime());
 
 	public EntityVillagerBot(World par1World) {
 		super(par1World);
 		// TODO Auto-generated constructor stub
+		jumpMovementFactor = 0;
 	}
 
 	public EntityVillagerBot(World par1World, int par2) {
@@ -55,6 +60,9 @@ public class EntityVillagerBot extends EntityVillager {
 	@Override
 	public void onEntityUpdate() {
 		super.onEntityUpdate();
+		posY = lastTickPosY;
+		motionY = 0;
+		rotationPitch = (float) headPitch.getValue();
 	}
 
 }

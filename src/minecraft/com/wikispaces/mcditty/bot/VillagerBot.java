@@ -31,6 +31,7 @@ import net.minecraft.src.EntityList;
 import net.minecraft.src.EntityLiving;
 import net.minecraft.src.EntityVillager;
 
+import com.wikispaces.mcditty.DestroyAction;
 import com.wikispaces.mcditty.GetMinecraft;
 import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.bot.action.BotAction;
@@ -103,6 +104,8 @@ public class VillagerBot extends Bot {
 
 		if (action instanceof RiseAction) {
 
+		} else if (action instanceof DestroyAction) {
+			villagerEntity.setDead();
 		}
 	}
 
