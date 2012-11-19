@@ -66,7 +66,7 @@ public class SignParser {
 			"proximity", "midi", "loud", "repeat", "oneline", "lyric",
 			"oneatatime", "isditty", "syncvoices", "syncwith", "sfx",
 			"proxpad", "volume", "area", "goto", "savemidi", "playmidi",
-			"emitter", "sfxinst", "sfxinstoff", "newbot", "staccato",
+			"emitter", "sfxinst2", "sfxinst", "sfxinstoff", "newbot", "staccato",
 			"staccatooff" };
 
 	/**
@@ -214,7 +214,7 @@ public class SignParser {
 			return PlayMidiKeyword.parse(rawLine);
 		} else if (keyword.equals("emitter")) {
 			return EmitterKeyword.parse(rawLine);
-		} else if (keyword.equals("sfxinst")) {
+		} else if (keyword.equals("sfxinst") || keyword.equals("sfxinst2")) {
 			return SFXInstKeyword.parse(rawLine);
 		} else if (keyword.equals("sfxinstoff")) {
 			return SFXInstOffKeyword.parse(rawLine);
