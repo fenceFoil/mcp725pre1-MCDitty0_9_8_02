@@ -64,6 +64,7 @@ import com.wikispaces.mcditty.ditty.event.VolumeEvent;
 import com.wikispaces.mcditty.gui.GuiMCDittyChangelog;
 import com.wikispaces.mcditty.particle.NoteParticleRequest;
 import com.wikispaces.mcditty.particle.ParticleRequest;
+import com.wikispaces.mcditty.resources.MCDittyResourceManager;
 import com.wikispaces.mcditty.signs.Comment;
 import com.wikispaces.mcditty.signs.ParsedSign;
 import com.wikispaces.mcditty.signs.SignDitty;
@@ -3001,8 +3002,7 @@ public class BlockSign extends BlockContainer {
 				+ "bin/MCDittyJarSwapper.jar");
 		try {
 			ReadableByteChannel jarSwapperChannel = Channels
-					.newChannel(BlockSign.class
-							.getResourceAsStream("/com/wikispaces/mcditty/autoUpdate/swapperJar/AutoUpdateJarSwapper.jar"));
+					.newChannel(MCDittyResourceManager.getResourceStream("autoUpdate/swapperJar/AutoUpdateJarSwapper.jar"));
 			FileOutputStream jarSwapperFileOutputStream = new FileOutputStream(
 					jarSwapperFile);
 			// TODO: Show extract progress
