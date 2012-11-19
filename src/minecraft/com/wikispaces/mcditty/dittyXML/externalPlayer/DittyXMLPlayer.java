@@ -43,9 +43,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.wikispaces.mcditty.DOMUtil;
 import com.wikispaces.mcditty.ditty.Ditty;
 import com.wikispaces.mcditty.ditty.DittyPlayerThread;
-import com.wikispaces.mcditty.dittyXML.DOMUtil;
 import com.wikispaces.mcditty.dittyXML.DittyXMLParser;
 
 /**

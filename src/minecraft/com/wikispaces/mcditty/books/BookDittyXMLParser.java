@@ -42,8 +42,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.wikispaces.mcditty.DOMUtil;
 import com.wikispaces.mcditty.ditty.Ditty;
-import com.wikispaces.mcditty.dittyXML.DOMUtil;
 
 /**
  * Accepts a writable book, and returns any elements from inside a <MCDitty>

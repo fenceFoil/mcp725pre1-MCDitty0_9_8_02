@@ -22,7 +22,7 @@
  * along with MCDitty. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
-package com.wikispaces.mcditty.dittyXML;
+package com.wikispaces.mcditty;
 
 import java.util.LinkedList;
 

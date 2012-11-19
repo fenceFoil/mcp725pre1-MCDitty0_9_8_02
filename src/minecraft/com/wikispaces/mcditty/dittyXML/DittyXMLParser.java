@@ -35,6 +35,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.wikispaces.mcditty.CueScheduler;
+import com.wikispaces.mcditty.DOMUtil;
 import com.wikispaces.mcditty.config.MCDittyConfig;
 import com.wikispaces.mcditty.ditty.Ditty;
 import com.wikispaces.mcditty.ditty.event.SFXInstrumentEvent;
