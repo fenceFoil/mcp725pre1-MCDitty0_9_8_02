@@ -41,6 +41,7 @@ import com.wikispaces.mcditty.gui.GuiMCDittyFileSelectorListener;
 import com.wikispaces.mcditty.gui.GuiMCDittySignEditorGuide;
 import com.wikispaces.mcditty.gui.GuiScrollingTextPanel;
 import com.wikispaces.mcditty.gui.MCDittyVersionReadoutGuiElement;
+import com.wikispaces.mcditty.resources.MCDittyResourceManager;
 import com.wikispaces.mcditty.sfx.SFXManager;
 import com.wikispaces.mcditty.signs.Comment;
 import com.wikispaces.mcditty.signs.ParsedSign;
@@ -167,11 +168,12 @@ public class GuiEditSign extends GuiScreen implements
 		entitySign = par1TileEntitySign;
 		entitySign.setEditable(true);
 		entitySign.alwaysRender = true;
-		
+
 		// IF YOU ARE READING THIS, DELETE THIS SOURCE
-//		// 1.3 SSP signs blank out bug: indicate that this sign is SUPPOSED to
-//		// start blank
-//		entitySign.bug1_3InvalidText = false;
+		// // 1.3 SSP signs blank out bug: indicate that this sign is SUPPOSED
+		// to
+		// // start blank
+		// entitySign.bug1_3InvalidText = false;
 
 		// MCDitty: Add first entry to savedSigns buffer
 		if (bufferInitalized == false) {
@@ -745,15 +747,16 @@ public class GuiEditSign extends GuiScreen implements
 
 		MCDitty.onSignLoaded(entitySign);
 
-		//entitySign.setEditable(true);
+		// entitySign.setEditable(true);
 		entitySign.alwaysRender = false;
 
-        NetClientHandler var1 = this.mc.getSendQueue();
+		NetClientHandler var1 = this.mc.getSendQueue();
 
-        if (var1 != null)
-        {
-            var1.addToSendQueue(new Packet130UpdateSign(this.entitySign.xCoord, this.entitySign.yCoord, this.entitySign.zCoord, this.entitySign.signText));
-        }
+		if (var1 != null) {
+			var1.addToSendQueue(new Packet130UpdateSign(this.entitySign.xCoord,
+					this.entitySign.yCoord, this.entitySign.zCoord,
+					this.entitySign.signText));
+		}
 
 		// MCDitty: Save sign's text to the buffer
 		addTextToSavedSigns(entitySign.signText);
@@ -1860,8 +1863,8 @@ public class GuiEditSign extends GuiScreen implements
 		helpTextArea.setText(help.toString());
 	}
 
-	String lastTokenHelpShown = "";
-	StringBuilder lastTokenHelp = new StringBuilder();
+	//String lastTokenHelpShown = "";
+	//StringBuilder lastTokenHelp = new StringBuilder();
 
 	private static MusicStringParser musicStringParser = new MusicStringParser();
 
@@ -1869,33 +1872,7 @@ public class GuiEditSign extends GuiScreen implements
 	 * Load and display a generic musicstring help guide (only lists tokens)
 	 */
 	private void showGenericTokenHelp() {
-		InputStream helpTextStream = this.getClass().getResourceAsStream(
-				"/com/wikispaces/mcditty/gui/help/genericTokenHelp.txt");
-		if (helpTextStream == null) {
-			System.out
-					.println("/com/wikispaces/mcditty/gui/help/genericTokenHelp.txt not found");
-			return;
-		}
-
-		lastTokenHelp = new StringBuilder();
-		try {
-			BufferedReader helpTextIn = new BufferedReader(
-					new InputStreamReader(helpTextStream));
-			while (true) {
-				String lineIn = helpTextIn.readLine();
-				if (lineIn == null) {
-					break;
-				} else {
-					lastTokenHelp.append(lineIn);
-					lastTokenHelp.append("§r\n");
-				}
-			}
-			helpTextIn.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		helpTextArea.setText(lastTokenHelp.toString());
+		helpTextArea.setText(MCDittyResourceManager.loadCachedResource("help/genericTokenHelp.txt"));
 	}
 
 	/**
@@ -2264,7 +2241,8 @@ public class GuiEditSign extends GuiScreen implements
 			SFXInstKeyword sfxInstKeyword = (SFXInstKeyword) keyword;
 			boolean showDefaultHelp = false;
 			StringBuilder additionalText = new StringBuilder();
-			if (keyword.getWholeKeyword().equalsIgnoreCase("sfxinst")
+			if ((keyword.getWholeKeyword().equalsIgnoreCase("sfxinst") || (keyword
+					.getWholeKeyword().equalsIgnoreCase("sfxinst2")))
 					&& (line == 0 || !(parsedSign.getLine(line - 1) == keyword))) {
 				// If first line and just a bare keyword
 				showDefaultHelp = true;
@@ -2359,16 +2337,17 @@ public class GuiEditSign extends GuiScreen implements
 						String sfxHandleEffect = SFXManager
 								.getEffectForShorthandName(handle, 0);
 						int numAlts = SFXManager
-								.getNumberOfAlternativesForEffect(sfxHandleEffect, 0);
+								.getNumberOfAlternativesForEffect(
+										sfxHandleEffect, 0);
 						additionalText.append(" §7(");
 						for (int i = 0; i < numAlts; i++) {
 							if (SFXManager.getDefaultTuningString(SFXManager
-									.getEffectForShorthandName(handle, 0), i + 1, 0) != null) {
-								additionalText
-										.append(SFXManager.getDefaultTuningString(
-												SFXManager
-														.getEffectForShorthandName(handle, 0),
-												i + 1, 0));
+									.getEffectForShorthandName(handle, 0),
+									i + 1, 0) != null) {
+								additionalText.append(SFXManager
+										.getDefaultTuningString(SFXManager
+												.getEffectForShorthandName(
+														handle, 0), i + 1, 0));
 
 							} else {
 								additionalText.append(Integer.toString(i + 1));
@@ -2442,7 +2421,7 @@ public class GuiEditSign extends GuiScreen implements
 	 * @param keyword
 	 */
 	private String lastHelpShown = "";
-	private StringBuilder lastHelp = new StringBuilder();
+	//private StringBuilder lastHelp = new StringBuilder();
 
 	private float signTranslateY;
 
@@ -2454,62 +2433,48 @@ public class GuiEditSign extends GuiScreen implements
 
 		if (keyword.getKeyword() != null
 				&& !keyword.getKeyword().equalsIgnoreCase(lastHelpShown)) {
-			InputStream helpTextStream = this.getClass().getResourceAsStream(
-					"/com/wikispaces/mcditty/gui/help/"
-							+ keyword.getKeyword().toLowerCase()
-							+ "ShortHelp.txt");
-			if (helpTextStream == null) {
-				System.out.println("" + keyword.getKeyword().toLowerCase()
-						+ "ShortHelp.txt not found");
-				return;
-			}
+			String helpText = MCDittyResourceManager.loadCachedResource("help/"
+					+ keyword.getKeyword().toLowerCase() + "ShortHelp.txt");
 
-			lastHelp = new StringBuilder();
-			lastHelp.append("§b");
-
-			try {
-				BufferedReader helpTextIn = new BufferedReader(
-						new InputStreamReader(helpTextStream));
-				while (true) {
-					String lineIn = helpTextIn.readLine();
-					if (lineIn == null) {
-						break;
-					} else {
-						lastHelp.append(lineIn);
-						lastHelp.append("§r\n");
-					}
-				}
-				helpTextIn.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			helpText = "§b"+helpText;
+			helpText = helpText.replaceAll("\n", "§r\n");
+			
+			lastHelpShown = helpText;
 		}
-		helpTextArea.setText(lastHelp.toString());
+		helpTextArea.setText(lastHelpShown.toString());
 	}
+
+	private static String genericKeywordHelpText = null;
+
+	// private void showGenericKeywordHelp() {
+	// // Set text area to a list of all available keywords
+	//
+	// StringBuilder b = new StringBuilder();
+	// // Add title
+	// b.append("§bAll Keywords§r\n\n");
+	// // Get the list of keywords
+	// LinkedList<String> keywords = new LinkedList<String>();
+	// for (String s : SignParser.keywords) {
+	// if (!ParsedKeyword.isKeywordDeprecated(s)) {
+	// keywords.add(s);
+	// }
+	// }
+	// Collections.sort(keywords);
+	// // Add the comment symbol
+	// keywords.push("#");
+	// // Add the keywords to the buffer, formatting them
+	// for (String s : keywords) {
+	// b.append(BlockSign.KEYWORD_HIGHLIGHT_CODE);
+	// b.append(s);
+	// b.append("§r, ");
+	// }
+	// helpTextArea.setText(b.toString());
+	// }
 
 	private void showGenericKeywordHelp() {
 		// Set text area to a list of all available keywords
-
-		StringBuilder b = new StringBuilder();
-		// Add title
-		b.append("§bAll Keywords§r\n\n");
-		// Get the list of keywords
-		LinkedList<String> keywords = new LinkedList<String>();
-		for (String s : SignParser.keywords) {
-			if (!ParsedKeyword.isKeywordDeprecated(s)) {
-				keywords.add(s);
-			}
-		}
-		Collections.sort(keywords);
-		// Add the comment symbol
-		keywords.push("#");
-		// Add the keywords to the buffer, formatting them
-		for (String s : keywords) {
-			b.append(BlockSign.KEYWORD_HIGHLIGHT_CODE);
-			b.append(s);
-			b.append("§r, ");
-		}
-		helpTextArea.setText(b.toString());
+		helpTextArea.setText(MCDittyResourceManager
+				.loadCachedResource("help/keywordsHelp.txt"));
 	}
 
 	static {
