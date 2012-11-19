@@ -80,6 +80,7 @@ public class SFXManager {
 		// Load general config info
 		NodeList configNodes = parseXMLStream(SFXManager.class
 				.getResourceAsStream("data/sfxManagerConfig.xml"));
+		configNodes = DOMUtil.findFirstElement("sfxConfig", configNodes).getChildNodes();
 
 		// Read the number of the latest source for sound effects in this
 		// version of Minecraft
@@ -516,6 +517,7 @@ public class SFXManager {
 
 				for (String[] v : values) {
 					// Store the effect name for the given shorthand
+					//System.out.println (v[0]);
 					source.effectNames.put(v[0], v[1]);
 
 					// Check for third part

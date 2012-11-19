@@ -74,7 +74,7 @@ catmew:mob.cat.purreow:NoSFXInst
 chicken:mob.chicken.say
 chickhit:mob.chicken.hurt
 chicklay:mob.chicken.plop
-chickwalk.mob.chicken.walk
+chickwalk:mob.chicken.walk
 cow:mob.cow.say
 cowhit:mob.cow.hurt
 cowwalk:mob.cow.step
