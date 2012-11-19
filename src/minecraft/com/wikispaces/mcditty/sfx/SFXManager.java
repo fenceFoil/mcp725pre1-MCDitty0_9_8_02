@@ -46,6 +46,7 @@ import org.xml.sax.SAXException;
 
 import com.wikispaces.mcditty.DOMUtil;
 import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.resources.MCDittyResourceManager;
 
 /**
  * Handles all things SFX and effects.<br>
@@ -78,8 +79,8 @@ public class SFXManager {
 
 	public static void load() throws IOException, SAXException {
 		// Load general config info
-		NodeList configNodes = parseXMLStream(SFXManager.class
-				.getResourceAsStream("data/sfxManagerConfig.xml"));
+		NodeList configNodes = parseXMLStream(MCDittyResourceManager
+				.getResourceStream("sfx/sfxManagerConfig.xml"));
 		configNodes = DOMUtil.findFirstElement("sfxConfig", configNodes).getChildNodes();
 
 		// Read the number of the latest source for sound effects in this
@@ -511,7 +512,7 @@ public class SFXManager {
 				// System.out.println("MCDitty: Loading sfx names");
 				LinkedList<String[]> values = readSeparatedList(
 						":",
-						SFXManager.class.getResourceAsStream("data/"
+						MCDittyResourceManager.getResourceStream("sfx/"
 								+ source.dataFilePrefix + "SfxNames.txt"),
 						"end of effects");
 
@@ -537,7 +538,7 @@ public class SFXManager {
 			try {
 				LinkedList<String[]> values = readSeparatedList(
 						":",
-						SFXManager.class.getResourceAsStream("data/"
+						MCDittyResourceManager.getResourceStream("sfx/"
 								+ source.dataFilePrefix + "effectPitches.txt"),
 						"end of effects");
 				for (String[] v : values) {
