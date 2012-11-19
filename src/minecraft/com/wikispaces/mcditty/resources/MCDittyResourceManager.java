@@ -52,8 +52,8 @@ public class MCDittyResourceManager {
 
 		// Otherwise, cache and return
 		// Read resource to a buffer
-		InputStream helpTextStream = MCDittyResourceManager.class.getResourceAsStream(
-				resourceName);
+		InputStream helpTextStream = MCDittyResourceManager.class
+				.getResourceAsStream(resourceName);
 		if (helpTextStream == null) {
 			System.out.println("MCDittyResourceManager: " + resourceName
 					+ " not found.");
@@ -82,6 +82,10 @@ public class MCDittyResourceManager {
 		String readTxt = txtBuffer.toString();
 		txtFileCache.put(resourceName, readTxt);
 		return readTxt;
+	}
+
+	public static InputStream getResourceStream(String resourceName) {
+		return MCDittyResourceManager.class.getResourceAsStream(resourceName);
 	}
 
 }
