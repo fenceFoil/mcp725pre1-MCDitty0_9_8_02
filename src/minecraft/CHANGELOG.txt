@@ -30,6 +30,9 @@ November 19, 2012: Version 0.9.7.05
     - Uses 1.4 sound effects
     - SFXInst uses 1.3 sound effects
     
+ - 1.4 sound effects all have improved pitches!
+    - Implication: I got all the 1.3 ones wrong :P
+    
  - SFX Keyword uses the most recent Minecraft sound effects
  
  - The <sfxInst /> tag in books now has a "source=0" or "source=1" attribute.

@@ -1863,8 +1863,8 @@ public class GuiEditSign extends GuiScreen implements
 		helpTextArea.setText(help.toString());
 	}
 
-	//String lastTokenHelpShown = "";
-	//StringBuilder lastTokenHelp = new StringBuilder();
+	// String lastTokenHelpShown = "";
+	// StringBuilder lastTokenHelp = new StringBuilder();
 
 	private static MusicStringParser musicStringParser = new MusicStringParser();
 
@@ -1872,7 +1872,8 @@ public class GuiEditSign extends GuiScreen implements
 	 * Load and display a generic musicstring help guide (only lists tokens)
 	 */
 	private void showGenericTokenHelp() {
-		helpTextArea.setText(MCDittyResourceManager.loadCachedResource("help/genericTokenHelp.txt"));
+		helpTextArea.setText(MCDittyResourceManager
+				.loadCachedResource("help/genericTokenHelp.txt"));
 	}
 
 	/**
@@ -2289,7 +2290,7 @@ public class GuiEditSign extends GuiScreen implements
 				// Fill sounds auto-suggest
 				ArrayList<String> matchingEffects = new ArrayList<String>();
 				HashMap<String, String> allEffectKeys = SFXManager
-						.getAllEffects(0);
+						.getAllEffects(sfxInstKeyword.getSFXSource());
 				Set<String> allEffectHandles = allEffectKeys.keySet();
 				String currHandle = sfxInstKeyword.getSFXNameIncomplete();
 				if (currHandle == null) {
@@ -2310,7 +2311,8 @@ public class GuiEditSign extends GuiScreen implements
 
 				// Compile matching handles into a string
 				if (exactMatch != null) {
-					if (SFXManager.isShorthandOnSFXInstBlacklist(exactMatch, 0)) {
+					if (SFXManager.isShorthandOnSFXInstBlacklist(exactMatch,
+							sfxInstKeyword.getSFXSource())) {
 						// Bad SFX; on blacklist for SFXInst
 						additionalText.append("§cOut Of Order:\n§6");
 					} else {
@@ -2326,7 +2328,8 @@ public class GuiEditSign extends GuiScreen implements
 					additionalText.append("§eOther SFX:\n");
 					for (String handle : matchingEffects) {
 						// Check for blacklist
-						if (SFXManager.isShorthandOnSFXInstBlacklist(handle, 0)) {
+						if (SFXManager.isShorthandOnSFXInstBlacklist(handle,
+								sfxInstKeyword.getSFXSource())) {
 							additionalText.append("§c");
 						}
 						additionalText.append(handle);
@@ -2335,19 +2338,27 @@ public class GuiEditSign extends GuiScreen implements
 						// SFXManager.getDefaultTuningInt(SFXManager.getEffectForShorthandName(handle),
 						// 1));
 						String sfxHandleEffect = SFXManager
-								.getEffectForShorthandName(handle, 0);
+								.getEffectForShorthandName(handle,
+										sfxInstKeyword.getSFXSource());
 						int numAlts = SFXManager
 								.getNumberOfAlternativesForEffect(
-										sfxHandleEffect, 0);
+										sfxHandleEffect,
+										sfxInstKeyword.getSFXSource());
 						additionalText.append(" §7(");
 						for (int i = 0; i < numAlts; i++) {
 							if (SFXManager.getDefaultTuningString(SFXManager
-									.getEffectForShorthandName(handle, 0),
-									i + 1, 0) != null) {
-								additionalText.append(SFXManager
-										.getDefaultTuningString(SFXManager
-												.getEffectForShorthandName(
-														handle, 0), i + 1, 0));
+									.getEffectForShorthandName(handle,
+											sfxInstKeyword.getSFXSource()),
+									i + 1, sfxInstKeyword.getSFXSource()) != null) {
+								additionalText
+										.append(SFXManager.getDefaultTuningString(
+												SFXManager
+														.getEffectForShorthandName(
+																handle,
+																sfxInstKeyword
+																		.getSFXSource()),
+												i + 1, sfxInstKeyword
+														.getSFXSource()));
 
 							} else {
 								additionalText.append(Integer.toString(i + 1));
@@ -2421,7 +2432,7 @@ public class GuiEditSign extends GuiScreen implements
 	 * @param keyword
 	 */
 	private String lastHelpShown = "";
-	//private StringBuilder lastHelp = new StringBuilder();
+	// private StringBuilder lastHelp = new StringBuilder();
 
 	private float signTranslateY;
 
@@ -2436,9 +2447,9 @@ public class GuiEditSign extends GuiScreen implements
 			String helpText = MCDittyResourceManager.loadCachedResource("help/"
 					+ keyword.getKeyword().toLowerCase() + "ShortHelp.txt");
 
-			helpText = "§b"+helpText;
+			helpText = "§b" + helpText;
 			helpText = helpText.replaceAll("\n", "§r\n");
-			
+
 			lastHelpShown = helpText;
 		}
 		helpTextArea.setText(lastHelpShown.toString());

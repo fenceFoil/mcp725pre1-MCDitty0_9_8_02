@@ -1,21 +1,21 @@
-§cSign Flow:
+§aSign Flow:
 Pattern, GoTo, #, End, EndLine, Left, Right, Up, Down, In, Out
-§cProximity:
+§aProximity:
 Area, Proximity
-§cMusic:
+§aMusic:
 Repeat, Volume, Staccato, StaccatoOff
-§cSync:
+§aSync:
 Reset, SyncVoices, SyncWith
-§cDitty:
+§aDitty:
 OneAtATime, Mute, IsDitty, SaveMIDI
-§cEffects:
+§aEffects:
 Lyric, Emitter, SFX, SFXInst, SFXInst2, SFXInstOff, PlayMIDI
-§cMisc:
+§aMisc:
 OneLine
-§cExperimental:
+§aExperimental:
 Disco, NewBot
-§cObsolete:
+§aObsolete:
 ProxPad, Midi
 
-§cNew:
+§bNew:
 NewBot, SFXInst2

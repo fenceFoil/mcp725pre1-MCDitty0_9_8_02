@@ -1455,7 +1455,7 @@ public class BlockSign extends BlockContainer {
 						}
 						// No more music on sign
 						break;
-					} else if (keyword.equals("sfxinst")) {
+					} else if (keyword.equals("sfxinst") || keyword.equals("sfxinst2")) {
 						// TODO: Move sign parsing so that it happens just once
 						// per sign
 						// Creates a create emitter event in the ditty, with
