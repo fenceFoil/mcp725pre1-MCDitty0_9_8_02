@@ -23,6 +23,11 @@
  */
 package com.wikispaces.mcditty.ditty.event;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Set;
+
+import com.wikispaces.mcditty.sfx.SFXManager;
 import com.wikispaces.mcditty.signs.keywords.SFXInstKeyword;
 
 /**
@@ -57,6 +62,40 @@ public class SFXInstrumentEvent extends TimedDittyEvent {
 		sfxNumber = keyword.getSFXNumber();
 		centerPitch = keyword.getCenterPitch();
 		sfxSource = keyword.getSFXSource();
+		updateTestMode();
+	}
+	
+	private static LinkedList<String> effectsToTest = new LinkedList<String>();
+	private static LinkedList<Integer> effectNums = new LinkedList<Integer>();
+	static {
+		Set<String> effectNames = SFXManager.getAllEffects(1).keySet();
+		
+		for (String s:effectNames) {
+			for (int i=1;i<9;i++) {
+				if (SFXManager.doesEffectExist(s, i, 1)) {
+					effectsToTest.add(s);
+					effectNums.add(i);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Used in a temporary test of all sound effects
+	 */
+	private void updateTestMode() {
+		String effect = effectsToTest.poll();
+		if (effect != null) {
+			int num = effectNums.poll();
+			
+			sfxFilename = SFXManager.getEffectFilename(effect, num, 1);
+			sfxSource = 1;
+			sfxName = effect;
+			sfxNameIncomplete = sfxName;
+			sfxNumber = num;
+			
+			System.out.println (sfxName+":"+sfxNumber);
+		}
 	}
 
 	public SFXInstrumentEvent(int inst, String sfxFile, String sfx,
