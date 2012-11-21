@@ -60,6 +60,7 @@ random.orb1:D#7
 note.harp1:F#3
 note.hihat1:F#3
 note.piano1:F#3
+note.snare1:F#3
 note.bassattack1:F#3
 note.bd1:F#3
 note.pling1:F#3
