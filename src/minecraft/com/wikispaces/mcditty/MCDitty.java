@@ -648,7 +648,8 @@ public class MCDitty {
 						double velZ = 0;
 						minecraft.theWorld.spawnParticle("smoke", partX, partY,
 								partZ, velX, velY, velZ);
-					} else if (particleRequest.getParticleType().equals("pissedVillager")) {
+					} else if (particleRequest.getParticleType().equals(
+							"pissedVillager")) {
 						// Generic particle
 						// Determine location
 						double locationVariance = particleRequest
@@ -666,9 +667,11 @@ public class MCDitty {
 						double velZ = 0;
 						// Spawn custom particle
 						// TODO: Check particle settings and distance
-						EntityFX customFX = new EntityHeartFX(minecraft.theWorld, partX, partY, partZ, velX, velY, velZ);
-                        ((EntityFX)customFX).setParticleTextureIndex(83);
-                        ((EntityFX)customFX).setRBGColorF(1.0F, 1.0F, 1.0F);
+						EntityFX customFX = new EntityHeartFX(
+								minecraft.theWorld, partX, partY, partZ, velX,
+								velY, velZ);
+						((EntityFX) customFX).setParticleTextureIndex(83);
+						((EntityFX) customFX).setRBGColorF(1.0F, 1.0F, 1.0F);
 						minecraft.effectRenderer.addEffect(customFX);
 					} else {
 						// Generic particle
@@ -683,8 +686,8 @@ public class MCDitty {
 						double partZ = (double) pos.z + centerOffset
 								+ locationVariance * getBoundedGaussian(1);
 						// Fix angry villager particles being a block too high
-						if (particleRequest.getParticleType()
-								.equals("angryVillager")) {
+						if (particleRequest.getParticleType().equals(
+								"angryVillager")) {
 							partY--;
 						}
 						// Determine velocity
@@ -1358,7 +1361,11 @@ public class MCDitty {
 					&& MCDittyConfig.particlesEnabled
 					&& !MCDittyConfig.emitOnlyOneParticle) {
 				synchronized (particleRequestQueue) {
-					double noteColor = (double) (noteEvent.getNote().getValue() % 24) / 24d;
+					double noteColor = 0d;
+					if (noteEvent.getNote() != null) {
+						noteColor = (double) (noteEvent.getNote()
+								.getValue() % 24) / 24d;
+					}
 					particleRequestQueue.add(new NoteParticleRequest(noteEvent
 							.getLocation(), noteColor, false));
 				}
