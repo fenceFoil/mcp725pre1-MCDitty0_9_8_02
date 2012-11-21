@@ -20,6 +20,11 @@ Show emitter stats in sign editor keyword help
 
 - TODO: Fix pitches in 1_3EffectPitches.txt
 
+- Keywords: FlagOn ###, FlagOff ###, ExitIfOn ###
+    - get ### from block mounted on? id + meta 
+
+- Optimize SFXInsts by remapping them (already loaded into a different bank), as opposed to loading them
+
 November 20, 2012: Version 0.9.7.05
 
 - Added particles for Emitters:
