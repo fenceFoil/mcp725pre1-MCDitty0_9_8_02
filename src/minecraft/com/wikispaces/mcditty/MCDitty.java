@@ -50,6 +50,8 @@ import net.minecraft.src.BlockSign;
 import net.minecraft.src.DestroyBlockProgress;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityClientPlayerMP;
+import net.minecraft.src.EntityFX;
+import net.minecraft.src.EntityHeartFX;
 import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiScreenBook;
@@ -638,7 +640,7 @@ public class MCDitty {
 						double partX = (double) pos.x + rand.nextDouble()
 								* 0.4d + 0.2d;
 						double partY = (double) pos.y + rand.nextDouble()
-								* 0.4d + 0.2d;
+								* 0.3d + 0.1d;
 						double partZ = (double) pos.z + rand.nextDouble()
 								* 0.4d + 0.2d;
 						double velX = 0;
@@ -646,21 +648,48 @@ public class MCDitty {
 						double velZ = 0;
 						minecraft.theWorld.spawnParticle("smoke", partX, partY,
 								partZ, velX, velY, velZ);
+					} else if (particleRequest.getParticleType().equals("pissedVillager")) {
+						// Generic particle
+						// Determine location
+						double locationVariance = particleRequest
+								.getLocationVariance();
+						double centerOffset = 0.5f;
+						double partX = (double) pos.x + centerOffset
+								+ locationVariance * getBoundedGaussian(1);
+						double partY = (double) pos.y + centerOffset
+								+ locationVariance * getBoundedGaussian(1);
+						double partZ = (double) pos.z + centerOffset
+								+ locationVariance * getBoundedGaussian(1);
+						// Determine velocity
+						double velX = 0;
+						double velY = rand.nextDouble() * 0.3f;
+						double velZ = 0;
+						// Spawn custom particle
+						// TODO: Check particle settings and distance
+						EntityFX customFX = new EntityHeartFX(minecraft.theWorld, partX, partY, partZ, velX, velY, velZ);
+                        ((EntityFX)customFX).setParticleTextureIndex(83);
+                        ((EntityFX)customFX).setRBGColorF(1.0F, 1.0F, 1.0F);
+						minecraft.effectRenderer.addEffect(customFX);
 					} else {
 						// Generic particle
 						// Determine location
 						double locationVariance = particleRequest
 								.getLocationVariance();
-						double centerOffset = locationVariance / 2d;
+						double centerOffset = 0.5f;
 						double partX = (double) pos.x + centerOffset
-								+ locationVariance * rand.nextGaussian();
+								+ locationVariance * getBoundedGaussian(1);
 						double partY = (double) pos.y + centerOffset
-								+ locationVariance * rand.nextGaussian();
+								+ locationVariance * getBoundedGaussian(1);
 						double partZ = (double) pos.z + centerOffset
-								+ locationVariance * rand.nextGaussian();
+								+ locationVariance * getBoundedGaussian(1);
+						// Fix angry villager particles being a block too high
+						if (particleRequest.getParticleType()
+								.equals("angryVillager")) {
+							partY--;
+						}
 						// Determine velocity
 						double velX = 0;
-						double velY = rand.nextDouble() * 0.1f;
+						double velY = rand.nextDouble() * 0.3f;
 						double velZ = 0;
 						minecraft.theWorld.spawnParticle(
 								particleRequest.getParticleType(), partX,
@@ -671,6 +700,24 @@ public class MCDitty {
 
 			// Put delayed stuff back in queue for later
 			particleRequestQueue.addAll(delayed);
+		}
+	}
+
+	/**
+	 * Returns a random gaussian value between rangePlusMinus and
+	 * -rangePlusMinus, both inclusive.
+	 * 
+	 * @param rangePlusMinus
+	 * @return
+	 */
+	private double getBoundedGaussian(double rangePlusMinus) {
+		double candidateValue = rand.nextGaussian();
+		if (candidateValue > rangePlusMinus) {
+			return rangePlusMinus;
+		} else if (candidateValue < -rangePlusMinus) {
+			return -rangePlusMinus;
+		} else {
+			return candidateValue;
 		}
 	}
 
@@ -1311,8 +1358,9 @@ public class MCDitty {
 					&& MCDittyConfig.particlesEnabled
 					&& !MCDittyConfig.emitOnlyOneParticle) {
 				synchronized (particleRequestQueue) {
+					double noteColor = (double) (noteEvent.getNote().getValue() % 24) / 24d;
 					particleRequestQueue.add(new NoteParticleRequest(noteEvent
-							.getLocation(), 0d, true));
+							.getLocation(), noteColor, false));
 				}
 			}
 
@@ -1415,10 +1463,11 @@ public class MCDitty {
 					i--;
 				}
 			}
-			
+
 			// Kill any bots
 			// Don't tell PETE (People for the Ethical Treatment of Entities)
-				executeBotAction(new DestroyAction("*", nextEventToFire.getDittyID()));
+			executeBotAction(new DestroyAction("*",
+					nextEventToFire.getDittyID()));
 		} else if (nextEventToFire instanceof SFXMCDittyEvent) {
 			if (((SFXMCDittyEvent) nextEventToFire).getSoundEffect() != null) {
 				double x = player.posX;

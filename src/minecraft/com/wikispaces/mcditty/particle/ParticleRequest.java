@@ -38,7 +38,7 @@ public class ParticleRequest {
 	private boolean instant = true;
 	private int dittyID = -1;
 
-	private double locationVariance = 0.4d;
+	private double locationVariance = 0.3d;
 
 	public void setLocationVariance(double locationVariance) {
 		this.locationVariance = locationVariance;

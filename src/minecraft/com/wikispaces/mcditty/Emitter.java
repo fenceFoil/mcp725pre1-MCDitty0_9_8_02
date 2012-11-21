@@ -51,10 +51,36 @@ public class Emitter {
 	public static HashMap<String, String> particleHandleMap = new HashMap<String, String>();
 	static {
 		particleHandleMap.put("chaos", "hugeexplosion");
-		particleHandleMap.put("debris", "largeexplode");
-		particleHandleMap.put("town", "townaura");
+		particleHandleMap.put("dust", "largeexplode");
+		particleHandleMap.put("spore", "townaura");
 		particleHandleMap.put("crit", "crit");
-		particleHandleMap.put("mcrit", "magicCrit");
+		particleHandleMap.put("critmag", "magicCrit");
+		particleHandleMap.put("smoke", "smoke");
+		// Todo: specify colors? how?
+//		particleHandleMap.put("t1", "mobSpell");
+//		particleHandleMap.put("t2", "mobSpellAmbient");
+//		particleHandleMap.put("t3", "spell");
+//		particleHandleMap.put("t4", "instantSpell");
+//		particleHandleMap.put("t5", "witchMagic");
+		//particleHandleMap.put("portal", "portal");
+		//particleHandleMap.put("runes", "enchantmenttable");
+		particleHandleMap.put("poof", "explode");
+		// it flies right now: particleHandleMap.put("fire", "flame");
+		particleHandleMap.put("spark", "lava");
+		particleHandleMap.put("splash", "splash");
+		// footstep
+		particleHandleMap.put("smoke2", "largesmoke");
+		particleHandleMap.put("redfume", "reddust");
+		// flies too much particleHandleMap.put("cloud", "cloud");
+		particleHandleMap.put("snowhit", "snowballpoof");
+		particleHandleMap.put("slime", "slime");
+		// invsible particleHandleMap.put("lava", "driplava");
+		//particleHandleMap.put("water", "dripwater");
+		particleHandleMap.put("flake", "snowshovel");
+		particleHandleMap.put("angry", "angryVillager");
+		particleHandleMap.put("happy", "happyVillager");
+		// Iconcrack, tilecrack
+		particleHandleMap.put("mad", "pissedVillager");
 	}
 
 	public Emitter(CreateEmitterEvent sourceEvent) {
