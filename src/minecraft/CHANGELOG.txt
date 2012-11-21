@@ -2,13 +2,11 @@ FUTURE Late October, 2012: Version 0.9.7 +
 
 - Added external MCDitty Book editor
 
-
-      
-
 - Theatre lights
 - Emitter improvements
     - Specify color by pitch
     - Mo' particles
+    - Specify random chance of particle occurring
 - Signs controlling skulls
 - Signs naming skulls
 - Signs with animated faces, rotations, etc.
@@ -22,22 +20,19 @@ Show emitter stats in sign editor keyword help
 
 - TODO: Fix pitches in 1_3EffectPitches.txt
 
-November 19, 2012: Version 0.9.7.05
+November 20, 2012: Version 0.9.7.05
 
-- TO DO: Updated SFX for new effects
+- Added particles for Emitters:
+    - chaos, dust, spore, crit, critMag, smoke, smoke2, poof, spark, splash, redFume, snowHit, slime, flake, angry, happy, mad
 
-- Added Keyword: SFXInst2
-    - Uses 1.4 sound effects
-    - SFXInst still uses 1.3 sound effects
+- Updated SFX for 1.4
+    - Added Keyword: SFXInst2
+        - Uses 1.4 sound effects
+        - Old SFXInst uses 1.3 and before
+    - Fixed all out-of-order SFX
+    - Improved default tunings for 1.4 SFX
     
-- Fixed bugs that caused out-of-order SFX in SFXInst
-    
- - 1.4 sound effects all have improved pitches!
-    - Implication: I got all the 1.3 ones wrong :P
-    
- 
-    
- - SFX Keyword uses the most recent Minecraft sound effects
+ - SFX Keyword uses 1.4 Minecraft sound effects
  
  - The <sfxInst /> tag in books now has a "source=0" or "source=1" attribute.
     - 0 is the Alpha to 1.3 SFX
