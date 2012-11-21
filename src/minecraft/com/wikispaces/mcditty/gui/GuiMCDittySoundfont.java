@@ -148,6 +148,7 @@ public class GuiMCDittySoundfont extends GuiScreen {
 					}
 				}
 			});
+			t.setName("MCDitty SoundFont Loader");
 			t.start();
 		} else if (guibutton.id == -200) {
 			// unload sound font

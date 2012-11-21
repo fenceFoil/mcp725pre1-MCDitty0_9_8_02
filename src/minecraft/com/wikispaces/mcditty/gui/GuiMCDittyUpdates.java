@@ -144,6 +144,7 @@ public class GuiMCDittyUpdates extends GuiScreen {
 				}
 
 			});
+			t.setName("MCDitty Update Gui AutoUpdater");
 			t.start();
 		}
 	}
@@ -209,6 +210,7 @@ public class GuiMCDittyUpdates extends GuiScreen {
 			}
 		});
 		t.setPriority(Thread.MAX_PRIORITY);
+		t.setName("MCDitty Update Checker (Update Gui)");
 		t.start();
 	}
 

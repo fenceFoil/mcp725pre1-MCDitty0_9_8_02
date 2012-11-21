@@ -36,7 +36,7 @@ public class RunCommandThread extends Thread {
 
 	public RunCommandThread(String cmd) {
 		this.cmd = cmd;
-		setName("Run Command After Shutdown");
+		setName("MCDitty Shutdown Command Runner");
 	}
 
 	@Override

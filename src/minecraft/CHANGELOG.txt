@@ -16,7 +16,7 @@ FUTURE Late October, 2012: Version 0.9.7 +
 - Sign note particles color coded by pitch, voice
 Show emitter stats in sign editor keyword help
 
-- Keywords: staccato, accelerate, crescendo, decrescendo, decellerate, transpose, octaves, autochord, triplet, appregiator?
+- Keywords: accelerate, crescendo, decrescendo, decellerate, transpose, octaves, autochord, triplet, appregiator?
 
 - Added an assortment of particles to Emitter
 
@@ -26,12 +26,16 @@ November 19, 2012: Version 0.9.7.05
 
 - TO DO: Updated SFX for new effects
 
-- TO DO: Added Keyword: SFXInst2
+- Added Keyword: SFXInst2
     - Uses 1.4 sound effects
-    - SFXInst uses 1.3 sound effects
+    - SFXInst still uses 1.3 sound effects
+    
+- Fixed bugs that caused out-of-order SFX in SFXInst
     
  - 1.4 sound effects all have improved pitches!
     - Implication: I got all the 1.3 ones wrong :P
+    
+ 
     
  - SFX Keyword uses the most recent Minecraft sound effects
  

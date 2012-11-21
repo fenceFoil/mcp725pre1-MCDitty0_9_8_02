@@ -1077,6 +1077,7 @@ public class MCDitty {
 				}
 			}
 		});
+		t.setName("MCDitty Update Checker");
 		t.start();
 
 		// Get the HashMap with a list of the blocks currently being punched
@@ -1176,6 +1177,7 @@ public class MCDitty {
 			}
 
 		});
+		t.setName("MCDitty Tick Hook Checker");
 		t.start();
 
 		// Start the decoy sign manager used in the bugfix for 1.4.4 SSP signs

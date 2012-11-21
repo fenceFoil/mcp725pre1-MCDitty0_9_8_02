@@ -31,6 +31,10 @@ import org.lwjgl.input.Mouse;
  * 
  */
 public class mod_MCDittyRightClickCheckThread extends Thread {
+	
+	public mod_MCDittyRightClickCheckThread () {
+		setName ("MCDitty Click Release Monitor");
+	}
 
 	/*
 	 * (non-Javadoc)

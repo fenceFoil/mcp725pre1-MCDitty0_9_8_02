@@ -46,7 +46,7 @@ public class MuteDittyThread extends Thread {
 			LinkedList<Sequencer> playMidiSequencers) {
 		this.players = players;
 		this.playMidiSequencers = playMidiSequencers;
-		setName("MCDitty Mute");
+		setName("Ditty Muter");
 	}
 
 	/*

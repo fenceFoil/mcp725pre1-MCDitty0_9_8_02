@@ -30,6 +30,10 @@ import org.lwjgl.input.Mouse;
  *
  */
 public class MCDittyClickCheckThread extends Thread {
+	
+	public MCDittyClickCheckThread () {
+		setName ("MCDitty Click Monitor");
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Thread#run()

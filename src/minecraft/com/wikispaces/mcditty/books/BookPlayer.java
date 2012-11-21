@@ -61,6 +61,7 @@ public class BookPlayer {
 			}
 			
 		});
+		t.setName("MCDitty Held Book Player");
 		t.start();
 	}
 	

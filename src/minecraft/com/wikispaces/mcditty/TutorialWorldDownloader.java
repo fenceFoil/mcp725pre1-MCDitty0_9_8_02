@@ -479,6 +479,7 @@ public class TutorialWorldDownloader {
 			}
 
 		});
+		t.setName("MCDittyLand Downloader");
 		t.start();
 
 		if (exitToMainMenu) {

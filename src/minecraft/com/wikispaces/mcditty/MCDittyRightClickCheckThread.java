@@ -32,6 +32,10 @@ import org.lwjgl.input.Mouse;
  *
  */
 public class MCDittyRightClickCheckThread extends Thread {
+	
+	public MCDittyRightClickCheckThread () {
+		setName ("MCDitty Sign Click Release Monitor");
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Thread#run()

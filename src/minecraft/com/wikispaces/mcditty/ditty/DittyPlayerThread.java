@@ -53,6 +53,9 @@ import org.jfugue.elements.MCDittyEvent;
 import org.jfugue.elements.Note;
 import org.jfugue.elements.Tempo;
 
+import paulscode.sound.SoundBuffer;
+import paulscode.sound.codecs.CodecJOrbis;
+
 import com.sun.media.sound.SF2Instrument;
 import com.sun.media.sound.SF2InstrumentRegion;
 import com.sun.media.sound.SF2Layer;
@@ -75,10 +78,8 @@ import com.wikispaces.mcditty.ditty.event.SignPlayingTimedEvent;
 import com.wikispaces.mcditty.ditty.event.TempoDittyEvent;
 import com.wikispaces.mcditty.ditty.event.TimedDittyEvent;
 import com.wikispaces.mcditty.ditty.event.VolumeEvent;
-import com.wikispaces.mcditty.sfx.OggDecoder;
 import com.wikispaces.mcditty.sfx.SFXManager;
 import com.wikispaces.mcditty.signs.SignDitty;
-import com.wikispaces.mcditty.signs.keywords.SFXInstKeyword;
 
 /**
  * Instantiate once per Ditty played; these are one use only. Plays a Ditty.
@@ -112,6 +113,7 @@ public class DittyPlayerThread extends Thread implements
 
 	public DittyPlayerThread(Ditty ditty) {
 		this.ditty = ditty;
+		setName("Ditty Player");
 	}
 
 	// public void setDitty(Ditty prop) {
@@ -373,25 +375,35 @@ public class DittyPlayerThread extends Thread implements
 		 */
 		File audioFile = SFXManager.getEffectFile(SFXManager.getAllEffects(timedEvent.getSfxSource())
 				.get(timedEvent.getSfxName()), timedEvent.getSfxNumber(), timedEvent.getSfxSource());
-		OggDecoder decoder = null;
+//		OggDecoder decoder = null;
+//		try {
+//			decoder = new OggDecoder(audioFile.toURI().toURL());
+//		} catch (MalformedURLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//
+//		/*
+//		 * Decode the content of the file into a byte array.
+//		 */
+//		// Big enough to hold 60 seconds of 4 byte per sample CD audio
+//		ByteBuffer rawDecoderOutputBuffer = ByteBuffer.allocate(41000 * 4 * 30);
+//		AudioFormat bufferFormat = decoder.toBuffer(rawDecoderOutputBuffer,
+//				true);
+//		byte[] soundData = new byte[rawDecoderOutputBuffer.position()];
+//		rawDecoderOutputBuffer.position(0);
+//		rawDecoderOutputBuffer.get(soundData);
+		
+		CodecJOrbis codec = new CodecJOrbis();
 		try {
-			decoder = new OggDecoder(audioFile.toURI().toURL());
-		} catch (MalformedURLException e) {
+			codec.initialize(audioFile.toURI().toURL());
+		} catch (MalformedURLException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e1.printStackTrace();
 		}
-
-		/*
-		 * Decode the content of the file into a byte array.
-		 */
-		// Big enough to hold 60 seconds of 4 byte per sample CD audio
-		ByteBuffer rawDecoderOutputBuffer = ByteBuffer.allocate(41000 * 4 * 30);
-		AudioFormat bufferFormat = decoder.toBuffer(rawDecoderOutputBuffer,
-				true);
-		byte[] soundData = new byte[rawDecoderOutputBuffer.position()];
-		rawDecoderOutputBuffer.position(0);
-		rawDecoderOutputBuffer.get(soundData);
-
+		SoundBuffer readAudio = codec.readAll();
+		codec.cleanup();
+		
 		/*
 		 * Convert the decoded audio into the correct format for soundfonts
 		 * e.g.16 bit signed, little endian
@@ -399,11 +411,11 @@ public class DittyPlayerThread extends Thread implements
 		 * (In practice, this usually seems to involve simply toggling the
 		 * "endian-ness")
 		 */
-		AudioFormat sf2Format = new AudioFormat(decoder.getSampleRate(), 16,
-				decoder.getNumChannels(), true, false);
+		AudioFormat sf2Format = new AudioFormat(readAudio.audioFormat.getSampleRate(), 16,
+				readAudio.audioFormat.getChannels(), true, false);
 		AudioInputStream audioStream = new AudioInputStream(
-				new ByteArrayInputStream(soundData), bufferFormat,
-				soundData.length);
+				new ByteArrayInputStream(readAudio.audioData), readAudio.audioFormat,
+				readAudio.audioData.length);
 		AudioInputStream converterAudioStream = AudioSystem
 				.getAudioInputStream(sf2Format, audioStream);
 
@@ -441,7 +453,7 @@ public class DittyPlayerThread extends Thread implements
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}	
 
 		byte[] convertedSoundData = sounddataOutputStream.toByteArray();
 
@@ -451,8 +463,8 @@ public class DittyPlayerThread extends Thread implements
 		SF2Sample sample = new SF2Sample(sf2);
 		sample.setName(timedEvent.getSfxName() + timedEvent.getSfxNumber()
 				+ " Sample");
-		sample.setData(soundData);
-		sample.setSampleRate((long) decoder.getSampleRate());
+		sample.setData(convertedSoundData);
+		sample.setSampleRate((long) readAudio.audioFormat.getSampleRate());
 		sample.setOriginalPitch(timedEvent.getCenterPitch());
 		sf2.addResource(sample);
 
@@ -490,6 +502,9 @@ public class DittyPlayerThread extends Thread implements
 
 		// Save SF2 instrument to cache
 		cachedSFXInstruments.put(timedEvent.getEventID(), sf2);
+		
+		// Cleanup read audio for sample
+		readAudio.cleanup();
 	}
 
 	/**

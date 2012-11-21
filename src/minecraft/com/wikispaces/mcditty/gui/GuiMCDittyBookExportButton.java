@@ -167,6 +167,7 @@ public class GuiMCDittyBookExportButton extends GuiButton {
 
 			});
 			t.start();
+			t.setName("MCDitty Book Exporter");
 			// Import txt file
 		}
 		return result;

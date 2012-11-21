@@ -60,6 +60,7 @@ public class MCDittyVersionReadoutGuiElement extends GuiButton {
 							.checkForUpdates();
 				}
 			});
+			t.setName("MCDitty Version Label Outdated Checker");
 			t.start();
 		}
 

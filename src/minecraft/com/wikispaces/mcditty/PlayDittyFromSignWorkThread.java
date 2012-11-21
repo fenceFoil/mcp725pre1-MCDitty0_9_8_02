@@ -33,17 +33,6 @@ import net.minecraft.src.World;
  * 
  */
 public class PlayDittyFromSignWorkThread extends Thread {
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Thread#run()
-	 */
-	@Override
-	public void run() {
-		BlockSign.playDittyFromSignsDoWork(w, x, y, z, one, silent,
-				limitToSigns);
-	}
-
 	private World w;
 	private int x;
 	private int y;
@@ -63,6 +52,17 @@ public class PlayDittyFromSignWorkThread extends Thread {
 		this.limitToSigns = limitToSigns;
 
 		setName("MCDitty Sign Ditty Player - " + x + ":" + y + ":" + z);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Thread#run()
+	 */
+	@Override
+	public void run() {
+		BlockSign.playDittyFromSignsDoWork(w, x, y, z, one, silent,
+				limitToSigns);
 	}
 
 }

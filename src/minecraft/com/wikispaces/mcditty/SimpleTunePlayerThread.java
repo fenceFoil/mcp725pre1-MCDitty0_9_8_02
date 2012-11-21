@@ -33,6 +33,10 @@ import net.minecraft.src.BlockSign;
 public class SimpleTunePlayerThread extends Thread {
 
 	private String tuneToPlay = null;
+	
+	public SimpleTunePlayerThread () {
+		setName("MCDitty Simple MusicString Player");
+	}
 
 	/*
 	 * (non-Javadoc)

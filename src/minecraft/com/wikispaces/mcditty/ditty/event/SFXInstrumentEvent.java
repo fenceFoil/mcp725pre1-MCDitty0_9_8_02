@@ -62,41 +62,58 @@ public class SFXInstrumentEvent extends TimedDittyEvent {
 		sfxNumber = keyword.getSFXNumber();
 		centerPitch = keyword.getCenterPitch();
 		sfxSource = keyword.getSFXSource();
-		updateTestMode();
+		// updateTestMode();
 	}
-	
-	private static LinkedList<String> effectsToTest = new LinkedList<String>();
-	private static LinkedList<Integer> effectNums = new LinkedList<Integer>();
-	static {
-		Set<String> effectNames = SFXManager.getAllEffects(1).keySet();
-		
-		for (String s:effectNames) {
-			for (int i=1;i<9;i++) {
-				if (SFXManager.doesEffectExist(s, i, 1)) {
-					effectsToTest.add(s);
-					effectNums.add(i);
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Used in a temporary test of all sound effects
-	 */
-	private void updateTestMode() {
-		String effect = effectsToTest.poll();
-		if (effect != null) {
-			int num = effectNums.poll();
-			
-			sfxFilename = SFXManager.getEffectFilename(effect, num, 1);
-			sfxSource = 1;
-			sfxName = effect;
-			sfxNameIncomplete = sfxName;
-			sfxNumber = num;
-			
-			System.out.println (sfxName+":"+sfxNumber);
-		}
-	}
+
+	// private static LinkedList<String> effectsToTest = new
+	// LinkedList<String>();
+	// private static LinkedList<Integer> effectNums = new
+	// LinkedList<Integer>();
+	// static {
+	// Set<String> effectNames = SFXManager.getAllEffects(1).keySet();
+	//
+	// boolean startYet = false;
+	// for (String s : effectNames) {
+	// for (int i = 1; i < 9; i++) {
+	// if (SFXManager.doesEffectExist(
+	// SFXManager.getEffectForShorthandName(s, 1), i, 1)) {
+	// System.out.println(s + ":" + i + " Added");
+	// if (startYet) {
+	// effectsToTest.add(s);
+	// effectNums.add(i);
+	// }
+	// } else {
+	// System.out
+	// .println("XXX " + s + ":" + i + " Does not exist");
+	// break;
+	// }
+	// }
+	//
+	// if (true || s.equals("thunder")) {
+	// startYet = true;
+	// }
+	// }
+	// }
+	//
+	// /**
+	// * Used in a temporary test of all sound effects
+	// */
+	// private void updateTestMode() {
+	// String effect = effectsToTest.poll();
+	// if (effect != null) {
+	// int num = effectNums.poll();
+	//
+	// sfxFilename = SFXManager.getEffectFilename(effect, num, 1);
+	// sfxSource = 1;
+	// sfxName = effect;
+	// sfxNameIncomplete = sfxName;
+	// sfxNumber = num;
+	//
+	// System.out.println(sfxName + ":" + sfxNumber);
+	// } else {
+	// System.exit(-500);
+	// }
+	// }
 
 	public SFXInstrumentEvent(int inst, String sfxFile, String sfx,
 			String sfxIncomplete, int sfxNum, int source, int tuning,

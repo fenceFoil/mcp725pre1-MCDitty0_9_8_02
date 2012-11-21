@@ -275,6 +275,7 @@ public class GuiMCDitty extends GuiScreen {
 			}
 
 		});
+		t.setName("MCDitty Menu Update Checker");
 		t.start();
 
 		// Win achievement for opening the main menu
