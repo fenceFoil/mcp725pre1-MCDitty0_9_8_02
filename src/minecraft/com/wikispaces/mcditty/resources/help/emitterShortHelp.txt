@@ -5,10 +5,8 @@ Must be on the first line of a sign, and no music or keywords can follow (althou
 
 Emitters create a particle every time a note is played in their ditty. You can customize the particles that it emits and how it emits them with options.
 
-[Type]s available:
-- Note
-- Heart
-(Many more to come)
+§aTypes:
+Note, Heart, Chaos, Dust, Spore, Crit, CritMag, Smoke, Smoke2, Poof, Spark, Splash, RedFume, SnowHit, Slime, Flake, Happy, Angry, Mad
 
 On the lines after, you can specify options:
 
