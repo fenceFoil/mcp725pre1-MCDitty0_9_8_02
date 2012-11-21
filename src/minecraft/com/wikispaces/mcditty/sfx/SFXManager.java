@@ -539,7 +539,7 @@ public class SFXManager {
 				LinkedList<String[]> values = readSeparatedList(
 						":",
 						MCDittyResourceManager.getResourceStream("sfx/"
-								+ source.dataFilePrefix + "effectPitches.txt"),
+								+ source.dataFilePrefix + "EffectPitches.txt"),
 						"end of effects");
 				for (String[] v : values) {
 					// Store the effect name for the given shorthand
