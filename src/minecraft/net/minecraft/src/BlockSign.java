@@ -413,7 +413,7 @@ public class BlockSign extends BlockContainer {
 
 	// Loud signs send a chat message starting with this:
 	// Odd case reduces odds of a normal person chatting this
-	public static final String MCDITTY_LOUD_CHAT_START = "McDiTtY:";
+	//public static final String MCDITTY_LOUD_CHAT_START = "McDiTtY:";
 
 	public static final int FACES_SOUTH = 0;
 	public static final int FACES_WEST = 1;
@@ -1981,7 +1981,7 @@ public class BlockSign extends BlockContainer {
 	/**
 	 * TODO: Almost redundant with the more powerful getCoordsRelative to sign?
 	 * 
-	 * @param startPoint
+	 * @param startPoint (not modified by this method)
 	 * @param signFacing
 	 * @param world
 	 * @param signWhitelist
@@ -1989,8 +1989,7 @@ public class BlockSign extends BlockContainer {
 	 */
 	private static Point3D findSignToRight(Point3D startSign, int signFacing,
 			World world, LinkedList<Point3D> whitelist) {
-		Point3D startPoint = startSign.clone();
-		Point3D rightPoint = getCoordsRelativeToSign(startPoint, signFacing, 1,
+		Point3D rightPoint = getCoordsRelativeToSign(startSign.clone(), signFacing, 1,
 				0, 0);
 		if (isSign(rightPoint, world)
 				&& (whitelist == null || whitelist.contains(rightPoint))) {
@@ -2003,6 +2002,7 @@ public class BlockSign extends BlockContainer {
 	}
 
 	/**
+	 * Tries to find the start of the next "line" of signs, given a starting sign.
 	 * 
 	 * @param world
 	 * @param startPoint
