@@ -25,6 +25,8 @@ Show emitter stats in sign editor keyword help
 
 - Optimize SFXInsts by remapping them (already loaded into a different bank), as opposed to loading them
 
+- Particle cap / reduce multi automatically on chaos or spark emitters
+
 November 20, 2012: Version 0.9.7.05
 
 - Added particles for Emitters:
