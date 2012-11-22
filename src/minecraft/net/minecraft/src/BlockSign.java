@@ -939,7 +939,7 @@ public class BlockSign extends BlockContainer {
 						// sign; cast an error if it is misused
 						if (line != 0) {
 							// Pattern can only be used on first line of a sign
-							ditty.addErrorMessage("§cAny pattern keywords should be on first line of a sign.");
+							ditty.addErrorMessage("§cPattern keywords should be on first line of a sign.");
 							ditty.addErrorHighlight(currSignPoint, line);
 						} else {
 							// If this is the pattern sign that started the
