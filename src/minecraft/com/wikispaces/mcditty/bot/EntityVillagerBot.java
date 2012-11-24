@@ -24,15 +24,15 @@
  */
 package com.wikispaces.mcditty.bot;
 
-import com.wikispaces.mcditty.GetMinecraft;
-
 import net.minecraft.src.EntityVillager;
-import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.World;
 
+import com.wikispaces.mcditty.GetMinecraft;
+
 public class EntityVillagerBot extends EntityVillager {
-	
-	private AnimatedValue headPitch = new AnimatedValue(0, GetMinecraft.instance().theWorld.getTotalWorldTime());
+
+	private AnimatedValue headPitch = new AnimatedValue(0,
+			GetMinecraft.instance().theWorld.getTotalWorldTime());
 
 	public EntityVillagerBot(World par1World) {
 		super(par1World);
@@ -45,7 +45,9 @@ public class EntityVillagerBot extends EntityVillager {
 		// TODO Auto-generated constructor stub
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.minecraft.src.EntityVillager#isAIEnabled()
 	 */
 	@Override
@@ -54,7 +56,9 @@ public class EntityVillagerBot extends EntityVillager {
 		return false;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.minecraft.src.EntityLiving#onEntityUpdate()
 	 */
 	@Override
@@ -63,6 +67,16 @@ public class EntityVillagerBot extends EntityVillager {
 		posY = lastTickPosY;
 		motionY = 0;
 		rotationPitch = (float) headPitch.getValue();
+		// rotationYawHead += 15;
+		// newPosRotationIncrements = 1;
+		// newPosX = posX;
+		// newPosY = posY;
+		// newPosZ = posZ;
+		// rotationYaw -= 5;
+		// legSwing = 0.5f;
+		// legYaw += 0.5;
+		// legYaw = 0.5f;
+		// renderYawOffset -= 5;
 	}
 
 }

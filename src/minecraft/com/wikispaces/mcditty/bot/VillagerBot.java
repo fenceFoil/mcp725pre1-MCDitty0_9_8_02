@@ -24,16 +24,11 @@
  */
 package com.wikispaces.mcditty.bot;
 
-import java.util.List;
-
 import net.minecraft.src.Entity;
-import net.minecraft.src.EntityList;
 import net.minecraft.src.EntityLiving;
-import net.minecraft.src.EntityVillager;
 
 import com.wikispaces.mcditty.DestroyAction;
 import com.wikispaces.mcditty.GetMinecraft;
-import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.bot.action.BotAction;
 import com.wikispaces.mcditty.bot.action.RiseAction;
 
@@ -44,7 +39,7 @@ public class VillagerBot extends Bot {
 
 	protected Entity entity;
 
-	private EntityVillager villagerEntity;
+	private EntityVillagerBot villagerEntity;
 
 	/**
 	 * @param name
@@ -56,7 +51,7 @@ public class VillagerBot extends Bot {
 		addSupportedAction(RiseAction.class);
 
 		// Create a creepily still-looking testificate dude
-		villagerEntity = new EntityVillagerBot (GetMinecraft.instance().theWorld);
+		villagerEntity = new EntityVillagerBot(GetMinecraft.instance().theWorld);
 
 		double var2 = x;
 		double var4 = y;
@@ -69,7 +64,7 @@ public class VillagerBot extends Bot {
 		var10.serverPosZ = (int) z;
 		var10.rotationYawHead = rotation;
 		var10.rotationYaw = rotation;
-		
+
 		Entity[] var11 = var10.getParts();
 
 		if (var11 != null) {
@@ -88,7 +83,8 @@ public class VillagerBot extends Bot {
 		var10.motionX = (double) ((float) 0 / 8000.0F);
 		var10.motionY = (double) ((float) 0 / 8000.0F);
 		var10.motionZ = (double) ((float) 0 / 8000.0F);
-		GetMinecraft.instance().theWorld.addEntityToWorld(var10.entityId, var10);
+		GetMinecraft.instance().theWorld
+				.addEntityToWorld(var10.entityId, var10);
 	}
 
 	/*
