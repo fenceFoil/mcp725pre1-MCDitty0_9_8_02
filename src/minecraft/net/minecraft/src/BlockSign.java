@@ -750,7 +750,7 @@ public class BlockSign extends BlockContainer {
 	private static StringBuilder readPattern(Point3D startPoint, World world,
 			LinkedList<SignLogPoint> signsReadList, SignDitty ditty,
 			int subpatternLevel, LinkedList<Point3D> signWhitelist) {
-		MCDitty.slowDownMC(5);
+		MCDitty.slowDownMC(2);
 
 		// Contains musicstring read from pattern
 		StringBuilder readMusicString = new StringBuilder();
