@@ -1577,7 +1577,7 @@ public class GuiEditSign extends GuiScreen implements
 		if (lyricLabel.length() > 1) {
 			lyricLabel = currToken.substring(1);
 			// Is a constant
-			if (LyricKeyword.isValidKeyworLabel(lyricLabel)) {
+			if (LyricKeyword.isValidCueLabel(lyricLabel)) {
 				colorCode = "§a";
 				errorMessage = "Lyric Name: §a" + lyricLabel
 						+ "\n\n§eWill play lyric named " + lyricLabel + ".";

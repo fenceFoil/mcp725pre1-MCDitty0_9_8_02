@@ -55,7 +55,7 @@ public class LyricKeyword extends ParsedKeyword {
 		// Get label (required)
 		if (numArgs >= 2) {
 			keyword.label = currLine.split(" ")[1];
-			if (!isValidKeyworLabel(keyword.label)) {
+			if (!isValidCueLabel(keyword.label)) {
 				// Illegal label
 				keyword.setGoodKeyword(false);
 				keyword.setErrorMessageType(ParsedKeyword.WARNING);
@@ -126,7 +126,7 @@ public class LyricKeyword extends ParsedKeyword {
 		return keyword;
 	}
 
-	public static boolean isValidKeyworLabel(String label) {
+	public static boolean isValidCueLabel(String label) {
 		return label.matches("[a-zA-Z0-9_]*");
 	}
 
