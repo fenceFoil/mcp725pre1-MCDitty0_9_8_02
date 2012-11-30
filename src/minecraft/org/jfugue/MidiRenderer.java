@@ -134,8 +134,6 @@ public final class MidiRenderer extends ParserListenerAdapter {
 		this.sequenceTiming = sequenceTiming;
 		this.resolution = resolution;
 		this.eventManager = new MidiEventManager(sequenceTiming, resolution);
-		// MCDITTY
-		// resetChannelTimes();
 	}
 
 	/**
@@ -151,8 +149,6 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	public void reset() {
 		this.eventManager = new MidiEventManager(this.sequenceTiming,
 				this.resolution);
-		// MCDITTY
-		// resetChannelTimes();
 	}
 
 	/**
@@ -184,27 +180,42 @@ public final class MidiRenderer extends ParserListenerAdapter {
 
 	public void tempoEvent(Tempo tempo) {
 		byte[] threeTempoBytes = TimeFactor.convertBPMToBytes(tempo.getTempo());
-		// MCDitty: Switch to voice 0 for this event
+		
+		// Add event to track 0 at the current track's time
+		// (Non-track 0 tempo changes upset the synth: it ignores them)
+		// Note that there is no harm in doing this even when we're at track 0 already.
+		
+		// note the time we want the event at
+		double currTrackTime = eventManager.getTrackTimerDec();
+		// switch to track 0
 		eventManager.setCurrentTrack((byte) 0);
+		// note the track 0 time
+		double oldTrack0Time = eventManager.getTrackTimerDec();
+		// move track 0 to the desired time, and add the event
+		eventManager.setTrackTimerDec(currTrackTime);
 		this.eventManager.addMetaMessage(0x51, threeTempoBytes);
+		// move track 0 back to where it was
+		eventManager.setTrackTimerDec(oldTrack0Time);
+		// switch back to the current track
 		eventManager.setCurrentTrack(currentTrack);
 
-		// MCDitty
-		// Note: For some reason, only "Txxx" tokens in the first track (any
-		// layer) are counted when played back.
-		// Therefore, MCDitty must explicitly do the same thing that JFugue does
-		// implicitly.
-		if (currentTrack == 0) {
-			if (tempoEventReadListener != null) {
-				long now = (long) eventManager.getTrackTimerDec();
-				tempoEventReadListener.tempoEventRead(tempo, now);
-			}
-		}
+//		// MCDitty
+//		// Note: For some reason, only "Txxx" tokens in the first track (any
+//		// layer) are counted when played back.
+//		// Therefore, MCDitty must explicitly do the same thing that JFugue does
+//		// implicitly.
+//		if (currentTrack == 0) {
+//			if (tempoEventReadListener != null) {
+//				long now = (long) eventManager.getTrackTimerDec();
+//				tempoEventReadListener.tempoEventRead(tempo, now);
+//			}
+//		}
 	}
 
 	public void instrumentEvent(Instrument instrument) {
 		this.eventManager.addEvent(ShortMessage.PROGRAM_CHANGE,
 				instrument.getInstrument(), 0);
+		
 		// MCDitty: note instrument change
 		currentInstrument[currentTrack] = instrument.getInstrument();
 		// Relay to listeners
@@ -415,14 +426,6 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	}
 
 	private void emitParticleForNote(Note note) {
-		// XXX: If still here next time you read this, REMOVE
-		// // For note particles
-		// if (!note.isRest() && MCDittyConfig.particlesEnabled &&
-		// !MCDittyConfig.emitOnlyOneParticle && !note.isEndOfTie()) {
-		// mcDittyEvent(new MCDittyEvent(BlockSign.NOTE_HIT_TOKEN +
-		// currentSignID));
-		// }
-
 		long now = (long) eventManager.getTrackTimerDec();
 		if (!note.isRest() && !note.isEndOfTie()
 				&& particleWorthyNoteReadListener != null) {
@@ -444,12 +447,13 @@ public final class MidiRenderer extends ParserListenerAdapter {
 			System.out.println("MidiRenderer: MCDittyEvent hit: "
 					+ event.getVerifyString());
 		}
+		
 		// Actually do something
 		if (event.getToken().equalsIgnoreCase(BlockSign.SYNC_VOICES_TOKEN)) {
 			eventManager.alignChannelTimes();
 		} else if (event.getToken().toLowerCase()
 				.startsWith(BlockSign.SYNC_WITH_TOKEN.toLowerCase())) {
-			// TODO Parse token
+			// Parse token
 			String arguments = event.getToken().substring(
 					BlockSign.SYNC_WITH_TOKEN.length());
 
