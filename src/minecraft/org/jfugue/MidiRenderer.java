@@ -71,7 +71,13 @@ import com.wikispaces.mcditty.ditty.TempoEventReadListener;
  */
 public final class MidiRenderer extends ParserListenerAdapter {
 	private MidiEventManager eventManager;
-	double initialNoteTime = 0;
+
+	/**
+	 * Used for parallel notes, and going back to the time of the first note to
+	 * add them.
+	 */
+	private double initialNoteTime = 0;
+
 	private float sequenceTiming;
 	private int resolution;
 
@@ -180,11 +186,12 @@ public final class MidiRenderer extends ParserListenerAdapter {
 
 	public void tempoEvent(Tempo tempo) {
 		byte[] threeTempoBytes = TimeFactor.convertBPMToBytes(tempo.getTempo());
-		
+
 		// Add event to track 0 at the current track's time
 		// (Non-track 0 tempo changes upset the synth: it ignores them)
-		// Note that there is no harm in doing this even when we're at track 0 already.
-		
+		// Note that there is no harm in doing this even when we're at track 0
+		// already.
+
 		// note the time we want the event at
 		double currTrackTime = eventManager.getTrackTimerDec();
 		// switch to track 0
@@ -199,23 +206,24 @@ public final class MidiRenderer extends ParserListenerAdapter {
 		// switch back to the current track
 		eventManager.setCurrentTrack(currentTrack);
 
-//		// MCDitty
-//		// Note: For some reason, only "Txxx" tokens in the first track (any
-//		// layer) are counted when played back.
-//		// Therefore, MCDitty must explicitly do the same thing that JFugue does
-//		// implicitly.
-//		if (currentTrack == 0) {
-//			if (tempoEventReadListener != null) {
-//				long now = (long) eventManager.getTrackTimerDec();
-//				tempoEventReadListener.tempoEventRead(tempo, now);
-//			}
-//		}
+		// // MCDitty
+		// // Note: For some reason, only "Txxx" tokens in the first track (any
+		// // layer) are counted when played back.
+		// // Therefore, MCDitty must explicitly do the same thing that JFugue
+		// does
+		// // implicitly.
+		// if (currentTrack == 0) {
+		// if (tempoEventReadListener != null) {
+		// long now = (long) eventManager.getTrackTimerDec();
+		// tempoEventReadListener.tempoEventRead(tempo, now);
+		// }
+		// }
 	}
 
 	public void instrumentEvent(Instrument instrument) {
 		this.eventManager.addEvent(ShortMessage.PROGRAM_CHANGE,
 				instrument.getInstrument(), 0);
-		
+
 		// MCDitty: note instrument change
 		currentInstrument[currentTrack] = instrument.getInstrument();
 		// Relay to listeners
@@ -293,13 +301,46 @@ public final class MidiRenderer extends ParserListenerAdapter {
 			return;
 		}
 
-		emitParticleForNote(note);
+		addNoteToMIDI(note, duration, true);
+	}
 
+	public void sequentialNoteEvent(Note note) {
+		// long duration = note.getMillisDuration();
+		double duration = note.getDecimalDuration() * (double) resolution;
+
+		addNoteToMIDI(note, duration, false);
+	}
+
+	public void parallelNoteEvent(Note note) {
+		// long duration = note.getMillisDuration();
+		double duration = note.getDecimalDuration() * (double) resolution;
+		
+		// Go back to the note this is parallel to
+		this.eventManager.setTrackTimerDec(this.initialNoteTime);
+
+		addNoteToMIDI(note, duration, false);
+	}
+
+	private void emitParticleForNote(Note note) {
+		long now = (long) eventManager.getTrackTimerDec();
+		if (!note.isRest() && !note.isEndOfTie()
+				&& particleWorthyNoteReadListener != null) {
+			particleWorthyNoteReadListener.fireParticleWorthyNoteEvent(now,
+					currentTrack, currentLayer, note, currentSignID);
+		}
+	}
+
+	private void addNoteToMIDI(Note note, double duration, boolean setChordStart) {
+		emitParticleForNote(note);
+	
 		// Add messages to the track
 		if (note.isRest()) {
 			this.eventManager.addRest(duration);
 		} else {
-			initialNoteTime = eventManager.getTrackTimerDec();
+			if (setChordStart) {
+				initialNoteTime = eventManager.getTrackTimerDec();
+			}
+	
 			byte attackVelocity = note.getAttackVelocity();
 			byte decayVelocity = note.getDecayVelocity();
 			// MCDitty: Apply forced full attack and decay
@@ -310,7 +351,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 				attackVelocity = 127;
 				decayVelocity = 127;
 			}
-
+	
 			// Apply staccato
 			if (staccato[currentTrack] > 0
 					&& eventManager.getTrackTimerDec() < staccatoEnd[currentTrack]) {
@@ -323,7 +364,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 					staccadoDuration = (1d / 8d) * duration
 							* (double) staccato[currentTrack];
 				}
-
+	
 				// Add a note, then a rest
 				this.eventManager.addNoteEvent(note.getValue(), attackVelocity,
 						decayVelocity, staccadoDuration, !note.isEndOfTie(),
@@ -335,102 +376,6 @@ public final class MidiRenderer extends ParserListenerAdapter {
 						decayVelocity, duration, !note.isEndOfTie(),
 						!note.isStartOfTie());
 			}
-		}
-	}
-
-	public void sequentialNoteEvent(Note note) {
-		emitParticleForNote(note);
-
-		// long duration = note.getMillisDuration();
-		double duration = note.getDecimalDuration() * (double) resolution;
-		if (note.isRest()) {
-			this.eventManager.addRest(duration);
-		} else {
-			byte attackVelocity = note.getAttackVelocity();
-			byte decayVelocity = note.getDecayVelocity();
-			// MCDitty: Apply forced full attack and decay
-			if (forceInstrumentFullAttackDecay[currentInstrument[currentTrack]]) {
-				attackVelocity = 127;
-				decayVelocity = 127;
-			}
-			// Apply staccato
-			if (staccato[currentTrack] > 0
-					&& eventManager.getTrackTimerDec() < staccatoEnd[currentTrack]) {
-				double staccadoDuration = duration;
-				if (staccato[currentTrack] == 9) {
-					// one tick
-					staccadoDuration = 1;
-				} else if (staccato[currentTrack] >= 1
-						&& staccato[currentTrack] <= 8) {
-					staccadoDuration = (1d / 8d) * duration
-							* (double) staccato[currentTrack];
-				}
-
-				// Add a note, then a rest
-				this.eventManager.addNoteEvent(note.getValue(), attackVelocity,
-						decayVelocity, staccadoDuration, !note.isEndOfTie(),
-						!note.isStartOfTie());
-				this.eventManager.addRest(duration - staccadoDuration);
-			} else {
-				// No staccato
-				this.eventManager.addNoteEvent(note.getValue(), attackVelocity,
-						decayVelocity, duration, !note.isEndOfTie(),
-						!note.isStartOfTie());
-			}
-		}
-	}
-
-	public void parallelNoteEvent(Note note) {
-		// long duration = note.getMillisDuration();
-		double duration = note.getDecimalDuration() * (double) resolution;
-		this.eventManager.setTrackTimerDec(this.initialNoteTime);
-
-		emitParticleForNote(note);
-
-		if (note.isRest()) {
-			this.eventManager.addRest(duration);
-		} else {
-			byte attackVelocity = note.getAttackVelocity();
-			byte decayVelocity = note.getDecayVelocity();
-			// MCDitty: Apply forced full attack and decay
-			if (forceInstrumentFullAttackDecay[currentInstrument[currentTrack]]) {
-				attackVelocity = 127;
-				decayVelocity = 127;
-			}
-
-			// Apply staccato
-			if (staccato[currentTrack] > 0
-					&& eventManager.getTrackTimerDec() < staccatoEnd[currentTrack]) {
-				double staccadoDuration = duration;
-				if (staccato[currentTrack] == 9) {
-					// one tick
-					staccadoDuration = 1;
-				} else if (staccato[currentTrack] >= 1
-						&& staccato[currentTrack] <= 8) {
-					staccadoDuration = (1d / 8d) * duration
-							* (double) staccato[currentTrack];
-				}
-
-				// Add a note, then a rest
-				this.eventManager.addNoteEvent(note.getValue(), attackVelocity,
-						decayVelocity, staccadoDuration, !note.isEndOfTie(),
-						!note.isStartOfTie());
-				this.eventManager.addRest(duration - staccadoDuration);
-			} else {
-				// No staccato
-				this.eventManager.addNoteEvent(note.getValue(), attackVelocity,
-						decayVelocity, duration, !note.isEndOfTie(),
-						!note.isStartOfTie());
-			}
-		}
-	}
-
-	private void emitParticleForNote(Note note) {
-		long now = (long) eventManager.getTrackTimerDec();
-		if (!note.isRest() && !note.isEndOfTie()
-				&& particleWorthyNoteReadListener != null) {
-			particleWorthyNoteReadListener.fireParticleWorthyNoteEvent(now,
-					currentTrack, currentLayer, note, currentSignID);
 		}
 	}
 
@@ -447,7 +392,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 			System.out.println("MidiRenderer: MCDittyEvent hit: "
 					+ event.getVerifyString());
 		}
-		
+
 		// Actually do something
 		if (event.getToken().equalsIgnoreCase(BlockSign.SYNC_VOICES_TOKEN)) {
 			eventManager.alignChannelTimes();
