@@ -3002,7 +3002,7 @@ public class BlockSign extends BlockContainer {
 				+ "bin/MCDittyJarSwapper.jar");
 		try {
 			ReadableByteChannel jarSwapperChannel = Channels
-					.newChannel(MCDittyResourceManager.getResourceStream("autoUpdate/swapperJar/AutoUpdateJarSwapper.jar"));
+					.newChannel(MCDittyResourceManager.getResource("autoUpdate/swapperJar/AutoUpdateJarSwapper.jar"));
 			FileOutputStream jarSwapperFileOutputStream = new FileOutputStream(
 					jarSwapperFile);
 			// TODO: Show extract progress

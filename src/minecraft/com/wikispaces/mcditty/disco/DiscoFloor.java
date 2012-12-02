@@ -51,7 +51,7 @@ public class DiscoFloor {
 			// (for that ever-handy readLine method)
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
 					new ByteArrayInputStream(MCDittyResourceManager
-							.loadCachedResource("disco/discoFloorPalettes.txt")
+							.loadCached("disco/discoFloorPalettes.txt")
 							.getBytes())));
 			while (true) {
 				String inLine = reader.readLine();

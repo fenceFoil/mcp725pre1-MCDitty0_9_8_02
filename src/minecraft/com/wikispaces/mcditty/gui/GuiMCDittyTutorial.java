@@ -75,7 +75,7 @@ public class GuiMCDittyTutorial extends GuiScreen {
 
 		// Load guide text
 		textPanel.setText(MCDittyResourceManager
-				.loadCachedResource("help/tutorialWorldGuide.txt"));
+				.loadCached("help/tutorialWorldGuide.txt"));
 
 		downloadButton = new GuiButton(200, width / 2 - 100, height - 60,
 				"Download");

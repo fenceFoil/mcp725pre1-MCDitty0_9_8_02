@@ -80,7 +80,7 @@ public class SFXManager {
 	public static void load() throws IOException, SAXException {
 		// Load general config info
 		NodeList configNodes = parseXMLStream(MCDittyResourceManager
-				.getResourceStream("sfx/sfxManagerConfig.xml"));
+				.getResource("sfx/sfxManagerConfig.xml"));
 		configNodes = DOMUtil.findFirstElement("sfxConfig", configNodes).getChildNodes();
 
 		// Read the number of the latest source for sound effects in this
@@ -512,7 +512,7 @@ public class SFXManager {
 				// System.out.println("MCDitty: Loading sfx names");
 				LinkedList<String[]> values = readSeparatedList(
 						":",
-						MCDittyResourceManager.getResourceStream("sfx/"
+						MCDittyResourceManager.getResource("sfx/"
 								+ source.dataFilePrefix + "SfxNames.txt"),
 						"end of effects");
 
@@ -538,7 +538,7 @@ public class SFXManager {
 			try {
 				LinkedList<String[]> values = readSeparatedList(
 						":",
-						MCDittyResourceManager.getResourceStream("sfx/"
+						MCDittyResourceManager.getResource("sfx/"
 								+ source.dataFilePrefix + "EffectPitches.txt"),
 						"end of effects");
 				for (String[] v : values) {

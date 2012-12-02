@@ -1873,7 +1873,7 @@ public class GuiEditSign extends GuiScreen implements
 	 */
 	private void showGenericTokenHelp() {
 		helpTextArea.setText(MCDittyResourceManager
-				.loadCachedResource("help/genericTokenHelp.txt"));
+				.loadCached("help/genericTokenHelp.txt"));
 	}
 
 	/**
@@ -2444,7 +2444,7 @@ public class GuiEditSign extends GuiScreen implements
 
 		if (keyword.getKeyword() != null
 				&& !keyword.getKeyword().equalsIgnoreCase(lastHelpShown)) {
-			String helpText = MCDittyResourceManager.loadCachedResource("help/"
+			String helpText = MCDittyResourceManager.loadCached("help/"
 					+ keyword.getKeyword().toLowerCase() + "ShortHelp.txt");
 
 			helpText = "§b" + helpText;
@@ -2485,7 +2485,7 @@ public class GuiEditSign extends GuiScreen implements
 	private void showGenericKeywordHelp() {
 		// Set text area to a list of all available keywords
 		helpTextArea.setText(MCDittyResourceManager
-				.loadCachedResource("help/keywordsHelp.txt"));
+				.loadCached("help/keywordsHelp.txt"));
 	}
 
 	static {

@@ -44,7 +44,7 @@ public class MCDittyResourceManager {
 	 * @param resourceName
 	 * @return
 	 */
-	public static String loadCachedResource(String resourceName) {
+	public static String loadCached(String resourceName) {
 		// First try to load cached copy
 		if (txtFileCache.get(resourceName) != null) {
 			return txtFileCache.get(resourceName);
@@ -84,7 +84,7 @@ public class MCDittyResourceManager {
 		return readTxt;
 	}
 
-	public static InputStream getResourceStream(String resourceName) {
+	public static InputStream getResource(String resourceName) {
 		return MCDittyResourceManager.class.getResourceAsStream(resourceName);
 	}
 

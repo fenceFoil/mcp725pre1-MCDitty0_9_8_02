@@ -63,7 +63,7 @@ public class GuiMCDittySignEditorGuide extends GuiScreen {
 
 		// Load guide text
 		String guideText = MCDittyResourceManager
-				.loadCachedResource("help/signEditorGuide.txt");
+				.loadCached("help/signEditorGuide.txt");
 		textPanel.setText(guideText);
 
 	}
