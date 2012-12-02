@@ -20,12 +20,16 @@ Show emitter stats in sign editor keyword help
 
 - TODO: Fix pitches in 1_3EffectPitches.txt
 
-- Keywords: FlagOn ###, FlagOff ###, ExitIfOn ###
+- Keywords: FlagOn ###, FlagOff ###, FlipFlag ###, EndIfFlag ###
     - get ### from block mounted on? id + meta 
 
 - Optimize SFXInsts by remapping them (already loaded into a different bank), as opposed to loading them
 
 - Particle cap / reduce multi automatically on chaos or spark emitters
+
+December 2, 2012: Version 0.9.7.06
+
+- Staccato keyword changed (PUT DUAL MUTEX EXAMPLE IN MCDITTY LAND)
 
 November 20, 2012: Version 0.9.7.05
 

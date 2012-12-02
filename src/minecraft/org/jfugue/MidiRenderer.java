@@ -22,6 +22,8 @@
 
 package org.jfugue;
 
+import java.util.LinkedList;
+
 import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 
@@ -49,6 +51,10 @@ import com.wikispaces.mcditty.ditty.LyricEventReadListener;
 import com.wikispaces.mcditty.ditty.MCDittyEventReadListener;
 import com.wikispaces.mcditty.ditty.ParticleWorthyNoteReadListener;
 import com.wikispaces.mcditty.ditty.TempoEventReadListener;
+import com.wikispaces.mcditty.jfugue.rendererEffect.ApplyEffect;
+import com.wikispaces.mcditty.jfugue.rendererEffect.RendererEffect;
+import com.wikispaces.mcditty.jfugue.rendererEffect.StaccatoEffect;
+import com.wikispaces.mcditty.jfugue.rendererEffect.TimedJFugueElement;
 
 /**
  * This class takes a Pattern, and turns it into wonderful music.
@@ -65,11 +71,19 @@ import com.wikispaces.mcditty.ditty.TempoEventReadListener;
  * changed to differentiate it from other types of renderers.
  * </p>
  * 
+ * <p>
+ * Modified heavily by MCDitty.
+ * </p>
+ * 
  * @author David Koelle
  * @version 2.0
  * @version 3.0 - Renderer renamed to MidiRenderer
  */
 public final class MidiRenderer extends ParserListenerAdapter {
+	/**
+	 * Keeps track of nitty gritty details of the midi being rendered, such as
+	 * track times
+	 */
 	private MidiEventManager eventManager;
 
 	/**
@@ -79,14 +93,17 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	private double initialNoteTime = 0;
 
 	private float sequenceTiming;
+
 	private int resolution;
 
-	// MCDITTY
+	/**
+	 * MCDitty: Random listeners
+	 */
 	private LyricEventReadListener lyricEventReadListener = null;
 	private TempoEventReadListener tempoEventReadListener = null;
 	private MCDittyEventReadListener mcdittyEventReadListener = null;
 	private ParticleWorthyNoteReadListener particleWorthyNoteReadListener = null;
-	private InstrumentEventReadListener instrumentEventReadListener;
+	private InstrumentEventReadListener instrumentEventReadListener = null;
 
 	/**
 	 * Whether to force the notes in [index] instrument to be played at full
@@ -94,28 +111,39 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	 */
 	private boolean[] forceInstrumentFullAttackDecay = new boolean[128];
 
+	/**
+	 * The track where notes are currently being added
+	 */
 	private byte currentTrack = 0;
 
 	/**
-	 * Current instrument per track
+	 * The layer of the current track that notes are currently being added to
 	 */
-	private byte[] currentInstrument = new byte[16];
-
-	// MCDitty
-	private int currentSignID = 0;
 	private byte currentLayer = 0;
 
 	/**
-	 * Staccato settings for each track; 0 = off, 1-8 = x/8 note length, 9 = 1
-	 * tick.
+	 * Current instrument for each track
 	 */
-	private int[] staccato = new int[16];
+	private byte[] currentInstrument = new byte[16];
 
 	/**
-	 * How many ticks of staccato are left for each track; -1 means on
-	 * indefinitely
+	 * MCDitty: used for sign highlighting
 	 */
-	private Double[] staccatoEnd = new Double[16];
+	private int currentSignID = 0;
+
+	// /**
+	// * Staccato settings for each track; 0 = off, 1-8 = x/8 note length, 9 = 1
+	// * tick.
+	// */
+	// private int[] staccato = new int[16];
+	//
+	// /**
+	// * How many ticks of staccato are left for each track; -1 means on
+	// * indefinitely
+	// */
+	// private Double[] staccatoEnd = new Double[16];
+
+	private LinkedList<RendererEffect>[] effects;
 
 	/**
 	 * Instantiates a Renderer
@@ -140,6 +168,8 @@ public final class MidiRenderer extends ParserListenerAdapter {
 		this.sequenceTiming = sequenceTiming;
 		this.resolution = resolution;
 		this.eventManager = new MidiEventManager(sequenceTiming, resolution);
+
+		resetEffects();
 	}
 
 	/**
@@ -155,6 +185,19 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	public void reset() {
 		this.eventManager = new MidiEventManager(this.sequenceTiming,
 				this.resolution);
+
+		resetEffects();
+	}
+
+	/**
+	 * Clears any remaining RendererEffects. Also sets up the list for the first
+	 * time if it has not yet been.
+	 */
+	private void resetEffects() {
+		effects = (LinkedList<RendererEffect>[]) new LinkedList[16];
+		for (int i = 0; i < effects.length; i++) {
+			effects[i] = new LinkedList<RendererEffect>();
+		}
 	}
 
 	/**
@@ -191,7 +234,6 @@ public final class MidiRenderer extends ParserListenerAdapter {
 		// (Non-track 0 tempo changes upset the synth: it ignores them)
 		// Note that there is no harm in doing this even when we're at track 0
 		// already.
-
 		// note the time we want the event at
 		double currTrackTime = eventManager.getTrackTimerDec();
 		// switch to track 0
@@ -314,7 +356,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	public void parallelNoteEvent(Note note) {
 		// long duration = note.getMillisDuration();
 		double duration = note.getDecimalDuration() * (double) resolution;
-		
+
 		// Go back to the note this is parallel to
 		this.eventManager.setTrackTimerDec(this.initialNoteTime);
 
@@ -332,7 +374,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 
 	private void addNoteToMIDI(Note note, double duration, boolean setChordStart) {
 		emitParticleForNote(note);
-	
+
 		// Add messages to the track
 		if (note.isRest()) {
 			this.eventManager.addRest(duration);
@@ -340,43 +382,119 @@ public final class MidiRenderer extends ParserListenerAdapter {
 			if (setChordStart) {
 				initialNoteTime = eventManager.getTrackTimerDec();
 			}
-	
+
 			byte attackVelocity = note.getAttackVelocity();
 			byte decayVelocity = note.getDecayVelocity();
-			// MCDitty: Apply forced full attack and decay
-			// System.out.println ("Forced full attack & decay");
 			if (forceInstrumentFullAttackDecay[currentInstrument[currentTrack]]) {
-				// System.out.println
-				// (currentTrack+","+note.getMusicString()+": Forcing full attack/decay");
 				attackVelocity = 127;
 				decayVelocity = 127;
 			}
-	
-			// Apply staccato
-			if (staccato[currentTrack] > 0
-					&& eventManager.getTrackTimerDec() < staccatoEnd[currentTrack]) {
-				double staccadoDuration = duration;
-				if (staccato[currentTrack] == 9) {
-					// one tick
-					staccadoDuration = 1;
-				} else if (staccato[currentTrack] >= 1
-						&& staccato[currentTrack] <= 8) {
-					staccadoDuration = (1d / 8d) * duration
-							* (double) staccato[currentTrack];
+
+			// // Apply staccato
+			// if (staccato[currentTrack] > 0
+			// && eventManager.getTrackTimerDec() < staccatoEnd[currentTrack]) {
+			// double staccadoDuration = duration;
+			// if (staccato[currentTrack] == 9) {
+			// // one tick
+			// staccadoDuration = 1;
+			// } else if (staccato[currentTrack] >= 1
+			// && staccato[currentTrack] <= 8) {
+			// staccadoDuration = (1d / 8d) * duration
+			// * (double) staccato[currentTrack];
+			// }
+			//
+			// // Add a note, then a rest
+			// this.eventManager.addNoteEvent(note.getValue(), attackVelocity,
+			// decayVelocity, staccadoDuration, !note.isEndOfTie(),
+			// !note.isStartOfTie());
+			// this.eventManager.addRest(duration - staccadoDuration);
+			// } else {
+			// // No staccato
+			// this.eventManager.addNoteEvent(note.getValue(), attackVelocity,
+			// decayVelocity, duration, !note.isEndOfTie(),
+			// !note.isStartOfTie());
+			// }
+
+			// Get the notes etc. that need to be added after applying all
+			// active effects for this track to the note
+			LinkedList<TimedJFugueElement> elements = applyEffectsToNote(note,
+					effects[currentTrack]);
+
+			// Add those elements to the midi being rendered
+
+			// Calculate the start and end times for the original note
+			double noteStart = eventManager.getTrackTimerDec();
+			double noteEnd = eventManager.getTrackTimerDec() + duration;
+
+			// Add the events
+			for (TimedJFugueElement e : elements) {
+				eventManager.setTrackTimerDec(noteStart + e.time);
+
+				// By type
+				if (e.element instanceof Note) {
+					eventManager.addNoteEvent(((Note) e.element).getValue(),
+							attackVelocity, decayVelocity,
+							((Note) e.element).getDecimalDuration()
+									* (double) resolution,
+							!((Note) e.element).isEndOfTie(),
+							!((Note) e.element).isStartOfTie());
 				}
-	
-				// Add a note, then a rest
-				this.eventManager.addNoteEvent(note.getValue(), attackVelocity,
-						decayVelocity, staccadoDuration, !note.isEndOfTie(),
-						!note.isStartOfTie());
-				this.eventManager.addRest(duration - staccadoDuration);
-			} else {
-				// No staccato
-				this.eventManager.addNoteEvent(note.getValue(), attackVelocity,
-						decayVelocity, duration, !note.isEndOfTie(),
-						!note.isStartOfTie());
+			}
+
+			// Set the track timer to the end of the original note
+			eventManager.setTrackTimerDec(noteEnd);
+		}
+	}
+
+	/**
+	 * Applies renderer effects to a note, returning the result. Example: a note
+	 * is hit on track 0. Call this with the note and the effects currently on
+	 * track 0, and this will run it through all the track's effects and return
+	 * the resulting note(s) and other elements.
+	 * 
+	 * Note that for MUTEX or DUAL_MUTEX effects, this method assumes that there
+	 * is only one (or two for DUAL) effects in the list: it will not obey the
+	 * mutex command properly if the effects list has an incorrect number of the
+	 * mutex-ed effect.
+	 * 
+	 * @param note
+	 * @param effects
+	 * @return
+	 */
+	private LinkedList<TimedJFugueElement> applyEffectsToNote(Note note,
+			LinkedList<RendererEffect> effects) {
+
+		// Create a set of effects to store the resusts of the effects in
+		LinkedList<TimedJFugueElement> elements = new LinkedList<TimedJFugueElement>();
+
+		// Add the original note to begin
+		elements.add(new TimedJFugueElement(note, 0));
+
+		// Apply effects to the resulting elements
+		for (RendererEffect e : effects) {
+			// If effect is infinite or a finite and still in effect
+			if (e.getEndless()
+					|| (!e.getEndless() && eventManager.getTrackTimerDec() < e
+							.getEnd())) {
+				if (e.getApplyMethod() == ApplyEffect.DUAL_MUTEX_FINITE_INFINITE) {
+					if (!e.getEndless()) {
+						// Apply finite one for sure
+						e.apply(elements);
+					} else {
+						// only apply infinite ones if there is not finite one
+						if (!containsMatchingEffects(effects, e.getClass(),
+								true)) {
+							// No finite one; apply
+							e.apply(elements);
+						} // Otherwise don't
+					}
+				} else {
+					e.apply(elements);
+				}
 			}
 		}
+
+		return elements;
 	}
 
 	/*
@@ -442,8 +560,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 		} else if (event.getToken().toLowerCase()
 				.equals(BlockSign.STACCATO_OFF_TOKEN.toLowerCase())) {
 			// Turn off staccato for curr track
-			staccato[currentTrack] = 0;
-			staccatoEnd[currentTrack] = 0d;
+			removeAllEffects(currentTrack, StaccatoEffect.class);
 		} else if (event.getToken().toLowerCase()
 				.startsWith(BlockSign.STACCATO_TOKEN.toLowerCase())) {
 			// Turn on staccato for curr track
@@ -455,25 +572,47 @@ public final class MidiRenderer extends ParserListenerAdapter {
 			tokenArgs = tokenArgs.substring(1);
 
 			Integer eighths = Integer.parseInt(eighthsString);
-			if (eighths == 0) {
-				// zero is reserved for "staccato off" here; use 9 to signal
-				// one-tick note lengths instead
-				eighths = 9;
-			}
+			// if (eighths == 0) {
+			// // zero is reserved for "staccato off" here; use 9 to signal
+			// // one-tick note lengths instead
+			// eighths = 9;
+			// }
 
 			// Duration
 			Double duration = Double.parseDouble(tokenArgs);
 
 			// Set up staccato
 
-			// System.out.println(duration + ":" + eighths);
-			if (duration >= 0) {
-				staccatoEnd[currentTrack] = eventManager.getTrackTimerDec()
-						+ duration;
-			} else {
-				staccatoEnd[currentTrack] = Double.MAX_VALUE;
+			System.out.println("Staccato token read: " + duration + ":"
+					+ eighths);
+			// if (duration >= 0) {
+			// staccatoEnd[currentTrack] = eventManager.getTrackTimerDec()
+			// + duration;
+			// } else {
+			// staccatoEnd[currentTrack] = Double.MAX_VALUE;
+			// }
+			// staccato[currentTrack] = eighths;
+
+			// TODO
+			// Create the staccato event to add to the current track from the
+			// token's info
+			// endValue could be called endTime, except that it could also equal
+			// null for infinity
+			Double endValue = null;
+			if (duration != -1) {
+				// There is a finite end to the staccato
+				endValue = eventManager.getTrackTimerDec() + duration;
 			}
-			staccato[currentTrack] = eighths;
+			StaccatoEffect effect = new StaccatoEffect(endValue, eighths);
+
+			// Clear out any existing, conflicting staccato event
+			// If it is an infinite effect, clear out any existing infinite
+			// effect
+			// If it is a finite effect, clear out any existing finite effect
+			removeMatchingEffects(currentTrack, effect,
+					effect.getEndless());
+
+			addEffect(currentTrack, effect);
 		}
 
 		// Report to listsners
@@ -485,6 +624,106 @@ public final class MidiRenderer extends ParserListenerAdapter {
 			mcdittyEventReadListener.mcDittyEventRead(event, now, currentTrack,
 					currentLayer);
 		}
+	}
+
+	/**
+	 * Adds an effect to the given track.
+	 * 
+	 * @param track
+	 * @param effect
+	 */
+	private void addEffect(byte track, RendererEffect effect) {
+		if (track < 0 || track >= 16) {
+			return;
+		}
+
+		LinkedList<RendererEffect> trackEffects = effects[track];
+
+		// Handle other effects of the same type first, based on the type of
+		// effect
+		if (effect.getApplyMethod() == ApplyEffect.MUTEX) {
+			removeAllEffects(track, effect.getClass());
+		} else if (effect.getApplyMethod() == ApplyEffect.DUAL_MUTEX_FINITE_INFINITE) {
+			removeMatchingEffects(track, effect, effect.getEndless());
+		} else if (effect.getApplyMethod() == ApplyEffect.STACK) {
+			// No need to change other effects -- they stack, after all!
+		}
+
+		// Add the new effect
+		trackEffects.add(effect);
+	}
+
+	/**
+	 * Removes all instances of a given class from the effects list of a given
+	 * track, if they are either infinite or finite in length (as specified in
+	 * finiteLength)
+	 * 
+	 * @param currentTrack2
+	 * @param class1
+	 */
+	private void removeMatchingEffects(byte track,
+			RendererEffect objectOfTypeToRemove, boolean isEndless) {
+		if (track < 0 || track >= 16) {
+			return;
+		}
+
+		System.out.println ("RemoveMatchingEffects called on valid track.");
+		LinkedList<RendererEffect> trackEffects = effects[track];
+		for (int i = 0; i < trackEffects.size(); i++) {
+			//System.out.println ("Checking "+trackEffects.get(i).toString());
+			RendererEffect eff = trackEffects.get(i);
+			if (eff.getClass().isInstance(objectOfTypeToRemove)) {
+				if (eff.getEndless() == isEndless) {
+					System.out.println ("Removing effect. Is endless? "+eff.getEndless());
+					trackEffects.remove(i);
+					i--;
+				}
+			}
+		}
+	}
+
+	/**
+	 * TODO: Javadoc comments Removes all instances of a given class from the
+	 * effects list of a given track, if they are either infinite or finite in
+	 * length (as specified in finiteLength)
+	 * 
+	 * @param currentTrack2
+	 * @param class1
+	 */
+	private boolean containsMatchingEffects(LinkedList<RendererEffect> list,
+			Class<? extends RendererEffect> type, boolean finiteLength) {
+		for (int i = 0; i < list.size(); i++) {
+			if (type.getClass().isInstance(list.get(i))) {
+				RendererEffect eff = list.get(i);
+				if (eff.getEndless() == finiteLength) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Removes all instances of a given class from the effects list of a given
+	 * track
+	 * 
+	 * @param currentTrack2
+	 * @param class1
+	 */
+	private void removeAllEffects(byte track,
+			Class<? extends RendererEffect> type) {
+		if (track < 0 || track >= 16) {
+			return;
+		}
+
+		LinkedList<RendererEffect> trackEffects = effects[track];
+		for (int i = 0; i < trackEffects.size(); i++) {
+			if (type.getClass().isInstance(trackEffects.get(i))) {
+				trackEffects.remove(i);
+				i--;
+			}
+		}
+
 	}
 
 	/*
