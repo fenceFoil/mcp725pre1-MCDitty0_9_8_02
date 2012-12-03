@@ -85,6 +85,7 @@ import com.wikispaces.mcditty.signs.keywords.SFXInstOffKeyword;
 import com.wikispaces.mcditty.signs.keywords.SFXKeyword;
 import com.wikispaces.mcditty.signs.keywords.StaccatoKeyword;
 import com.wikispaces.mcditty.signs.keywords.SyncWithKeyword;
+import com.wikispaces.mcditty.signs.keywords.TransposeKeyword;
 import com.wikispaces.mcditty.signs.keywords.VolumeKeyword;
 import com.wikispaces.mcditty.test.SignLogPoint;
 import com.wikispaces.mcditty.test.TileEntitySkullRenderer2;
@@ -413,7 +414,7 @@ public class BlockSign extends BlockContainer {
 
 	// Loud signs send a chat message starting with this:
 	// Odd case reduces odds of a normal person chatting this
-	//public static final String MCDITTY_LOUD_CHAT_START = "McDiTtY:";
+	// public static final String MCDITTY_LOUD_CHAT_START = "McDiTtY:";
 
 	public static final int FACES_SOUTH = 0;
 	public static final int FACES_WEST = 1;
@@ -1455,7 +1456,8 @@ public class BlockSign extends BlockContainer {
 						}
 						// No more music on sign
 						break;
-					} else if (keyword.equals("sfxinst") || keyword.equals("sfxinst2")) {
+					} else if (keyword.equals("sfxinst")
+							|| keyword.equals("sfxinst2")) {
 						// TODO: Move sign parsing so that it happens just once
 						// per sign
 						// Creates a create emitter event in the ditty, with
@@ -1538,23 +1540,37 @@ public class BlockSign extends BlockContainer {
 						// long)
 						line += 1;
 					} else if (keyword.equals("staccato")) {
-						StringBuilder buf = new StringBuilder();
-
+						// Create and add a staccato note effect token
 						StaccatoKeyword staccatoKeyword = (StaccatoKeyword) SignParser
 								.parseKeyword(currLine);
 
-						buf.append(STACCATO_TOKEN)
-								.append(Integer.toString(staccatoKeyword
-										.getEighths()))
-								.append(Integer.toString(staccatoKeyword
-										.getDuration()));
+						String staccatoToken = createNoteEffectToken(false,
+								NOTE_EFFECT_STACCATO,
+								staccatoKeyword.getEighths(),
+								staccatoKeyword.getDuration());
 
-						String staccatoToken = buf.toString();
 						addMusicStringTokens(readMusicString, ditty,
 								staccatoToken, false);
 					} else if (keyword.equals("staccatooff")) {
-						addMusicStringTokens(readMusicString, ditty,
-								STACCATO_OFF_TOKEN, false);
+						addMusicStringTokens(
+								readMusicString,
+								ditty,
+								createNoteEffectToken(true,
+										NOTE_EFFECT_STACCATO), false);
+					} else if (keyword.equals("tran")) {
+						// Add a transpose note effect token
+						TransposeKeyword k = (TransposeKeyword) SignParser.parseKeyword(currLine);
+						String token = createNoteEffectToken(false,
+								NOTE_EFFECT_TRANSPOSE, k.getTones(),
+								k.getDuration());
+						addMusicStringTokens(readMusicString, ditty, token,
+								false);
+					} else if (keyword.equals("tranoff")) {
+						addMusicStringTokens(
+								readMusicString,
+								ditty,
+								createNoteEffectToken(true,
+										NOTE_EFFECT_TRANSPOSE), false);
 					} else {
 						// Unrecognized keyword; announce with error
 						ditty.addErrorMessage("§b"
@@ -1797,11 +1813,98 @@ public class BlockSign extends BlockContainer {
 
 	public static final String SYNC_VOICES_TOKEN = "~syncC";
 	public static final String SYNC_WITH_TOKEN = "~syncW";
-	public static final String STACCATO_TOKEN = "~Mstac";
-	public static final String STACCATO_OFF_TOKEN = "~MstacOff";
+	// public static final String STACCATO_TOKEN = "~Mstac";
+	// public static final String STACCATO_OFF_TOKEN = "~MstacOff";
+	public static final String NOTE_EFFECT_TOKEN = "~M";
+	public static final String NOTE_EFFECT_OFF_TOKEN = "~N";
+	public static final String NOTE_EFFECT_STACCATO = "stac";
+	public static final String NOTE_EFFECT_TRANSPOSE = "tran";
+	public static final String NOTE_EFFECT_OCTAVES = "octa";
 	public static final String TIMED_EVENT_TOKEN = "~E";
 	public static final String SIGN_START_TOKEN = "~A";
 	public static final String SIGN_END_TOKEN = "~B";
+
+	/**
+	 * Constructs a note effect token with arguments. Result will resemble<br>
+	 * <br>
+	 * ~Mstac~1~-1
+	 * 
+	 * @param offToken
+	 * @param type
+	 * @param args
+	 * @return
+	 */
+	public static String createNoteEffectToken(boolean offToken, String type,
+			Object... args) {
+		StringBuilder token = new StringBuilder();
+		if (offToken) {
+			token.append(NOTE_EFFECT_OFF_TOKEN);
+		} else {
+			token.append(NOTE_EFFECT_TOKEN);
+		}
+		token.append(type);
+		for (Object o : args) {
+			token.append("~").append(o.toString());
+		}
+		return token.toString();
+	}
+
+	public static boolean isNoteEffectToken(String token) {
+		if (token.toLowerCase().startsWith(NOTE_EFFECT_OFF_TOKEN.toLowerCase())) {
+			return true;
+		} else if (token.toLowerCase().startsWith(
+				NOTE_EFFECT_TOKEN.toLowerCase())) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Returns true if the given string begins with the Note Effect Off Token
+	 * beginning (~N as of this writing).
+	 * 
+	 * @param token
+	 * @return
+	 */
+	public static boolean getNoteEffectTokenOff(String token) {
+		if (token.toLowerCase().startsWith(NOTE_EFFECT_OFF_TOKEN.toLowerCase())) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static String getNoteEffectTokenType(String token) {
+		if (token.length() < 3) {
+			return "";
+		}
+
+		token = token.substring(2);
+
+		int endIndex = token.indexOf("~");
+		if (endIndex > 0) {
+			token = token.substring(0, endIndex);
+		}
+		return token;
+	}
+
+	/**
+	 * Returns the arguments in a note effect token.
+	 * 
+	 * @param token
+	 * @return null if none
+	 */
+	public static String[] getNoteEffectTokenArgs(String token) {
+		String[] tokenParts = token.split("~");
+		if (tokenParts.length < 2) {
+			return null;
+		} else {
+			String[] arguments = new String[tokenParts.length - 2];
+			System.arraycopy(tokenParts, 2, arguments, 0, arguments.length);
+			return arguments;
+		}
+	}
 
 	// public static final String NOTE_HIT_TOKEN = "~N";
 	// public static final String SFX_TOKEN = "~F";
@@ -1822,7 +1925,7 @@ public class BlockSign extends BlockContainer {
 			// TODO: Really require a KCmaj on EVERY voice?
 			tokens += " V" + v + " L0 I[Piano] KCmaj +0 "
 					+ getMinecraftAdjustedVolumeToken(100) + " "
-					+ STACCATO_OFF_TOKEN;
+					+ createNoteEffectToken(true, NOTE_EFFECT_STACCATO);
 		}
 		tokens += " T120";
 		return tokens;
@@ -1981,7 +2084,8 @@ public class BlockSign extends BlockContainer {
 	/**
 	 * TODO: Almost redundant with the more powerful getCoordsRelative to sign?
 	 * 
-	 * @param startPoint (not modified by this method)
+	 * @param startPoint
+	 *            (not modified by this method)
 	 * @param signFacing
 	 * @param world
 	 * @param signWhitelist
@@ -1989,8 +2093,8 @@ public class BlockSign extends BlockContainer {
 	 */
 	private static Point3D findSignToRight(Point3D startSign, int signFacing,
 			World world, LinkedList<Point3D> whitelist) {
-		Point3D rightPoint = getCoordsRelativeToSign(startSign.clone(), signFacing, 1,
-				0, 0);
+		Point3D rightPoint = getCoordsRelativeToSign(startSign.clone(),
+				signFacing, 1, 0, 0);
 		if (isSign(rightPoint, world)
 				&& (whitelist == null || whitelist.contains(rightPoint))) {
 			// There is a sign to the right! Return its location.
@@ -2002,7 +2106,8 @@ public class BlockSign extends BlockContainer {
 	}
 
 	/**
-	 * Tries to find the start of the next "line" of signs, given a starting sign.
+	 * Tries to find the start of the next "line" of signs, given a starting
+	 * sign.
 	 * 
 	 * @param world
 	 * @param startPoint
@@ -3002,7 +3107,8 @@ public class BlockSign extends BlockContainer {
 				+ "bin/MCDittyJarSwapper.jar");
 		try {
 			ReadableByteChannel jarSwapperChannel = Channels
-					.newChannel(MCDittyResourceManager.getResource("autoUpdate/swapperJar/AutoUpdateJarSwapper.jar"));
+					.newChannel(MCDittyResourceManager
+							.getResource("autoUpdate/swapperJar/AutoUpdateJarSwapper.jar"));
 			FileOutputStream jarSwapperFileOutputStream = new FileOutputStream(
 					jarSwapperFile);
 			// TODO: Show extract progress
@@ -3023,10 +3129,11 @@ public class BlockSign extends BlockContainer {
 			e.printStackTrace();
 			return "§cCould not start jar swapper. §bYou can still copy the jar file yourself: rename minecraft.updatedMCDitty.jar to minecraft.jar in the .minecraft/bin folder.";
 		}
+		
 
+		showTextAsLyricNow("§bBackup of old minecraft.jar saved.");
 		return "§bUpdate successful! Next time you start Minecraft, MCDitty will be updated to version "
-				+ downloadCurrentVersion(MCDittyConfig.MC_CURRENT_VERSION)
-				+ ". (Backup saved: §aminecraft.mcdittyUpdateBackup.jar)";
+				+ downloadCurrentVersion(MCDittyConfig.MC_CURRENT_VERSION);
 	}
 
 	/**
