@@ -40,7 +40,7 @@ public class StaccatoEffect extends RendererEffect {
 		setEighths(eighths);
 
 		applyMethod = ApplyEffect.DUAL_MUTEX_FINITE_INFINITE;
-		System.out.println(toString());
+		//System.out.println(toString());
 	}
 
 	public int getEighths() {
