@@ -55,6 +55,7 @@ import com.wikispaces.mcditty.jfugue.rendererEffect.ApplyEffect;
 import com.wikispaces.mcditty.jfugue.rendererEffect.RendererEffect;
 import com.wikispaces.mcditty.jfugue.rendererEffect.StaccatoEffect;
 import com.wikispaces.mcditty.jfugue.rendererEffect.TimedJFugueElement;
+import com.wikispaces.mcditty.jfugue.rendererEffect.TransposeEffect;
 
 /**
  * This class takes a Pattern, and turns it into wonderful music.
@@ -512,13 +513,14 @@ public final class MidiRenderer extends ParserListenerAdapter {
 		}
 
 		// Actually do something
-		if (event.getToken().equalsIgnoreCase(BlockSign.SYNC_VOICES_TOKEN)) {
+		String token = event.getToken();
+		if (token.equalsIgnoreCase(BlockSign.SYNC_VOICES_TOKEN)) {
 			eventManager.alignChannelTimes();
-		} else if (event.getToken().toLowerCase()
-				.startsWith(BlockSign.SYNC_WITH_TOKEN.toLowerCase())) {
+		} else if (token.toLowerCase().startsWith(
+				BlockSign.SYNC_WITH_TOKEN.toLowerCase())) {
 			// Parse token
-			String arguments = event.getToken().substring(
-					BlockSign.SYNC_WITH_TOKEN.length());
+			String arguments = token.substring(BlockSign.SYNC_WITH_TOKEN
+					.length());
 
 			// Get voice
 			String voiceNum = arguments.substring(1, 3);
@@ -530,7 +532,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 			} else {
 				// !?!?!
 				System.err.println("Bad SyncWith token (invalid voice): "
-						+ event.getToken());
+						+ token);
 			}
 
 			// Get Layer
@@ -548,71 +550,80 @@ public final class MidiRenderer extends ParserListenerAdapter {
 					layer = -1000;
 				} else {
 					System.err.println("Bad SyncWith token (invalid layer): "
-							+ event.getToken());
+							+ token);
 				}
 			}
 			eventManager.syncCurrVoiceAndLayerWith(voice, layer);
-		} else if (event.getToken().toLowerCase()
-				.startsWith(BlockSign.SIGN_START_TOKEN.toLowerCase())) {
+		} else if (token.toLowerCase().startsWith(
+				BlockSign.SIGN_START_TOKEN.toLowerCase())) {
 			// TODO: Add again
 			// Note current sign id
-			currentSignID = Integer.parseInt(event.getToken().substring(2));
-		} else if (event.getToken().toLowerCase()
-				.equals(BlockSign.STACCATO_OFF_TOKEN.toLowerCase())) {
-			// Turn off staccato for curr track
-			removeAllEffects(currentTrack, StaccatoEffect.class);
-		} else if (event.getToken().toLowerCase()
-				.startsWith(BlockSign.STACCATO_TOKEN.toLowerCase())) {
-			// Turn on staccato for curr track
-			String tokenArgs = event.getToken().toLowerCase()
-					.replace(BlockSign.STACCATO_TOKEN.toLowerCase(), "");
+			currentSignID = Integer.parseInt(token.substring(2));
+		} else if (BlockSign.isNoteEffectToken(token)) {
+			// Get useful info from token
+			boolean isOffToken = BlockSign.getNoteEffectTokenOff(token);
+			String type = BlockSign.getNoteEffectTokenType(token).toLowerCase();
+			String[] args = BlockSign.getNoteEffectTokenArgs(token);
 
-			// Eighths
-			String eighthsString = tokenArgs.substring(0, 1);
-			tokenArgs = tokenArgs.substring(1);
+			// Execute according to type
 
-			Integer eighths = Integer.parseInt(eighthsString);
-			// if (eighths == 0) {
-			// // zero is reserved for "staccato off" here; use 9 to signal
-			// // one-tick note lengths instead
-			// eighths = 9;
-			// }
+			// Effect to add
+			RendererEffect effect = null;
 
-			// Duration
-			Double duration = Double.parseDouble(tokenArgs);
+			if (type.equals(BlockSign.NOTE_EFFECT_STACCATO)) {
+				if (isOffToken) {
+					// Turn off all staccato effects for curr track
+					removeAllEffects(currentTrack, new StaccatoEffect(0d, 0));
+				} else {
+					// Turn on staccato for current track
+					int eighths = Integer.parseInt(args[0]);
+					double duration = Double.parseDouble(args[1]);
 
-			// Set up staccato
+					// Create the staccato event to add to the current track
+					// from the
+					// token's info
+					Double endTime = null;
+					if (duration != -1) {
+						// There is a finite end to the staccato
+						endTime = eventManager.getTrackTimerDec() + duration;
+					}
 
-			System.out.println("Staccato token read: " + duration + ":"
-					+ eighths);
-			// if (duration >= 0) {
-			// staccatoEnd[currentTrack] = eventManager.getTrackTimerDec()
-			// + duration;
-			// } else {
-			// staccatoEnd[currentTrack] = Double.MAX_VALUE;
-			// }
-			// staccato[currentTrack] = eighths;
+					effect = new StaccatoEffect(endTime, eighths);
+				}
+			} else if (type.equals(BlockSign.NOTE_EFFECT_TRANSPOSE)) {
+				if (isOffToken) {
+					// Turn off all transposition on current track
+					removeAllEffects(currentTrack, new TransposeEffect(0d, 0));
+				} else {
+					// Turn on transpose for current track
+					int tones = Integer.parseInt(args[0]);
+					double duration = Double.parseDouble(args[1]);
 
-			// TODO
-			// Create the staccato event to add to the current track from the
-			// token's info
-			// endValue could be called endTime, except that it could also equal
-			// null for infinity
-			Double endValue = null;
-			if (duration != -1) {
-				// There is a finite end to the staccato
-				endValue = eventManager.getTrackTimerDec() + duration;
+					// Create the event to add to the current track from the
+					// token's info
+					Double endTime = null;
+					if (duration != -1) {
+						// There is a finite end to the staccato
+						endTime = eventManager.getTrackTimerDec() + duration;
+					}
+
+					effect = new TransposeEffect(endTime, tones);
+				}
 			}
-			StaccatoEffect effect = new StaccatoEffect(endValue, eighths);
 
-			// Clear out any existing, conflicting staccato event
-			// If it is an infinite effect, clear out any existing infinite
-			// effect
-			// If it is a finite effect, clear out any existing finite effect
-			removeMatchingEffects(currentTrack, effect,
-					effect.getEndless());
+			// Add effect according to type
+			if (effect != null) {
+				if (effect.getApplyMethod() == ApplyEffect.MUTEX) {
+					removeAllEffects(currentTrack, effect);
+				} else if (effect.getApplyMethod() == ApplyEffect.DUAL_MUTEX_FINITE_INFINITE) {
+					removeMatchingEffects(currentTrack, effect,
+							effect.getEndless());
+				} else if (effect.getApplyMethod() == ApplyEffect.STACK) {
+					// Well... don't need to remove anything. That's easy!
+				}
 
-			addEffect(currentTrack, effect);
+				addEffect(currentTrack, effect);
+			}
 		}
 
 		// Report to listsners
@@ -642,7 +653,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 		// Handle other effects of the same type first, based on the type of
 		// effect
 		if (effect.getApplyMethod() == ApplyEffect.MUTEX) {
-			removeAllEffects(track, effect.getClass());
+			removeAllEffects(track, effect);
 		} else if (effect.getApplyMethod() == ApplyEffect.DUAL_MUTEX_FINITE_INFINITE) {
 			removeMatchingEffects(track, effect, effect.getEndless());
 		} else if (effect.getApplyMethod() == ApplyEffect.STACK) {
@@ -667,14 +678,15 @@ public final class MidiRenderer extends ParserListenerAdapter {
 			return;
 		}
 
-		System.out.println ("RemoveMatchingEffects called on valid track.");
+		// System.out.println ("RemoveMatchingEffects called on valid track.");
 		LinkedList<RendererEffect> trackEffects = effects[track];
 		for (int i = 0; i < trackEffects.size(); i++) {
-			//System.out.println ("Checking "+trackEffects.get(i).toString());
+			// System.out.println ("Checking "+trackEffects.get(i).toString());
 			RendererEffect eff = trackEffects.get(i);
 			if (eff.getClass().isInstance(objectOfTypeToRemove)) {
 				if (eff.getEndless() == isEndless) {
-					System.out.println ("Removing effect. Is endless? "+eff.getEndless());
+					// System.out.println
+					// ("Removing effect. Is endless? "+eff.getEndless());
 					trackEffects.remove(i);
 					i--;
 				}
@@ -711,14 +723,15 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	 * @param class1
 	 */
 	private void removeAllEffects(byte track,
-			Class<? extends RendererEffect> type) {
+			RendererEffect objectOfTypeToRemove) {
 		if (track < 0 || track >= 16) {
 			return;
 		}
 
 		LinkedList<RendererEffect> trackEffects = effects[track];
 		for (int i = 0; i < trackEffects.size(); i++) {
-			if (type.getClass().isInstance(trackEffects.get(i))) {
+			RendererEffect eff = trackEffects.get(i);
+			if (eff.getClass().isInstance(objectOfTypeToRemove)) {
 				trackEffects.remove(i);
 				i--;
 			}

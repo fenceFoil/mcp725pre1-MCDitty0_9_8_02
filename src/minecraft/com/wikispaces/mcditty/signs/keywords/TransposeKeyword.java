@@ -35,20 +35,20 @@ import org.jfugue.factories.NoteFactory.NoteContext;
  * [eighths]: 0-8 Int
  * [duration]: JFugue duration
  */
-public class StaccatoKeyword extends ParsedKeyword {
+public class TransposeKeyword extends ParsedKeyword {
 
-	private int eighths = 2;
+	private int deltaTones = 2;
 
 	private int duration = -1;
 	
 	private String durationString = "";
 
-	public StaccatoKeyword(String wholeKeyword) {
+	public TransposeKeyword(String wholeKeyword) {
 		super(wholeKeyword);
 	}
 
-	public static StaccatoKeyword parse(String rawLine) {
-		StaccatoKeyword keyword = new StaccatoKeyword(rawLine);
+	public static TransposeKeyword parse(String rawLine) {
+		TransposeKeyword keyword = new TransposeKeyword(rawLine);
 
 		String[] args = rawLine.split(" ");
 		int numArgs = rawLine.split(" ").length;
@@ -60,29 +60,28 @@ public class StaccatoKeyword extends ParsedKeyword {
 			argsLeft = numArgs - 1;
 		}
 
-		boolean eighthsRead = false;
+		boolean tonesRead = false;
 		boolean durationRead = false;
 		int currArg = 1;
-		while (argsLeft > 0 && !(eighthsRead && durationRead)) {
+		while (argsLeft > 0 && !(tonesRead && durationRead)) {
 
 			String argument = args[currArg];
 
-			if (argument.trim().matches("\\d+") && !eighthsRead) {
-				Integer eighthsArg = Integer.parseInt(argument);
-				if (eighthsArg > 8 || eighthsArg < 0) {
+			if (argument.trim().matches("[-\\+]?\\d+") && !tonesRead) {
+				Integer tonesArg = Integer.parseInt(argument);
+				if (tonesArg > 127 || tonesArg < -127) {
 					// Out of range
 					keyword.setGoodKeyword(false);
 					keyword.setErrorMessageType(ERROR);
-					keyword.setErrorMessage("Follow Staccato with a number from 0 to 8.");
+					keyword.setErrorMessage("Follow Trans with semitones to transpose (-127 to +127).");
 					return keyword;
 				}
-				keyword.setEighths(eighthsArg);
+				keyword.setTones(tonesArg);
 				
-				eighthsRead = true;
+				tonesRead = true;
 			} else {
 				double decimalDuration = parseLetterDuration(argument.toUpperCase(), argument.length(), 0);
 				keyword.setDuration((int) (decimalDuration * JFugueDefinitions.SEQUENCE_RESOLUTION));
-				
 				keyword.setDurationString (argument);
 				
 				//System.out.println (decimalDuration + ":"+argument);
@@ -93,16 +92,24 @@ public class StaccatoKeyword extends ParsedKeyword {
 			argsLeft--;
 			currArg++;
 		}
+		
+		// Ensure that tones are specified
+		if (!tonesRead) {
+			keyword.setGoodKeyword(false);
+			keyword.setErrorMessageType(ERROR);
+			keyword.setErrorMessage("Follow Trans with semitones to transpose (-127 to +127).");
+			return keyword;
+		}
 
 		return keyword;
 	}
 
-	public int getEighths() {
-		return eighths;
+	public int getTones() {
+		return deltaTones;
 	}
 
-	public void setEighths(int eighths) {
-		this.eighths = eighths;
+	public void setTones(int semitones) {
+		this.deltaTones = semitones;
 	}
 
 	public int getDuration() {
@@ -122,68 +129,8 @@ public class StaccatoKeyword extends ParsedKeyword {
 	}
 
 	// Copied from JFugue's MusicStringParser (I know, bad form); modified
-	public static double parseLetterDuration(String s, int slen, int index) {
-		// Check duration
-		boolean durationExists = true;
-		boolean isDotted = false;
-		double duration = 0;
-
-		while (durationExists == true) {
-			int durationNumber = 0;
-			// See if the note has a duration
-			// Duration is optional; default is Q (4)
-			if (index < slen) {
-				char durationChar = s.charAt(index);
-				switch (durationChar) {
-				case 'W':
-					durationNumber = 1;
-					break;
-				case 'H':
-					durationNumber = 2;
-					break;
-				case 'Q':
-					durationNumber = 4;
-					break;
-				case 'I':
-					durationNumber = 8;
-					break;
-				case 'S':
-					durationNumber = 16;
-					break;
-				case 'T':
-					durationNumber = 32;
-					break;
-				case 'X':
-					durationNumber = 64;
-					break;
-				case 'O':
-					durationNumber = 128;
-					break;
-				default:
-					index--;
-					durationExists = false;
-					break;
-				}
-				index++;
-				if ((index < slen) && (s.charAt(index) == '.')) {
-					isDotted = true;
-					index++;
-				}
-
-				if (durationNumber > 0) {
-					double d = 1.0 / durationNumber;
-					if (isDotted) {
-						duration += d + (d / 2.0);
-					} else {
-						duration += d;
-					}
-				}
-			} else {
-				durationExists = false;
-			}
-		}
-
-		return duration;
+	private static double parseLetterDuration(String s, int slen, int index) {
+		return StaccatoKeyword.parseLetterDuration(s, slen, index);
 	}
 
 }

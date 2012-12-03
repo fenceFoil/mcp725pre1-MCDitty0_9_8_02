@@ -3,7 +3,7 @@ Pattern, GoTo, #, End, EndLine, Left, Right, Up, Down, In, Out
 §aProximity:
 Area, Proximity
 §aMusic:
-Repeat, Volume, Staccato, StaccatoOff
+Repeat, Volume, Staccato, StaccatoOff, Tran, TranOff
 §aSync:
 Reset, SyncVoices, SyncWith
 §aDitty:
@@ -18,4 +18,4 @@ Disco, NewBot
 ProxPad, Midi
 
 §bNew:
-NewBot, SFXInst2
+SFXInst2, Tran

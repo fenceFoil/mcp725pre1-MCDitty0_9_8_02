@@ -40,6 +40,7 @@ import com.wikispaces.mcditty.signs.keywords.SFXKeyword;
 import com.wikispaces.mcditty.signs.keywords.SaveMidiKeyword;
 import com.wikispaces.mcditty.signs.keywords.StaccatoKeyword;
 import com.wikispaces.mcditty.signs.keywords.SyncWithKeyword;
+import com.wikispaces.mcditty.signs.keywords.TransposeKeyword;
 
 /**
  * Given the lines of text upon a sign, SignParser will resolve the sign into
@@ -55,19 +56,19 @@ public class SignParser {
 	 * Keywords that should not be shown in help and the like, but still
 	 * technically work or are read without errors.
 	 */
-	public static String[] deprecatedKeywords = { "loud", "tutorial",
+	public static final String[] deprecatedKeywords = { "loud", "tutorial",
 			"proxpad", "disco", "newbot" };
 
 	/**
 	 * Array of all keywords recognized by MCDitty
 	 */
-	public static String[] keywords = { "pattern", "left", "right", "up",
+	public static final String[] keywords = { "pattern", "left", "right", "up",
 			"down", "disco", "in", "out", "end", "endline", "mute", "reset",
 			"proximity", "midi", "loud", "repeat", "oneline", "lyric",
 			"oneatatime", "isditty", "syncvoices", "syncwith", "sfx",
 			"proxpad", "volume", "area", "goto", "savemidi", "playmidi",
-			"emitter", "sfxinst2", "sfxinst", "sfxinstoff", "newbot", "staccato",
-			"staccatooff" };
+			"emitter", "sfxinst2", "sfxinst", "sfxinstoff", "newbot",
+			"staccato", "staccatooff", "tran", "tranoff" };
 
 	/**
 	 * 
@@ -222,8 +223,10 @@ public class SignParser {
 			return NewBotKeyword.parse(rawLine);
 		} else if (keyword.equals("staccato")) {
 			return StaccatoKeyword.parse(rawLine);
+		} else if (keyword.equals("tran")) {
+			return TransposeKeyword.parse(rawLine);
 		} else {
-			// Unknown keyword
+			// Unknown or simple (no arguments) keyword
 			ParsedKeyword k = new ParsedKeyword(rawLine);
 			k.setKeyword(keyword);
 			return k;

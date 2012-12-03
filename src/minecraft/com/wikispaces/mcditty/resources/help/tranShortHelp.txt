@@ -1,0 +1,8 @@
+Tran [tones] [length]
+
+Transposes following notes up or down [tones] semitones (12 per octave).
+
+[tones]: From -127 to +127 tones up or down.
+[length]: Optional: how long to transpose for. 'wq' will transpose notes for a whole and quarter note.
+
+See: TranOff
