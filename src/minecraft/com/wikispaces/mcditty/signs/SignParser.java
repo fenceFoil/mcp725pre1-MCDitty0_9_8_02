@@ -23,15 +23,19 @@
  */
 package com.wikispaces.mcditty.signs;
 
+import com.wikispaces.mcditty.signs.keywords.AccelerateKeyword;
 import com.wikispaces.mcditty.signs.keywords.DiscoKeyword;
 import com.wikispaces.mcditty.signs.keywords.EmitterKeyword;
 import com.wikispaces.mcditty.signs.keywords.ExplicitGotoKeyword;
 import com.wikispaces.mcditty.signs.keywords.GotoKeyword;
 import com.wikispaces.mcditty.signs.keywords.LyricKeyword;
 import com.wikispaces.mcditty.signs.keywords.NewBotKeyword;
+import com.wikispaces.mcditty.signs.keywords.OctavesKeyword;
+import com.wikispaces.mcditty.signs.keywords.OctavesOffKeyword;
 import com.wikispaces.mcditty.signs.keywords.ParsedKeyword;
 import com.wikispaces.mcditty.signs.keywords.PatternKeyword;
 import com.wikispaces.mcditty.signs.keywords.PlayMidiKeyword;
+import com.wikispaces.mcditty.signs.keywords.PreLyricKeyword;
 import com.wikispaces.mcditty.signs.keywords.ProxPadKeyword;
 import com.wikispaces.mcditty.signs.keywords.RepeatKeyword;
 import com.wikispaces.mcditty.signs.keywords.SFXInstKeyword;
@@ -68,7 +72,8 @@ public class SignParser {
 			"oneatatime", "isditty", "syncvoices", "syncwith", "sfx",
 			"proxpad", "volume", "area", "goto", "savemidi", "playmidi",
 			"emitter", "sfxinst2", "sfxinst", "sfxinstoff", "newbot",
-			"staccato", "staccatooff", "tran", "tranoff" };
+			"staccato", "staccatooff", "tran", "tranoff", "octaves",
+			"octavesoff", "prelyric", "accel" };
 
 	/**
 	 * 
@@ -225,6 +230,14 @@ public class SignParser {
 			return StaccatoKeyword.parse(rawLine);
 		} else if (keyword.equals("tran")) {
 			return TransposeKeyword.parse(rawLine);
+		} else if (keyword.equals("octaves")) {
+			return OctavesKeyword.parse(rawLine);
+		} else if (keyword.equals("octavesoff")) {
+			return OctavesOffKeyword.parse(rawLine);
+		} else if (keyword.equals("prelyric")) {
+			return PreLyricKeyword.parse(rawLine);
+		} else if (keyword.equals("accel")) {
+			return AccelerateKeyword.parse(rawLine);
 		} else {
 			// Unknown or simple (no arguments) keyword
 			ParsedKeyword k = new ParsedKeyword(rawLine);

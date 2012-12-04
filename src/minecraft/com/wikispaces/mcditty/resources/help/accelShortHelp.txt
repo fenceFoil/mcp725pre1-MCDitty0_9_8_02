@@ -1,0 +1,6 @@
+Accel [BPM] [time]
+
+Gradually accelerates or decellerates the tempo [BPM] over [time].
+
+[BPM]: Number from -200 to 200.
+[time]: A note length (like 'whq').

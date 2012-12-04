@@ -3,13 +3,13 @@ Pattern, GoTo, #, End, EndLine, Left, Right, Up, Down, In, Out
 §aProximity:
 Area, Proximity
 §aMusic:
-Repeat, Volume, Staccato, StaccatoOff, Tran, TranOff
+Repeat, Volume, Staccato, StaccatoOff, Tran, TranOff, Octaves, OctavesOff, Accel
 §aSync:
 Reset, SyncVoices, SyncWith
 §aDitty:
 OneAtATime, Mute, IsDitty, SaveMIDI
 §aEffects:
-Lyric, Emitter, SFX, SFXInst, SFXInst2, SFXInstOff, PlayMIDI
+Lyric, PreLyric, Emitter, SFX, SFXInst, SFXInst2, SFXInstOff, PlayMIDI
 §aMisc:
 OneLine
 §aExperimental:
@@ -18,4 +18,4 @@ Disco, NewBot
 ProxPad, Midi
 
 §bNew:
-SFXInst2, Tran
+SFXInst2, Tran, Octaves, PreLyric, Accel

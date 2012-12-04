@@ -14,7 +14,7 @@ FUTURE Late October, 2012: Version 0.9.7 +
 - Sign note particles color coded by pitch, voice
 Show emitter stats in sign editor keyword help
 
-- Keywords: accelerate, crescendo, decrescendo, decellerate, transpose, octaves, autochord, triplet, appregiator?
+- Keywords: accelerate, crescendo, decrescendo, decellerate, autochord, triplet, appregiator?
 
 - Added an assortment of particles to Emitter
 
@@ -30,6 +30,9 @@ Show emitter stats in sign editor keyword help
 December 2, 2012: Version 0.9.7.06
 
 - Staccato keyword changed (PUT DUAL MUTEX EXAMPLE IN MCDITTY LAND)
+
+Added Trans (+/- integer) [duration], Octaves (octaves: space separated +/- integers) [duration], TransOff, OctavesOff
+Added PreLyric (Lyric prefix text)
 
 November 20, 2012: Version 0.9.7.05
 

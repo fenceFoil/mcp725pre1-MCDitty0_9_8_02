@@ -1,0 +1,24 @@
+OctavesOff [numbers]
+
+Turns off all or individual octaves from the Octaves keyword.
+
+[numbers]: Optional. If not given, all octaves are turned off.
+
+Examples:
+
+-------------
+Octaves 1 2
+A B C6
+OctavesOff 2
+A B C6
+-------------
+
+Plays three notes like this:
+
+A5+A6+A7 B5+B6+B7 C6+C7+C8
+
+Then plays them again without the topmost note:
+
+A5+A6 B5+B6 C6+C7
+
+See: Octaves

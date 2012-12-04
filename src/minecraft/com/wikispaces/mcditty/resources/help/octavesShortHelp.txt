@@ -1,0 +1,29 @@
+Octaves [numbers]
+
+Plays the following notes at octaves: same note in multiple octaves simuntaneously.
+
+[numbers]: Optional. Default is 1. From -10 to +10. 
+
+Examples:
+
+----------
+Octaves
+A B C6
+----------
+
+Equals
+
+A5+A6 B5+B6 C6+C7
+
+--------------
+Octaves -1 1 3
+A B C6
+--------------
+
+Equals
+
+A4+A5+A6+A8
+B4+B5+B6+B8
+C5+C6+C7+C9
+
+See: OctavesOff

@@ -89,4 +89,8 @@ public class RendererEffect {
 	public void apply(LinkedList<TimedJFugueElement> elements) {
 		// By default, do nothing.
 	}
+	
+	public void combineWith (RendererEffect effect) {
+		// By default, do nothing
+	}
 }

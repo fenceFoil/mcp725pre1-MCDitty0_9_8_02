@@ -66,6 +66,9 @@ public class CueScheduler {
 	// Each array SOULD be sorted so that entry 0 contains repetition 1, etc.
 	private HashMap<String, ArrayList<CueEvent>> labelMap = new HashMap<String, ArrayList<CueEvent>>();
 
+	// Lyric prefix texts, sorted by label (label, prefixText)
+	private HashMap<String, String> lyricPrefixes = new HashMap<String, String>();
+
 	/**
 	 * Adds a new lyric text to the lists, under the given label. If this is
 	 * called on a lyric that is already stored, the given text is appended to
@@ -127,6 +130,18 @@ public class CueScheduler {
 		}
 	}
 
+	public void addLyricPreText(String label, String prefixText) {
+		label = label.toLowerCase();
+
+		String existingPrefixText = lyricPrefixes.get(label);
+		if (existingPrefixText == null) {
+			existingPrefixText = "";
+		}
+
+		existingPrefixText += prefixText;
+		lyricPrefixes.put(label, existingPrefixText);
+	}
+
 	/**
 	 * Performs range checking.
 	 * 
@@ -145,8 +160,8 @@ public class CueScheduler {
 			return null;
 		}
 
-		ArrayList<CueEvent> labelLyrics = labelMap.get(lyricLabel
-				.toLowerCase());
+		ArrayList<CueEvent> labelLyrics = labelMap
+				.get(lyricLabel.toLowerCase());
 		if (labelLyrics.size() < repetition) {
 			return null;
 		} else {
@@ -160,40 +175,10 @@ public class CueScheduler {
 	 * 1. Any "holes" (e.g. where a 1, (no 2), (no 3), and a 4 are listed) are
 	 * filled by duplicating the preceding lyric or (if there are no previous
 	 * lyrics) by an empty lyric.
+	 * 
+	 * 2. All prefixes are added to lyric texts
 	 */
 	public void finalizeLyrics() {
-		// // First, organize lyrics by label and sort within each label
-		// HashMap<String, MCDittyLyric[]> labels = new HashMap<String,
-		// MCDittyLyric[]>();
-		//
-		// // Fill the index
-		// for (MCDittyLyric l : lyrics) {
-		// if (labels.get(l.getLabel()) == null) {
-		// // Label is not yet in our index
-		// MCDittyLyric[] labelLyrics = new MCDittyLyric[l.getRepetition()];
-		// labelLyrics[l.getRepetition() - 1] = l;
-		// labels.put(l.getLabel(), labelLyrics);
-		// } else {
-		// // Is this new lyric a higher repetition in its label than found
-		// // before?
-		// MCDittyLyric[] labelLyrics = labels.get(l.getLabel());
-		// if (labelLyrics.length < l.getRepetition()) {
-		// // Allocate and fill a larger array
-		// MCDittyLyric[] newLabelLyrics = new MCDittyLyric[l
-		// .getRepetition()];
-		// System.arraycopy(labelLyrics, 0, newLabelLyrics, 0,
-		// labelLyrics.length);
-		// labels.put(l.getLabel(), newLabelLyrics);
-		// }
-		//
-		// // Re-retrieve the current (possibly larger than before) lyrics
-		// // array
-		// labelLyrics = labels.get(l.getLabel());
-		// // Put the new lyric into the array
-		// labelLyrics[l.getRepetition() - 1] = l;
-		// }
-		// }
-
 		// Apply rule 1: Fill holes
 		Set<String> allDefinedLabels = labelMap.keySet();
 		for (String label : allDefinedLabels) {
@@ -229,6 +214,24 @@ public class CueScheduler {
 			}
 		}
 
+		// 2: Apply lyric prefixes
+		for (String label : allDefinedLabels) {
+			// Get prefix text for this label
+			String prefixText = lyricPrefixes.get(label.toLowerCase());
+			if (prefixText == null || prefixText.length() <= 0) {
+				// no prefix. move on.
+				continue;
+			}
+
+			ArrayList<CueEvent> labelLyrics = labelMap.get(label);
+			for (int i = 0; i < labelLyrics.size(); i++) {
+				// Add prefix to each lyric's text
+				String lyricText = labelLyrics.get(i).getLyricText();
+				lyricText = prefixText + lyricText;
+				labelLyrics.get(i).setLyricText(lyricText);
+			}
+		}
+
 		printAllLyrics("After finalization");
 	}
 
@@ -256,8 +259,7 @@ public class CueScheduler {
 		}
 
 		// Get all repetitions for the given label
-		ArrayList<CueEvent> repsArray = labelMap.get(lyricLabel
-				.toLowerCase());
+		ArrayList<CueEvent> repsArray = labelMap.get(lyricLabel.toLowerCase());
 
 		if (repsArray == null) {
 			// If no lyrics are found matching the label, well, don't do

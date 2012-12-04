@@ -40,8 +40,8 @@ import org.jfugue.Player;
 import org.jfugue.parsers.MusicStringParser;
 
 import com.wikispaces.mcditty.CompareVersion;
-import com.wikispaces.mcditty.GetMinecraft;
 import com.wikispaces.mcditty.CueScheduler;
+import com.wikispaces.mcditty.GetMinecraft;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.MCDittyRightClickCheckThread;
 import com.wikispaces.mcditty.MuteDittyThread;
@@ -62,7 +62,6 @@ import com.wikispaces.mcditty.ditty.event.SFXInstrumentOffEvent;
 import com.wikispaces.mcditty.ditty.event.SFXMCDittyEvent;
 import com.wikispaces.mcditty.ditty.event.VolumeEvent;
 import com.wikispaces.mcditty.gui.GuiMCDittyChangelog;
-import com.wikispaces.mcditty.particle.NoteParticleRequest;
 import com.wikispaces.mcditty.particle.ParticleRequest;
 import com.wikispaces.mcditty.resources.MCDittyResourceManager;
 import com.wikispaces.mcditty.signs.Comment;
@@ -71,14 +70,18 @@ import com.wikispaces.mcditty.signs.SignDitty;
 import com.wikispaces.mcditty.signs.SignLine;
 import com.wikispaces.mcditty.signs.SignLineHighlight;
 import com.wikispaces.mcditty.signs.SignParser;
+import com.wikispaces.mcditty.signs.keywords.AccelerateKeyword;
 import com.wikispaces.mcditty.signs.keywords.DiscoKeyword;
 import com.wikispaces.mcditty.signs.keywords.EmitterKeyword;
 import com.wikispaces.mcditty.signs.keywords.ExplicitGotoKeyword;
 import com.wikispaces.mcditty.signs.keywords.GotoKeyword;
 import com.wikispaces.mcditty.signs.keywords.LyricKeyword;
 import com.wikispaces.mcditty.signs.keywords.NewBotKeyword;
+import com.wikispaces.mcditty.signs.keywords.OctavesKeyword;
+import com.wikispaces.mcditty.signs.keywords.OctavesOffKeyword;
 import com.wikispaces.mcditty.signs.keywords.ParsedKeyword;
 import com.wikispaces.mcditty.signs.keywords.PatternKeyword;
+import com.wikispaces.mcditty.signs.keywords.PreLyricKeyword;
 import com.wikispaces.mcditty.signs.keywords.RepeatKeyword;
 import com.wikispaces.mcditty.signs.keywords.SFXInstKeyword;
 import com.wikispaces.mcditty.signs.keywords.SFXInstOffKeyword;
@@ -1368,6 +1371,67 @@ public class BlockSign extends BlockContainer {
 
 						// No more keywords or music on a the sign.
 						break;
+					} else if (keyword.equals("prelyric")) {
+						// PreLyric keyword
+
+						// Parse keyword's arguments
+						PreLyricKeyword l = PreLyricKeyword.parse(currLine);
+
+						// Check that this isn't on the last line (no lyric text
+						// possible), after parsing arguments.
+						if (line >= LINES_ON_A_SIGN - 1) {
+							// If this is on the last line of a sign, don't
+							// bother to continue.
+							// Note that we did tell user about any errors
+							// before giving up here.
+
+							// Skip this line.
+							continue;
+						}
+
+						// Get lyric's text
+						String lyricText = "";
+						int startLine = line + 1;
+						for (int lyricTextLine = startLine; lyricTextLine < LINES_ON_A_SIGN; lyricTextLine++) {
+							if (signText[lyricTextLine].trim().endsWith("-")) {
+								// Handle split words
+								lyricText += signText[lyricTextLine].substring(
+										0, signText[lyricTextLine]
+												.lastIndexOf("-"));
+							} else if (signText[lyricTextLine].trim().length() > 0) {
+								String lyricLineFromSign = signText[lyricTextLine];
+
+								// Trim whitespace off of JUST THE END of a line
+								// Also remove lines that consist wholly of
+								// whitespace
+								while (lyricLineFromSign
+										.charAt(lyricLineFromSign.length() - 1) == ' ') {
+									lyricLineFromSign = lyricLineFromSign
+											.substring(
+													0,
+													lyricLineFromSign.length() - 1);
+								}
+
+								lyricText += lyricLineFromSign + " ";
+							}
+						}
+						// Add color code
+						lyricText = l.getColorCode().replace('&', '§')
+								+ lyricText;
+
+						// Replace inline color codes
+						for (String s : colorCodeChars) {
+							lyricText = lyricText.replace("&" + s, "§" + s);
+						}
+
+						// Adding to existing lyric?
+						if (MCDittyConfig.lyricsEnabled) {
+							CueScheduler lyrics = ditty.getLyricsStorage();
+							lyrics.addLyricPreText(l.getLabel(), lyricText);
+						}
+
+						// No more keywords or music on a the sign.
+						break;
 					} else if (keyword.equals("oneatatime")) {
 						// Set a flag in the dittyproperties
 						ditty.setOneAtATime(true);
@@ -1559,7 +1623,8 @@ public class BlockSign extends BlockContainer {
 										NOTE_EFFECT_STACCATO), false);
 					} else if (keyword.equals("tran")) {
 						// Add a transpose note effect token
-						TransposeKeyword k = (TransposeKeyword) SignParser.parseKeyword(currLine);
+						TransposeKeyword k = (TransposeKeyword) SignParser
+								.parseKeyword(currLine);
 						String token = createNoteEffectToken(false,
 								NOTE_EFFECT_TRANSPOSE, k.getTones(),
 								k.getDuration());
@@ -1571,6 +1636,35 @@ public class BlockSign extends BlockContainer {
 								ditty,
 								createNoteEffectToken(true,
 										NOTE_EFFECT_TRANSPOSE), false);
+					} else if (keyword.equals("octaves")) {
+						// Add an octaves note effect token
+						OctavesKeyword k = (OctavesKeyword) SignParser
+								.parseKeyword(currLine);
+						Object[] octaves = k.getOctaves().toArray(
+								new Integer[0]);
+						String token = createNoteEffectToken(false,
+								NOTE_EFFECT_OCTAVES, octaves);
+						addMusicStringTokens(readMusicString, ditty, token,
+								false);
+					} else if (keyword.equals("octavesoff")) {
+						// Add an octaves off note effect token
+						OctavesOffKeyword k = (OctavesOffKeyword) SignParser
+								.parseKeyword(currLine);
+						Object[] octaves = k.getOctaves().toArray(
+								new Integer[0]);
+						String token = createNoteEffectToken(true,
+								NOTE_EFFECT_OCTAVES, octaves);
+						addMusicStringTokens(readMusicString, ditty, token,
+								false);
+					} else if (keyword.equals("accel")) {
+						// Add a accelerate note effect token
+						AccelerateKeyword k = (AccelerateKeyword) SignParser
+								.parseKeyword(currLine);
+						String token = createNoteEffectToken(false,
+								NOTE_EFFECT_ACCELERATE, k.getBPM(),
+								k.getDuration());
+						addMusicStringTokens(readMusicString, ditty, token,
+								false);
 					} else {
 						// Unrecognized keyword; announce with error
 						ditty.addErrorMessage("§b"
@@ -1813,13 +1907,17 @@ public class BlockSign extends BlockContainer {
 
 	public static final String SYNC_VOICES_TOKEN = "~syncC";
 	public static final String SYNC_WITH_TOKEN = "~syncW";
-	// public static final String STACCATO_TOKEN = "~Mstac";
-	// public static final String STACCATO_OFF_TOKEN = "~MstacOff";
+	
 	public static final String NOTE_EFFECT_TOKEN = "~M";
 	public static final String NOTE_EFFECT_OFF_TOKEN = "~N";
 	public static final String NOTE_EFFECT_STACCATO = "stac";
 	public static final String NOTE_EFFECT_TRANSPOSE = "tran";
-	public static final String NOTE_EFFECT_OCTAVES = "octa";
+	public static final String NOTE_EFFECT_OCTAVES = "octv";
+	public static final String NOTE_EFFECT_ACCELERATE = "accl";
+	public static final String NOTE_EFFECT_DECELLERATE = "decl";
+	public static final String NOTE_EFFECT_CRESCENDO = "cresc";
+	public static final String NOTE_EFFECT_DECRESCENDO = "decr";
+	
 	public static final String TIMED_EVENT_TOKEN = "~E";
 	public static final String SIGN_START_TOKEN = "~A";
 	public static final String SIGN_END_TOKEN = "~B";
@@ -1925,7 +2023,9 @@ public class BlockSign extends BlockContainer {
 			// TODO: Really require a KCmaj on EVERY voice?
 			tokens += " V" + v + " L0 I[Piano] KCmaj +0 "
 					+ getMinecraftAdjustedVolumeToken(100) + " "
-					+ createNoteEffectToken(true, NOTE_EFFECT_STACCATO);
+					+ createNoteEffectToken(true, NOTE_EFFECT_STACCATO) + " "
+					+ createNoteEffectToken(true, NOTE_EFFECT_TRANSPOSE) + " "
+					+ createNoteEffectToken(true, NOTE_EFFECT_OCTAVES);
 		}
 		tokens += " T120";
 		return tokens;
@@ -1950,7 +2050,10 @@ public class BlockSign extends BlockContainer {
 		for (int v = 15; v >= 0; v--) {
 			// TODO: Really require a KCmaj on EVERY voice?
 			tokens += " V" + v + " L0 I[Piano] KCmaj +0 "
-					+ getAdjustedVolumeToken(100, dittyProperties);
+					+ getAdjustedVolumeToken(100, dittyProperties) + " "
+					+ createNoteEffectToken(true, NOTE_EFFECT_STACCATO) + " "
+					+ createNoteEffectToken(true, NOTE_EFFECT_TRANSPOSE) + " "
+					+ createNoteEffectToken(true, NOTE_EFFECT_OCTAVES);
 		}
 		tokens += " T120";
 		return tokens;
@@ -3129,7 +3232,6 @@ public class BlockSign extends BlockContainer {
 			e.printStackTrace();
 			return "§cCould not start jar swapper. §bYou can still copy the jar file yourself: rename minecraft.updatedMCDitty.jar to minecraft.jar in the .minecraft/bin folder.";
 		}
-		
 
 		showTextAsLyricNow("§bBackup of old minecraft.jar saved.");
 		return "§bUpdate successful! Next time you start Minecraft, MCDitty will be updated to version "

@@ -23,6 +23,28 @@
  */
 package com.wikispaces.mcditty.jfugue.rendererEffect;
 
-public enum ApplyEffect {
-	STACK, MUTEX, DUAL_MUTEX_FINITE_INFINITE, COMBINE, IMMEDIATE, POST_TEMPO_RQD
+/**
+ * An effect that requires the current tempo before applying. The current tempo
+ * for given time in a MusicString can only be discovered reliably after the
+ * entire string has been parsed, so TempoEffects have to be added after
+ * parsing: post-effects.
+ * 
+ */
+public class TempoEffect extends RendererEffect {
+
+	protected int startTempo = 120;
+
+	public TempoEffect(Double endTime) {
+		super(endTime);
+		applyMethod = ApplyEffect.POST_TEMPO_RQD;
+	}
+
+	public int getStartTempo() {
+		return startTempo;
+	}
+
+	public void setStartTempo(int startTempo) {
+		this.startTempo = startTempo;
+	}
+
 }

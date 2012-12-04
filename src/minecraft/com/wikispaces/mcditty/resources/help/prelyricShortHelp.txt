@@ -1,0 +1,20 @@
+PreLyric [name]
+
+Adds a prefix to all lyrics called [name]. Put the prefix text below the keyword.
+
+For example: to put "<Katisha>" before all YKat lyrics:
+
+------------
+PreLyric Kat
+<Katisha> 
+------------
+
+In Text:
+	- You can insert color codes with &[code] (e.g. &1 turns text blue, &r resets color, &c makes red text)
+	- You can write long words with hyphens at the end.
+		lyric verse 1
+		&dSupercalafra-
+		dulistic.
+		
+		Results in "Supercalafradulistic." in pink.
+	- To make even longer text, add another PreLyric sign with the same name and number: it's text will be added to the first's.
