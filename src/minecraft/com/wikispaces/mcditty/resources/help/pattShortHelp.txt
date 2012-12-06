@@ -1,8 +1,13 @@
-Patt num #Comment
+Patt [Count] #Comm
 
 A one-line equivalent to:
 
-Pattern num
-Goto #Comment
+Pattern Count
+Goto #Comm
+
+***
+
+[Count]: Number of times to repeat pattern
+#Comm: A comment at the start of the pattern to repeat.
 
 See: Pattern, Goto
