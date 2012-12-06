@@ -80,6 +80,7 @@ import com.wikispaces.mcditty.signs.keywords.NewBotKeyword;
 import com.wikispaces.mcditty.signs.keywords.OctavesKeyword;
 import com.wikispaces.mcditty.signs.keywords.OctavesOffKeyword;
 import com.wikispaces.mcditty.signs.keywords.ParsedKeyword;
+import com.wikispaces.mcditty.signs.keywords.PattKeyword;
 import com.wikispaces.mcditty.signs.keywords.PatternKeyword;
 import com.wikispaces.mcditty.signs.keywords.PreLyricKeyword;
 import com.wikispaces.mcditty.signs.keywords.RepeatKeyword;
@@ -996,6 +997,94 @@ public class BlockSign extends BlockContainer {
 								break;
 							}
 						}
+					} else if (keyword.equals("patt")) {
+						// TODO: CHECK THAT THESE ARE NOT NECESSARY!!!!!!!!
+						// // Goto keyword; disable normal focus flow
+						// naturalFocusFlowEnabled = false;
+						// Gotos are on sign (obviously)
+						// gotosOnSign = true;
+						// A goto keyword automatically means a pattern is more
+						// than one sign
+						// patternIsMoreThanOneSign = true;
+
+						// Parse keyword
+						PattKeyword pattKeyword = PattKeyword.parse(currLine);
+
+						// Show any errors as necessary
+						if (!pattKeyword.isGoodKeyword()) {
+							showKeywordError(ditty, currSignPoint, currLine,
+									line, pattKeyword);
+							break;
+						}
+
+						// Try to jump to sign with the given comment
+						Comment match = GotoKeyword.getNearestMatchingComment(
+								currSignPoint, world, pattKeyword.getComment());
+
+						Point3D pattLocation;
+						if (match == null) {
+							// Simulate an explicit goto pointing at thin air
+							// TODO: This is a hack. Please come up with a more
+							// explicit solution.
+							pattLocation = new Point3D(0, -1, 0);
+						} else {
+							pattLocation = match.getLocation().clone();
+						}
+
+						// // If this is the pattern sign that started the
+						// // current pattern, ignore the keyword
+						// // Fix: If this is the main song, read the keyword!
+						// if (!currSignPoint.equals(startPoint)
+						// || subpatternLevel == 0) {
+
+						// // Remove the current sign from the sign log to
+						// // prevent duplicates: readPattern will re-add
+						// // it
+						// signLog.removeLast();
+
+						// Read pattern
+						LinkedList<Point3D> subPatternSignLog = (LinkedList<Point3D>) signLog
+								.clone();
+						StringBuilder subPatternMusicString = readPattern(
+								pattLocation, world, signLog, ditty,
+								subpatternLevel + 1, signWhitelist);
+						
+						// If a subpattern fails due to an infinte loop,
+						// pass the failure on
+						if (subPatternMusicString == null) {
+							// simpleLog("PATTERN: null failure on pattern");
+							return null;
+						}
+
+						PattKeyword patternKeyword = PattKeyword
+								.parse(currLine);
+
+						if (!patternKeyword.isGoodKeyword()) {
+							showKeywordError(ditty, currSignPoint, currLine,
+									line, patternKeyword);
+							break;
+						}
+
+						// Add the subpattern to this pattern the
+						// specified
+						// number of times
+						// TODO: Better trimming?
+						for (int i = 0; i < patternKeyword.getRepeatCount(); i++) {
+							// Do not check for errors
+							// TODO: Use addMusicStringTokens here
+							readMusicString.append(" ");
+							readMusicString.append(subPatternMusicString);
+						}
+						
+						// Note that we are back on the original sign in the musicstring
+						addMusicStringTokens(readMusicString, ditty, SIGN_START_TOKEN
+								+ currSignIDNum, false);
+
+						// // Ignore the contents of this sign; it has been
+						// // read by readPattern already.
+						// break;
+						// }
+
 					} else if (keyword.equals("goto")) {
 						// Goto keyword; disable normal focus flow
 						naturalFocusFlowEnabled = false;
@@ -1016,8 +1105,8 @@ public class BlockSign extends BlockContainer {
 						}
 
 						// Try to jump to sign with the given comment
-						Comment match = gotoKeyword.getNearestMatchingComment(
-								currSignPoint, world);
+						Comment match = GotoKeyword.getNearestMatchingComment(
+								currSignPoint, world, gotoKeyword.getComment());
 						if (match == null) {
 							// Simulate an explicit goto pointing at thin air
 							// TODO: This is a hack. Please come up with a more
@@ -1907,7 +1996,7 @@ public class BlockSign extends BlockContainer {
 
 	public static final String SYNC_VOICES_TOKEN = "~syncC";
 	public static final String SYNC_WITH_TOKEN = "~syncW";
-	
+
 	public static final String NOTE_EFFECT_TOKEN = "~M";
 	public static final String NOTE_EFFECT_OFF_TOKEN = "~N";
 	public static final String NOTE_EFFECT_STACCATO = "stac";
@@ -1917,7 +2006,7 @@ public class BlockSign extends BlockContainer {
 	public static final String NOTE_EFFECT_DECELLERATE = "decl";
 	public static final String NOTE_EFFECT_CRESCENDO = "cresc";
 	public static final String NOTE_EFFECT_DECRESCENDO = "decr";
-	
+
 	public static final String TIMED_EVENT_TOKEN = "~E";
 	public static final String SIGN_START_TOKEN = "~A";
 	public static final String SIGN_END_TOKEN = "~B";

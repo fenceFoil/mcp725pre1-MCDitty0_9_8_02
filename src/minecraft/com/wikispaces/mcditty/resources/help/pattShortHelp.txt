@@ -1,0 +1,8 @@
+Patt num #Comment
+
+A one-line equivalent to:
+
+Pattern num
+Goto #Comment
+
+See: Pattern, Goto

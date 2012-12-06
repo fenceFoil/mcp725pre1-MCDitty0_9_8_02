@@ -33,14 +33,14 @@ public class AccelerateEffect extends TempoEffect {
 	 * Number of semitones to increase or decrease note pitch
 	 */
 	private int bpm = 0;
-	
+
 	private double duration = 0;
 
 	public AccelerateEffect(Double endTime, int tempoIncrease, double length) {
 		super(endTime);
 		setBPM(tempoIncrease);
 		setDuration(length);
-		
+
 		// System.out.println(toString());
 	}
 
@@ -67,21 +67,26 @@ public class AccelerateEffect extends TempoEffect {
 	public void apply(LinkedList<TimedJFugueElement> elements) {
 		// Create tempo tokens
 		double spaceBetweenChanges = duration / Math.abs(bpm);
-		for (int i=0;i<bpm;i++) {
+		for (int i = 0; i < Math.abs(bpm); i++) {
 			double time = spaceBetweenChanges * i;
-			int tempo = startTempo + i;
-			
+			int tempo;
+			if (bpm >= 0) {
+				tempo = startTempo + i;
+			} else {
+				tempo = startTempo - i;
+			}
+
 			if (tempo < MusicStringParser.MIN_TEMPO) {
 				tempo = MusicStringParser.MIN_TEMPO;
 			} else if (tempo > MusicStringParser.MAX_TEMPO) {
 				tempo = MusicStringParser.MAX_TEMPO;
 			}
-			
+
 			Tempo tempoChange = new Tempo(tempo);
 			TimedJFugueElement e = new TimedJFugueElement(tempoChange, time);
 			elements.add(e);
 		}
-		
+
 		// Add the final event
 		int tempo = startTempo + bpm;
 		if (tempo < MusicStringParser.MIN_TEMPO) {

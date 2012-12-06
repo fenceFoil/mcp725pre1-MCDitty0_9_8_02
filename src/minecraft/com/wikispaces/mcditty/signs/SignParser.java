@@ -33,6 +33,7 @@ import com.wikispaces.mcditty.signs.keywords.NewBotKeyword;
 import com.wikispaces.mcditty.signs.keywords.OctavesKeyword;
 import com.wikispaces.mcditty.signs.keywords.OctavesOffKeyword;
 import com.wikispaces.mcditty.signs.keywords.ParsedKeyword;
+import com.wikispaces.mcditty.signs.keywords.PattKeyword;
 import com.wikispaces.mcditty.signs.keywords.PatternKeyword;
 import com.wikispaces.mcditty.signs.keywords.PlayMidiKeyword;
 import com.wikispaces.mcditty.signs.keywords.PreLyricKeyword;
@@ -73,13 +74,12 @@ public class SignParser {
 			"proxpad", "volume", "area", "goto", "savemidi", "playmidi",
 			"emitter", "sfxinst2", "sfxinst", "sfxinstoff", "newbot",
 			"staccato", "staccatooff", "tran", "tranoff", "octaves",
-			"octavesoff", "prelyric", "accel" };
+			"octavesoff", "prelyric", "accel", "patt" };
 
 	/**
-	 * 
+	 * Prevent people from instantiating this class of static methods
 	 */
 	private SignParser() {
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -238,6 +238,8 @@ public class SignParser {
 			return PreLyricKeyword.parse(rawLine);
 		} else if (keyword.equals("accel")) {
 			return AccelerateKeyword.parse(rawLine);
+		} else if (keyword.equals("patt")) {
+			return PattKeyword.parse(rawLine);
 		} else {
 			// Unknown or simple (no arguments) keyword
 			ParsedKeyword k = new ParsedKeyword(rawLine);

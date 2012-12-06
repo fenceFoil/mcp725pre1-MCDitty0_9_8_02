@@ -6,8 +6,9 @@ A reset is a bit like letting a ditty end, and then starting it again at the key
 - Resets all instruments, the tempo, and the current voice and layer
 - Restores the key to C major.
 - Sets all volumes back to 100
+- Turns off effects like Octaves, Staccato, and Tran
 
-Before letting things afterward start playing again.
+before letting things afterward start again.
 
 Resets are handy for "breaking up" long or complex songs: they're like the ends of tracks, and starting from one is like starting a the beginning of a song.
 

@@ -2133,19 +2133,19 @@ public class GuiEditSign extends GuiScreen implements
 		} else if (keyword instanceof GotoKeyword) {
 			// Show matching comments in immediate area
 
-			if (keyword.getWholeKeyword().equalsIgnoreCase("goto")) {
+			if (keyword.getWholeKeyword().equalsIgnoreCase("goto") || keyword.getWholeKeyword().equalsIgnoreCase("patt")) {
 				showDefaultKeywordHelp(keyword);
 			} else {
 				GotoKeyword gotoKeyword = (GotoKeyword) keyword;
 
 				// Fill auto-suggest
-				Comment bestMatch = gotoKeyword.getNearestMatchingComment(
+				Comment bestMatch = GotoKeyword.getNearestMatchingComment(
 						new Point3D(entitySign.xCoord, entitySign.yCoord,
-								entitySign.zCoord), mc.theWorld);
+								entitySign.zCoord), mc.theWorld, gotoKeyword.getComment());
 				LinkedList<Comment> matchingComments = gotoKeyword
 						.matchingCommentsNearby(new Point3D(entitySign.xCoord,
 								entitySign.yCoord, entitySign.zCoord),
-								mc.theWorld);
+								mc.theWorld, gotoKeyword.getComment());
 
 				// Compile matching comments into a string
 				StringBuilder b = new StringBuilder();

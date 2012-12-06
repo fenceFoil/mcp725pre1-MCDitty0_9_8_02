@@ -64,8 +64,8 @@ public class GotoKeyword extends ParsedKeyword {
 		return keyword;
 	}
 
-	public LinkedList<Comment> matchingCommentsNearby(Point3D signPos,
-			World world) {
+	public static LinkedList<Comment> matchingCommentsNearby(Point3D signPos,
+			World world, String comment) {
 		LinkedList<Comment> matchingComments = new LinkedList<Comment>();
 		// TODO: Optimise this line to be called less often?
 		MCDitty.optimizeCommentList(world);
@@ -74,7 +74,7 @@ public class GotoKeyword extends ParsedKeyword {
 				.getCommentsSortedByDistFrom(signPos);
 		for (Comment c : allComments) {
 			if (c.getCommentText().toLowerCase()
-					.startsWith(getComment().toLowerCase())) {
+					.startsWith(comment.toLowerCase())) {
 				// comment matches
 				matchingComments.add(c);
 			}
@@ -89,7 +89,7 @@ public class GotoKeyword extends ParsedKeyword {
 	 * @param world
 	 * @return
 	 */
-	public Comment getNearestMatchingComment(Point3D signPos, World world) {
+	public static Comment getNearestMatchingComment(Point3D signPos, World world, String comment) {
 		LinkedList<Comment> matchingComments = new LinkedList<Comment>();
 		// TODO: Optimise this line to be called less often?
 		MCDitty.optimizeCommentList(world);
@@ -99,11 +99,11 @@ public class GotoKeyword extends ParsedKeyword {
 		Comment bestMatch = null;
 		for (Comment c : allComments) {
 			if (c.getCommentText().toLowerCase()
-					.startsWith(getComment().toLowerCase())) {
+					.startsWith(comment.toLowerCase())) {
 				// comment matches
 				matchingComments.add(c);
 				if (bestMatch == null
-						&& c.getCommentText().equalsIgnoreCase(getComment())) {
+						&& c.getCommentText().equalsIgnoreCase(comment)) {
 					// Matches exactly!
 					bestMatch = c;
 				}

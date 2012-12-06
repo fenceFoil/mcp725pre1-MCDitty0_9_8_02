@@ -69,7 +69,7 @@ public class AccelerateKeyword extends ParsedKeyword {
 
 			if (argument.trim().matches("[-\\+]?\\d+") && !tonesRead) {
 				Integer arg = Integer.parseInt(argument);
-				if (arg > 127 || arg < -127) {
+				if (arg > 300 || arg < -300) {
 					// Out of range
 					keyword.setGoodKeyword(false);
 					keyword.setErrorMessageType(ERROR);
