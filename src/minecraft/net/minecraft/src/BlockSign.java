@@ -44,9 +44,11 @@ import com.wikispaces.mcditty.CueScheduler;
 import com.wikispaces.mcditty.GetMinecraft;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.MCDittyRightClickCheckThread;
+import com.wikispaces.mcditty.MCDittyUpdateTickHookEntity;
 import com.wikispaces.mcditty.MuteDittyThread;
 import com.wikispaces.mcditty.PlayDittyFromSignWorkThread;
 import com.wikispaces.mcditty.Point3D;
+import com.wikispaces.mcditty.RenderMCDittyUpdateHook;
 import com.wikispaces.mcditty.autoUpdate.RunCommandThread;
 import com.wikispaces.mcditty.config.MCDittyConfig;
 import com.wikispaces.mcditty.disco.DiscoFloor;
@@ -1048,7 +1050,7 @@ public class BlockSign extends BlockContainer {
 						StringBuilder subPatternMusicString = readPattern(
 								pattLocation, world, signLog, ditty,
 								subpatternLevel + 1, signWhitelist);
-						
+
 						// If a subpattern fails due to an infinte loop,
 						// pass the failure on
 						if (subPatternMusicString == null) {
@@ -1075,10 +1077,11 @@ public class BlockSign extends BlockContainer {
 							readMusicString.append(" ");
 							readMusicString.append(subPatternMusicString);
 						}
-						
-						// Note that we are back on the original sign in the musicstring
-						addMusicStringTokens(readMusicString, ditty, SIGN_START_TOKEN
-								+ currSignIDNum, false);
+
+						// Note that we are back on the original sign in the
+						// musicstring
+						addMusicStringTokens(readMusicString, ditty,
+								SIGN_START_TOKEN + currSignIDNum, false);
 
 						// // Ignore the contents of this sign; it has been
 						// // read by readPattern already.

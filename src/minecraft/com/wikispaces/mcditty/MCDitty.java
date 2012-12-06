@@ -58,6 +58,7 @@ import net.minecraft.src.GuiScreenBook;
 import net.minecraft.src.GuiVideoSettings;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.RenderGlobal;
+import net.minecraft.src.RenderManager;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntitySign;
 import net.minecraft.src.TileEntitySignRenderer;
@@ -1223,6 +1224,30 @@ public class MCDitty {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+
+					// Also register the Hook Entity renderer
+					if (m != null && m.theWorld != null) {
+						try {
+							Map registeredRenderers = (Map) GetMinecraft
+									.getUniqueTypedFieldFromClass(
+											RenderManager.class, Map.class,
+											RenderManager.instance);
+							if (registeredRenderers != null) {
+								if (!(registeredRenderers
+										.get(MCDittyUpdateTickHookEntity.class) instanceof RenderMCDittyUpdateHook)) {
+									registeredRenderers.put(
+											MCDittyUpdateTickHookEntity.class,
+											new RenderMCDittyUpdateHook());
+								}
+							}
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 				}
 			}
 
@@ -1254,31 +1279,26 @@ public class MCDitty {
 		try {
 			if (hookEntity != null) {
 				// Check that it's still in the world
-				Minecraft mc = GetMinecraft.instance();
-				if (mc != null && mc.theWorld != null) {
-					mc.theWorld.removeEntityFromWorld(12345678);
-					Entity e = mc.theWorld.getEntityByID(12345678);
-					if (e != null) {
-						// Exists. All is well
-					} else {
+				if (GetMinecraft.instance().theWorld != null) {
+					if (!GetMinecraft.instance().theWorld.loadedEntityList
+							.contains(hookEntity)) {
 						// Add to world
 						hookEntity = new MCDittyUpdateTickHookEntity(
 								GetMinecraft.instance().theWorld);
-						mc.theWorld.addEntityToWorld(12345678, hookEntity);
+						GetMinecraft.instance().theWorld.addEntityToWorld(
+								12345678, hookEntity);
+						//System.out.println("Adding MCDitty tick hook entity");
+					} else {
+						//System.out.println ("Tick hook entity already added!");
 					}
 				}
 				return;
 			} else {
 				hookEntity = new MCDittyUpdateTickHookEntity(
 						GetMinecraft.instance().theWorld);
-				// TODO: ID is random
-				// TODO: Use proper "next id" function
 				Minecraft mc1 = GetMinecraft.instance();
 				if (mc1 != null && mc1.theWorld != null) {
-					mc1.theWorld.addEntityToWorld(
-					// (Integer.MAX_VALUE / 2)
-					// + r.nextInt(Integer.MAX_VALUE / 2 - 1200),
-							12345678, hookEntity);
+					mc1.theWorld.addEntityToWorld(12345678, hookEntity);
 				} else {
 					// Failed
 					hookEntity = null;
@@ -1363,8 +1383,7 @@ public class MCDitty {
 				synchronized (particleRequestQueue) {
 					double noteColor = 0d;
 					if (noteEvent.getNote() != null) {
-						noteColor = (double) (noteEvent.getNote()
-								.getValue() % 24) / 24d;
+						noteColor = (double) (noteEvent.getNote().getValue() % 24) / 24d;
 					}
 					particleRequestQueue.add(new NoteParticleRequest(noteEvent
 							.getLocation(), noteColor, false));

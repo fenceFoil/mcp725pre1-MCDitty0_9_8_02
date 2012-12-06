@@ -25,7 +25,9 @@ package com.wikispaces.mcditty;
 
 import net.minecraft.src.BlockSign;
 import net.minecraft.src.Entity;
+import net.minecraft.src.EntityClientPlayerMP;
 import net.minecraft.src.NBTTagCompound;
+import net.minecraft.src.Vec3;
 import net.minecraft.src.World;
 
 /**
@@ -33,13 +35,14 @@ import net.minecraft.src.World;
  * 
  */
 public class MCDittyUpdateTickHookEntity extends Entity {
+	
+	//public static long lastUpdateTime = 0;
 
 	/**
 	 * @param par1World
 	 */
 	public MCDittyUpdateTickHookEntity(World par1World) {
 		super(par1World);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -49,6 +52,12 @@ public class MCDittyUpdateTickHookEntity extends Entity {
 		// Call the hook method in MCDitty
 		BlockSign.mcDittyMod.onTick(GetMinecraft.timer().elapsedPartialTicks,
 				GetMinecraft.instance());
+		
+		// Follow player
+		EntityClientPlayerMP player = GetMinecraft.instance().thePlayer;
+		posX = player.posX;
+		posY = player.posY;
+		posZ = player.posZ;
 	}
 
 	/**
@@ -76,6 +85,16 @@ public class MCDittyUpdateTickHookEntity extends Entity {
 	protected void writeEntityToNBT(NBTTagCompound nbttagcompound) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public boolean isInRangeToRenderVec3D(Vec3 par1Vec3) {
+		return true;
+	}
+
+	@Override
+	public boolean isInRangeToRenderDist(double par1) {
+		return true;
 	}
 
 }
