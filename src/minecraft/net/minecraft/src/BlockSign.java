@@ -35,7 +35,6 @@ import java.util.zip.ZipInputStream;
 
 import net.minecraft.client.Minecraft;
 
-import org.jfugue.JFugueException;
 import org.jfugue.Player;
 import org.jfugue.parsers.MusicStringParser;
 
@@ -881,7 +880,7 @@ public class BlockSign extends BlockContainer {
 			// addMusicStringTokens(readMusicString, dittyProperties,
 			// TIMED_EVENT_TOKEN + eventId, true);
 			// Add sign location token
-			addMusicStringTokens(readMusicString, ditty, SIGN_START_TOKEN
+			ditty.addMusicStringTokens(readMusicString, SIGN_START_TOKEN
 					+ currSignIDNum, false);
 
 			// Process each line of a sign
@@ -1079,8 +1078,7 @@ public class BlockSign extends BlockContainer {
 
 						// Note that we are back on the original sign in the
 						// musicstring
-						addMusicStringTokens(readMusicString, ditty,
-								SIGN_START_TOKEN + currSignIDNum, false);
+						ditty.addMusicStringTokens(readMusicString, SIGN_START_TOKEN + currSignIDNum, false);
 
 						// // Ignore the contents of this sign; it has been
 						// // read by readPattern already.
@@ -1262,8 +1260,7 @@ public class BlockSign extends BlockContainer {
 										.addDittyEvent(new PlayMidiDittyEvent(
 												midiSaveFile, ditty
 														.getDittyID()));
-								addMusicStringTokens(readMusicString, ditty,
-										TIMED_EVENT_TOKEN + eventID, false);
+								ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
 							}
 
 							// Regardless of whether the sign is heeded:
@@ -1319,8 +1316,7 @@ public class BlockSign extends BlockContainer {
 						}
 
 						// Add comboline to the music buffer
-						if (!addMusicStringTokens(readMusicString, ditty,
-								comboLine.trim(), true)) {
+						if (!ditty.addMusicStringTokens(readMusicString, comboLine.trim(), true)) {
 							// If the comboline contained errors, highlight all
 							// lines in comboLine
 							for (int i = line + 1; i < signText.length; i++) {
@@ -1375,8 +1371,7 @@ public class BlockSign extends BlockContainer {
 								// eliminates duplicate errors
 								checkForErrors = false;
 							}
-							if (!addMusicStringTokens(readMusicString, ditty,
-									comboLine.trim(), checkForErrors)) {
+							if (!ditty.addMusicStringTokens(readMusicString, comboLine.trim(), checkForErrors)) {
 								// If the comboline contained errors, highlight
 								// all lines in comboLine
 								for (int i = line + 1; i < signText.length; i++) {
@@ -1398,8 +1393,7 @@ public class BlockSign extends BlockContainer {
 						// musicstring-neutral token
 						// Do not check for errors! The token is a MCDitty-only
 						// token.
-						addMusicStringTokens(readMusicString, ditty,
-								getResetToken(), false);
+						ditty.addMusicStringTokens(readMusicString, getResetToken(), false);
 					} else if (keyword.equals("lyric")) {
 						// Lyric keyword
 
@@ -1531,21 +1525,18 @@ public class BlockSign extends BlockContainer {
 						ditty.setForceGoodDittyDetect(true);
 					} else if (keyword.equals("syncvoices")) {
 						// Add a token
-						addMusicStringTokens(readMusicString, ditty,
-								SYNC_VOICES_TOKEN, false);
+						ditty.addMusicStringTokens(readMusicString, SYNC_VOICES_TOKEN, false);
 					} else if (keyword.equals("syncwith")) {
 						// Read arguments
 						SyncWithKeyword k = SyncWithKeyword.parse(currLine);
 
 						// Finally, add token
 						if (k.getLayer() != -1000) {
-							addMusicStringTokens(readMusicString, ditty,
-									SYNC_WITH_TOKEN + "V" + k.getVoice() + "L"
+							ditty.addMusicStringTokens(readMusicString, SYNC_WITH_TOKEN + "V" + k.getVoice() + "L"
 											+ k.getLayer(), false);
 						} else {
-							addMusicStringTokens(
+							ditty.addMusicStringTokens(
 									readMusicString,
-									ditty,
 									SYNC_WITH_TOKEN + "V" + k.getVoice() + "Lu",
 									false);
 						}
@@ -1559,8 +1550,7 @@ public class BlockSign extends BlockContainer {
 						int eventID = ditty.addDittyEvent(new SFXMCDittyEvent(k
 								.getEffectName(), -1, ditty.getDittyID()));
 						// Add token
-						addMusicStringTokens(readMusicString, ditty,
-								TIMED_EVENT_TOKEN + eventID, false);
+						ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
 					} else if (keyword.equals("disco")) {
 						// Handle disco floors
 
@@ -1582,8 +1572,7 @@ public class BlockSign extends BlockContainer {
 					} else if (keyword.equals("volume")) {
 						// Inserts a volume token into the song
 						VolumeKeyword k = VolumeKeyword.parse(currLine);
-						addMusicStringTokens(readMusicString, ditty,
-								getAdjustedVolumeToken(k.getVolume(), ditty),
+						ditty.addMusicStringTokens(readMusicString, getAdjustedVolumeToken(k.getVolume(), ditty),
 								false);
 					} else if (keyword.equals("emitter")) {
 						// Creates a create emitter event in the ditty, with
@@ -1606,8 +1595,7 @@ public class BlockSign extends BlockContainer {
 									.addDittyEvent(new CreateEmitterEvent(k,
 											-1, ditty.getDittyID(),
 											currSignPoint.clone()));
-							addMusicStringTokens(readMusicString, ditty,
-									TIMED_EVENT_TOKEN + eventID, false);
+							ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
 						}
 						// No more music on sign
 						break;
@@ -1634,8 +1622,7 @@ public class BlockSign extends BlockContainer {
 							int eventID = ditty
 									.addDittyEvent(new SFXInstrumentEvent(k,
 											-1, ditty.getDittyID()));
-							addMusicStringTokens(readMusicString, ditty,
-									TIMED_EVENT_TOKEN + eventID, false);
+							ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
 						}
 						// Skip ahead a couple of lines (keyword is 2 lines
 						// long)
@@ -1648,8 +1635,7 @@ public class BlockSign extends BlockContainer {
 						int eventID = ditty
 								.addDittyEvent(new SFXInstrumentOffEvent(k, -1,
 										ditty.getDittyID()));
-						addMusicStringTokens(readMusicString, ditty,
-								TIMED_EVENT_TOKEN + eventID, false);
+						ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
 					} else if (keyword.equals("newbot")) {
 						// TODO: Move sign parsing so that it happens just once
 						// per sign
@@ -1688,8 +1674,7 @@ public class BlockSign extends BlockContainer {
 
 							// Add the event to the ditty
 							int eventID = ditty.addDittyEvent(botEvent);
-							addMusicStringTokens(readMusicString, ditty,
-									TIMED_EVENT_TOKEN + eventID, false);
+							ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
 						}
 						// Skip ahead a couple of lines (keyword is 2 lines
 						// long)
@@ -1704,12 +1689,10 @@ public class BlockSign extends BlockContainer {
 								staccatoKeyword.getEighths(),
 								staccatoKeyword.getDuration());
 
-						addMusicStringTokens(readMusicString, ditty,
-								staccatoToken, false);
+						ditty.addMusicStringTokens(readMusicString, staccatoToken, false);
 					} else if (keyword.equals("staccatooff")) {
-						addMusicStringTokens(
+						ditty.addMusicStringTokens(
 								readMusicString,
-								ditty,
 								createNoteEffectToken(true,
 										NOTE_EFFECT_STACCATO), false);
 					} else if (keyword.equals("tran")) {
@@ -1719,12 +1702,11 @@ public class BlockSign extends BlockContainer {
 						String token = createNoteEffectToken(false,
 								NOTE_EFFECT_TRANSPOSE, k.getTones(),
 								k.getDuration());
-						addMusicStringTokens(readMusicString, ditty, token,
+						ditty.addMusicStringTokens(readMusicString, token,
 								false);
 					} else if (keyword.equals("tranoff")) {
-						addMusicStringTokens(
+						ditty.addMusicStringTokens(
 								readMusicString,
-								ditty,
 								createNoteEffectToken(true,
 										NOTE_EFFECT_TRANSPOSE), false);
 					} else if (keyword.equals("octaves")) {
@@ -1735,7 +1717,7 @@ public class BlockSign extends BlockContainer {
 								new Integer[0]);
 						String token = createNoteEffectToken(false,
 								NOTE_EFFECT_OCTAVES, octaves);
-						addMusicStringTokens(readMusicString, ditty, token,
+						ditty.addMusicStringTokens(readMusicString, token,
 								false);
 					} else if (keyword.equals("octavesoff")) {
 						// Add an octaves off note effect token
@@ -1745,7 +1727,7 @@ public class BlockSign extends BlockContainer {
 								new Integer[0]);
 						String token = createNoteEffectToken(true,
 								NOTE_EFFECT_OCTAVES, octaves);
-						addMusicStringTokens(readMusicString, ditty, token,
+						ditty.addMusicStringTokens(readMusicString, token,
 								false);
 					} else if (keyword.equals("accel")) {
 						// Add a accelerate note effect token
@@ -1754,7 +1736,7 @@ public class BlockSign extends BlockContainer {
 						String token = createNoteEffectToken(false,
 								NOTE_EFFECT_ACCELERATE, k.getBPM(),
 								k.getDuration());
-						addMusicStringTokens(readMusicString, ditty, token,
+						ditty.addMusicStringTokens(readMusicString, token,
 								false);
 					} else {
 						// Unrecognized keyword; announce with error
@@ -1765,8 +1747,8 @@ public class BlockSign extends BlockContainer {
 					}
 				} else {
 					// Line contians music
-					boolean noErrors = addMusicStringTokens(readMusicString,
-							ditty, currLine, true);
+					boolean noErrors = ditty.addMusicStringTokens(readMusicString,
+							currLine, true);
 					if (!noErrors) {
 						ditty.addErrorHighlight(currSignPoint, line);
 					}
@@ -1781,7 +1763,7 @@ public class BlockSign extends BlockContainer {
 			}
 
 			// Add sign hit end token
-			addMusicStringTokens(readMusicString, ditty, SIGN_END_TOKEN
+			ditty.addMusicStringTokens(readMusicString, SIGN_END_TOKEN
 					+ currSignIDNum, false);
 			// // Add sign hit end ditty event
 			// int eventId2 = dittyProperties
@@ -2151,75 +2133,6 @@ public class BlockSign extends BlockContainer {
 	}
 
 	// public static final String RESET_TOKEN = "~Reset";
-
-	/**
-	 * Adds musicString tokens to a musicString token buffer, checking them for
-	 * errors as they are added. Any error messages found are registered with
-	 * dittyProperties; error highlights are left to the calling method to add.
-	 * 
-	 * Also checks for noPlayTokens
-	 * 
-	 * @param buffer
-	 * @param ditty
-	 * @param tokens
-	 * @param checkForErrors
-	 * @return true if added without errors; false if added wtih errors.
-	 */
-	public static boolean addMusicStringTokens(StringBuilder buffer,
-			Ditty ditty, String musicString, boolean checkForErrors) {
-		boolean errorFree = true;
-		String[] tokens = musicString.split(" ");
-		for (String token : tokens) {
-			// Only bother adding non-blank tokens
-			if (token.trim().length() > 0) {
-				// Check against NoPlayTokens
-				if (ditty instanceof SignDitty) {
-					for (String noPlayToken : MCDittyConfig.getNoPlayTokens()) {
-						// Check for equality, stripping color codes
-						if (noPlayToken.equalsIgnoreCase(token.replaceAll("§.",
-								""))) {
-							// Is a no play token!
-							((SignDitty) ditty).setContainsNoPlayTokens(true);
-							break;
-						}
-					}
-				}
-
-				// Check tokens for errors
-				if (checkForErrors) {
-					try {
-						musicStringParser.parseTokenStrict(token);
-					} catch (JFugueException e) {
-						// Token is not a valid token
-						ditty.addErrorMessage("§b" + token + "§c: "
-								+ e.getMessage());
-						ditty.incrementBadTokens();
-						errorFree = false;
-						simpleLog("addMusicStringTokens: Bad token found ("
-								+ token + "):");
-						if (MCDittyConfig.debug) {
-							e.printStackTrace();
-						}
-					} catch (Exception e) {
-						// Token is a really screwed up token!
-						ditty.addErrorMessage("§cMCDitty cannot figure out this token: §b"
-								+ token);
-						ditty.incrementBadTokens();
-						errorFree = false;
-						simpleLog("addMusicStringTokens: Really bad token found ("
-								+ token + "):");
-						if (MCDittyConfig.debug) {
-							e.printStackTrace();
-						}
-					}
-				}
-
-				ditty.incrementTotalTokens();
-				buffer.append(" " + token);
-			}
-		}
-		return errorFree;
-	}
 
 	private static void highlightSignErrorLine(World world, SignLine signLine) {
 		TileEntity t = world.getBlockTileEntity(signLine.x, signLine.y,

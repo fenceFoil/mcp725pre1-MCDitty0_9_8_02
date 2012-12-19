@@ -115,7 +115,7 @@ public class DittyXMLPlayer extends JFrame {
 			containersList.addAll(mcdittyElements);
 		}
 
-		Ditty d = DittyXMLParser.parseDittyXMLContainers(containersList);
+		Ditty d = DittyXMLParser.parseDittyXMLContainers(containersList, null);
 		if (d != null) {
 			DittyPlayerThread t = new DittyPlayerThread(d);
 			t.start();

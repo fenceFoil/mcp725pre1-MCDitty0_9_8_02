@@ -47,12 +47,24 @@ import com.wikispaces.mcditty.sfx.SFXManager;
  */
 public class DittyXMLParser {
 
-	public static Ditty parseDittyXMLContainer(Element dittyXMLContainer)
+	/**
+	 * Attempts to parse the given DittyXML container.
+	 * 
+	 * @param dittyXMLContainer Null elements are
+	 *            allowed.
+	 * @param ditty
+	 *            a ditty to append read music to, or null to create a new one
+	 * @return null if there is no ditty in the first container in the list, or
+	 *         if dittyXMLContainers is null or empty.
+	 * @throws UnnumberedLyricException
+	 * @throws UnnamedLyricsException
+	 */
+	public static Ditty parseDittyXMLContainer(Element dittyXMLContainer, Ditty ditty)
 			throws MissingContainerException, UnnamedLyricsException,
 			UnnumberedLyricException {
 		LinkedList<Element> l = new LinkedList();
 		l.add(dittyXMLContainer);
-		return parseDittyXMLContainers(l);
+		return parseDittyXMLContainers(l, ditty);
 	}
 
 	/**
@@ -62,13 +74,15 @@ public class DittyXMLParser {
 	 * @param dittyXMLContainers
 	 *            must be already put in order to be read in. Null elements are
 	 *            allowed.
+	 * @param ditty
+	 *            a ditty to append read music to, or null to create a new one
 	 * @return null if there is no ditty in the first container in the list, or
 	 *         if dittyXMLContainers is null or empty.
 	 * @throws UnnumberedLyricException
 	 * @throws UnnamedLyricsException
 	 */
 	public static Ditty parseDittyXMLContainers(
-			LinkedList<Element> dittyXMLContainers)
+			LinkedList<Element> dittyXMLContainers, Ditty ditty)
 			throws MissingContainerException, UnnamedLyricsException,
 			UnnumberedLyricException {
 		// System.out.println("ParseDittyXMLContainers called");
@@ -95,7 +109,9 @@ public class DittyXMLParser {
 		}
 
 		// Set up the ditty that will be parsed
-		Ditty ditty = new Ditty();
+		if (ditty == null) {
+			ditty = new Ditty();
+		}
 
 		// TODO: Parse each element, referring each one to the appropriate parse
 		// method
@@ -297,8 +313,7 @@ public class DittyXMLParser {
 					s = s.replaceAll("\n", " ");
 				}
 				// Text is read as music.
-				BlockSign.addMusicStringTokens(musicStringBuffer, ditty, s,
-						true);
+				ditty.addMusicStringTokens(musicStringBuffer, s, true);
 			} else if (currNodeType == Node.ELEMENT_NODE) {
 				// If an element, go by name
 				String currNodeName = currNode.getNodeName();
@@ -306,12 +321,12 @@ public class DittyXMLParser {
 				if (currNodeName.equals("reset")) {
 					// Reset element
 					// Add reset token to musicstring
-					BlockSign.addMusicStringTokens(musicStringBuffer, ditty,
+					ditty.addMusicStringTokens(musicStringBuffer,
 							BlockSign.getResetToken(ditty), false);
 				} else if (currNodeName.equals("syncVoices")) {
 					// SyncVoices element
 					// Add token to musicstring
-					BlockSign.addMusicStringTokens(musicStringBuffer, ditty,
+					ditty.addMusicStringTokens(musicStringBuffer,
 							BlockSign.SYNC_VOICES_TOKEN, false);
 				} else if (currNodeName.equals("syncWith")) {
 					// SyncWith element
@@ -331,13 +346,13 @@ public class DittyXMLParser {
 
 					// Finally, add token
 					if (layer != -1000) {
-						BlockSign.addMusicStringTokens(musicStringBuffer,
-								ditty, BlockSign.SYNC_WITH_TOKEN + "V" + voice
-										+ "L" + layer, false);
+						ditty.addMusicStringTokens(musicStringBuffer,
+								BlockSign.SYNC_WITH_TOKEN + "V" + voice + "L"
+										+ layer, false);
 					} else {
-						BlockSign.addMusicStringTokens(musicStringBuffer,
-								ditty, BlockSign.SYNC_WITH_TOKEN + "V" + voice
-										+ "Lu", false);
+						ditty.addMusicStringTokens(musicStringBuffer,
+								BlockSign.SYNC_WITH_TOKEN + "V" + voice + "Lu",
+								false);
 					}
 				} else if (currNodeName.equals("volume")) {
 					// Volume element
@@ -354,7 +369,7 @@ public class DittyXMLParser {
 					}
 
 					// Finally, add token
-					BlockSign.addMusicStringTokens(musicStringBuffer, ditty,
+					ditty.addMusicStringTokens(musicStringBuffer,
 							BlockSign.getAdjustedVolumeToken(percent, ditty),
 							false);
 				} else if (currNodeName.equals("repeat")) {
@@ -379,8 +394,8 @@ public class DittyXMLParser {
 						// duplicated in the ditty
 						String musicString = parseMusicNode(currElement, ditty);
 						if (musicString != null) {
-							BlockSign.addMusicStringTokens(musicStringBuffer,
-									ditty, musicString, false);
+							ditty.addMusicStringTokens(musicStringBuffer,
+									musicString, false);
 						}
 					}
 				} else if (currNodeName.equals("sfxInst")) {
@@ -419,9 +434,13 @@ public class DittyXMLParser {
 						// Arbitrary
 						tuning = 64;
 					}
-					
-					// Get the SFX source folder (optional; default is alpha thru 1.3)
-					int sfxSource = DOMUtil.parseIntStringWithDefault(DOMUtil.getAttributeValue(currElement, "source"), 0);
+
+					// Get the SFX source folder (optional; default is alpha
+					// thru 1.3)
+					int sfxSource = DOMUtil
+							.parseIntStringWithDefault(DOMUtil
+									.getAttributeValue(currElement, "source"),
+									0);
 
 					// Get the instrument number to swap in (required)
 					String instString = DOMUtil.getAttributeValue(currElement,
@@ -456,8 +475,9 @@ public class DittyXMLParser {
 						// XXX: Could cause bugs by removing digits in middle of
 						// shorthand
 						String fullSFXName = SFXManager
-								.getEffectForShorthandName(sfxNameAttr
-										.replaceAll("\\d", ""), sfxSource);
+								.getEffectForShorthandName(
+										sfxNameAttr.replaceAll("\\d", ""),
+										sfxSource);
 
 						if (fullSFXName == null) {
 							// No SFX by that name.
@@ -508,7 +528,8 @@ public class DittyXMLParser {
 						sfxName = sfxNameAttr.replaceAll("\\d", "");
 
 						// Check that the SFX is not an out-of-order SFX
-						if (SFXManager.isShorthandOnSFXInstBlacklist(sfxName, sfxSource)) {
+						if (SFXManager.isShorthandOnSFXInstBlacklist(sfxName,
+								sfxSource)) {
 							// blacklisted as out of order
 							ditty.addErrorMessage("A <sfxInst> element uses the sfx "
 									+ sfxName
@@ -523,8 +544,9 @@ public class DittyXMLParser {
 						// given
 						Integer defaultCenterPitch = SFXManager
 								.getDefaultTuningInt(SFXManager
-										.getEffectForShorthandName(sfxName, sfxSource),
-										sfxNumber, sfxSource);
+										.getEffectForShorthandName(sfxName,
+												sfxSource), sfxNumber,
+										sfxSource);
 						if (defaultCenterPitch != null) {
 							tuning = defaultCenterPitch;
 						} else {
@@ -541,11 +563,11 @@ public class DittyXMLParser {
 							instrument.intValue(), sfxFilename, sfxName,
 							sfxNameIncomplete, sfxNumber, tuning, -1, ditty
 									.getDittyID(), 0));
-					BlockSign.addMusicStringTokens(musicStringBuffer, ditty,
+					ditty.addMusicStringTokens(musicStringBuffer,
 							BlockSign.TIMED_EVENT_TOKEN + eventID, false);
 				} else if (currNodeName.equals("sfxInstOff")) {
 					int instrument = 0;
-					
+
 					// Get the instrument number to turn off
 					String instAttr = DOMUtil.getAttributeValue(currElement,
 							"i");
@@ -565,13 +587,13 @@ public class DittyXMLParser {
 							ditty.addErrorMessage("A <sfxInstOff> element speficies an instrument that is out of range (0 to 127 are valid).");
 						}
 					}
-					
+
 					// Create event
 					// Add keyword to schedule
 					int eventID = ditty
-							.addDittyEvent(new SFXInstrumentOffEvent(instrument, -1,
-									ditty.getDittyID()));
-					BlockSign.addMusicStringTokens(musicStringBuffer, ditty,
+							.addDittyEvent(new SFXInstrumentOffEvent(
+									instrument, -1, ditty.getDittyID()));
+					ditty.addMusicStringTokens(musicStringBuffer,
 							BlockSign.TIMED_EVENT_TOKEN + eventID, false);
 				}
 			}

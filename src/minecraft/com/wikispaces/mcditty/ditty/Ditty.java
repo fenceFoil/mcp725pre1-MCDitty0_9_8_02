@@ -29,12 +29,18 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.minecraft.src.BlockSign;
+
+import org.jfugue.JFugueException;
+
 import com.wikispaces.mcditty.CueScheduler;
 import com.wikispaces.mcditty.DestroyAction;
 import com.wikispaces.mcditty.bot.action.BotAction;
+import com.wikispaces.mcditty.config.MCDittyConfig;
 import com.wikispaces.mcditty.disco.DiscoFloor;
 import com.wikispaces.mcditty.ditty.event.CueEvent;
 import com.wikispaces.mcditty.ditty.event.TimedDittyEvent;
+import com.wikispaces.mcditty.signs.SignDitty;
 
 /**
  * Holds all the data necessary to play a ditty. A ditty is composed of a number
@@ -59,7 +65,7 @@ public class Ditty {
 	private LinkedList<DiscoFloor> discoFloors = new LinkedList<DiscoFloor>();
 
 	private LinkedList<String> errorMessages = new LinkedList<String>();
-	
+
 	private HashSet<Byte> instrumentUsed = new HashSet<Byte>();
 
 	/**
@@ -70,8 +76,8 @@ public class Ditty {
 	private int totalTokens = 0;
 
 	private String musicString = "";
-	
-	public Ditty () {
+
+	public Ditty() {
 	}
 
 	/**
@@ -277,6 +283,75 @@ public class Ditty {
 
 	public HashSet<Byte> getInstrumentUsed() {
 		return instrumentUsed;
+	}
+
+	/**
+	 * Adds musicString tokens to a musicString token buffer, checking them for
+	 * errors as they are added. Any error messages found are registered with
+	 * dittyProperties; error highlights are left to the calling method to add.
+	 * 
+	 * Also checks for noPlayTokens
+	 * 
+	 * @param buffer
+	 * @param tokens
+	 * @param checkForErrors
+	 * @return true if added without errors; false if added wtih errors.
+	 */
+	public boolean addMusicStringTokens(StringBuilder buffer,
+			String musicString, boolean checkForErrors) {
+		boolean errorFree = true;
+		String[] tokens = musicString.split(" ");
+		for (String token : tokens) {
+			// Only bother adding non-blank tokens
+			if (token.trim().length() > 0) {
+				// Check against NoPlayTokens
+				if (this instanceof SignDitty) {
+					for (String noPlayToken : MCDittyConfig.getNoPlayTokens()) {
+						// Check for equality, stripping color codes
+						if (noPlayToken.equalsIgnoreCase(token.replaceAll("§.",
+								""))) {
+							// Is a no play token!
+							((SignDitty) this).setContainsNoPlayTokens(true);
+							break;
+						}
+					}
+				}
+
+				// Check tokens for errors
+				if (checkForErrors) {
+					try {
+						BlockSign.musicStringParser.parseTokenStrict(token);
+					} catch (JFugueException e) {
+						// Token is not a valid token
+						addErrorMessage("§b" + token + "§c: " + e.getMessage());
+						incrementBadTokens();
+						errorFree = false;
+						if (MCDittyConfig.debug) {
+							BlockSign
+									.simpleLog("addMusicStringTokens: Bad token found ("
+											+ token + "):");
+							e.printStackTrace();
+						}
+					} catch (Exception e) {
+						// Token is a really screwed up token!
+						addErrorMessage("§cMCDitty cannot figure out this token: §b"
+								+ token);
+						incrementBadTokens();
+						errorFree = false;
+						if (MCDittyConfig.debug) {
+							BlockSign
+									.simpleLog("addMusicStringTokens: Really bad token found ("
+											+ token + "):");
+							e.printStackTrace();
+						}
+					}
+				}
+
+				incrementTotalTokens();
+				buffer.append(" ").append(token);
+			}
+		}
+		return errorFree;
 	}
 
 }

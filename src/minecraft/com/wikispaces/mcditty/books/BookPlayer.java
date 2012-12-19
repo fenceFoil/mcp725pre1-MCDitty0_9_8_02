@@ -337,7 +337,7 @@ public class BookPlayer {
 		// Parse ditty from containers
 		Ditty ditty = null;
 		try {
-			ditty = DittyXMLParser.parseDittyXMLContainers(allElementsInDitty);
+			ditty = DittyXMLParser.parseDittyXMLContainers(allElementsInDitty, null);
 		} catch (MissingContainerException e) {
 			// TODO Auto-generated catch block
 			// This had sure as hell better not be happening after all that code
@@ -354,7 +354,7 @@ public class BookPlayer {
 			return;
 		}
 
-		// Play ditty
+		// Play ditty, if one has been read
 		if (ditty != null) {
 			// Check for errors
 			if (ditty.getErrorMessages().size() > 0) {
