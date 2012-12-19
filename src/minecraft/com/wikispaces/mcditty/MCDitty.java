@@ -323,8 +323,169 @@ public class MCDitty {
 	 */
 	public boolean onTick(float partialTick, Minecraft minecraft) {
 		// Do in any tick, not just in game (see below section)
-		GuiScreen currentScreen = com.wikispaces.mcditty.GetMinecraft
-				.instance().currentScreen;
+		addButtonsToGuis();
+
+		// Get the current gui
+		GuiScreen currGui = minecraft.currentScreen;
+		
+		// Check whether a gui has just been closed
+		if (currGui == null && lastTickGui != null) {
+			// Just left a gui -- put a anti-click timer up to avoid the click
+			// that closed the gui clicking something in the game that is
+			// checked here.
+			doNotCheckForClicks = true;
+			MCDittyClickCheckThread t = new MCDittyClickCheckThread();
+			t.start();
+		}
+		lastTickGui = currGui;
+
+		if (firstTick) {
+			doFirstTickSetup();
+			// Mark the first tick as past
+			firstTick = false;
+		}
+
+		// Update the block damage value for sign entities
+		updateSignBlockDamages(minecraft);
+
+		// TODO: Find a better way of doing this
+		if (slowMinecraft) {
+			try {
+				//System.out.println (sleepOnTickTime);
+				Thread.sleep(sleepOnTickTime);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// Check all prox pads for collisions
+		updateProxpads(minecraft);
+
+		// If not in a gui...
+		if (currGui == null) {
+			// Do keyboard checks
+			// TODO: Move to separate thread
+			checkForKeyCommands();
+
+			// Check for a sign to be clicked
+			if (!doNotCheckForClicks) {
+				handleMouseInput(minecraft);
+			}
+		}
+
+		// Check queues for any events to process from songs
+		processLyricsRequests();
+		processParticleRequests(minecraft);
+
+		// Finish and return
+		lastTickGui = currGui;
+		return true;
+	}
+
+	private void handleMouseInput(Minecraft minecraft) {
+		if (Mouse.isButtonDown(1) || Mouse.isButtonDown(0)) {
+			if (minecraft != null && minecraft.objectMouseOver != null) {
+				Point3D hoverPoint = new Point3D(
+						minecraft.objectMouseOver.blockX,
+						minecraft.objectMouseOver.blockY,
+						minecraft.objectMouseOver.blockZ);
+				// Get the item held by the player
+				ItemStack heldStack = minecraft.thePlayer
+						.getCurrentEquippedItem();
+				int held = 0;
+				if (heldStack != null) {
+					held = heldStack.itemID;
+				}
+
+				if (BlockSign.getSignBlockType(hoverPoint,
+						minecraft.theWorld) != null) {
+					// A sign has been clicked!
+					// Perform some functions of
+					// BlockSign.blockActivated
+					if (isIDPickaxe(held)
+							&& !BlockSign.clickHeld) {
+						BlockSign.clickHeld = true;
+						MCDittyRightClickCheckThread t = new MCDittyRightClickCheckThread();
+						t.start();
+
+						// Pickaxe! "Pick" a sign to test.
+						TileEntity blockEntity = minecraft.theWorld
+								.getBlockTileEntity(hoverPoint.x,
+										hoverPoint.y, hoverPoint.z);
+						if (blockEntity instanceof TileEntitySign) {
+							((TileEntitySign) blockEntity).picked = !((TileEntitySign) blockEntity).picked;
+							if (((TileEntitySign) blockEntity).picked) {
+								pickedSigns
+										.add((TileEntitySign) blockEntity);
+								BlockSign.writeChatMessage(
+										minecraft.theWorld,
+										"§2Picked a sign. ("
+												+ pickedSigns.size()
+												+ " picked)");
+							} else {
+								pickedSigns
+										.remove((TileEntitySign) blockEntity);
+								BlockSign.writeChatMessage(
+										minecraft.theWorld,
+										"§2Un-picked a sign. ("
+												+ pickedSigns.size()
+												+ " left)");
+							}
+						}
+					} else {
+						// Manually trigger blockActivated
+						((BlockSign) Block.signPost).blockActivated(
+								minecraft.theWorld, hoverPoint.x,
+								hoverPoint.y, hoverPoint.z,
+								minecraft.thePlayer);
+					}
+				} else {
+					// If not aiming at a sign
+					if ((held == 270 || held == 274 || held == 285
+							|| held == 278 || held == 257)
+							&& !BlockSign.clickHeld) {
+						BlockSign.clickHeld = true;
+						MCDittyRightClickCheckThread t = new MCDittyRightClickCheckThread();
+						t.start();
+
+						// Pickaxe! "Unpick" all signs.
+
+						if (pickedSigns.size() > 0) {
+							for (TileEntitySign t1 : pickedSigns) {
+								t1.picked = false;
+							}
+							pickedSigns.clear();
+
+							BlockSign.writeChatMessage(
+									minecraft.theWorld,
+									"§2Unpicked all signs.");
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private void showProxpadCorners(Minecraft minecraft) {
+		if (MCDittyConfig.debug) {
+			for (ProxPadBoundingBox bb : proxPadBBs) {
+				if (rand.nextDouble() > 0.7f) {
+					if (bb.getBox() != null) {
+						double xVel = rand.nextDouble();
+						minecraft.theWorld.spawnParticle("note",
+								bb.getBox().maxX, bb.getBox().maxY,
+								bb.getBox().maxZ, xVel, 0D, 0D);
+						minecraft.theWorld.spawnParticle("note",
+								bb.getBox().minX, bb.getBox().minY,
+								bb.getBox().minZ, xVel, 0D, 0D);
+					}
+				}
+			}
+		}
+	}
+
+	private void addButtonsToGuis() {
+		GuiScreen currentScreen = GetMinecraft.instance().currentScreen;
 		if (currentScreen != null) {
 			List mControlList = null;
 			try {
@@ -363,164 +524,6 @@ public class MCDitty {
 				}
 			}
 		}
-
-		// Check that this is really a tick "in the game"
-		// Modloader used to do this for me... :(
-		GuiScreen currGui = minecraft.currentScreen;
-
-		if (currGui != null) {
-			// // If in a gui, exit immediately
-			// lastTickGui = currGui;
-			// return true;
-		} else if (lastTickGui != null) {
-			// Just left a gui -- put a anti-click timer up to avoid the click
-			// that closed the gui clicking something in the game that is
-			// checked here.
-			doNotCheckForClicks = true;
-			MCDittyClickCheckThread t = new MCDittyClickCheckThread();
-			t.start();
-
-			// lastTickGui = null;
-		}
-
-		if (firstTick) {
-			doFirstTickSetup();
-			// Mark the first tick as past
-			firstTick = false;
-		}
-
-		// Update the block damage value for sign entities
-		updateSignBlockDamages(minecraft);
-
-		// TODO: Find a better way of doing this
-		if (slowMinecraft) {
-			try {
-				Thread.sleep(sleepOnTickTime);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		// TODO: Debug proxpads by showing corners with particles
-		if (MCDittyConfig.debug) {
-			for (ProxPadBoundingBox bb : proxPadBBs) {
-				if (rand.nextDouble() > 0.7f) {
-					if (bb.getBox() != null) {
-						double xVel = rand.nextDouble();
-						minecraft.theWorld.spawnParticle("note",
-								bb.getBox().maxX, bb.getBox().maxY,
-								bb.getBox().maxZ, xVel, 0D, 0D);
-						minecraft.theWorld.spawnParticle("note",
-								bb.getBox().minX, bb.getBox().minY,
-								bb.getBox().minZ, xVel, 0D, 0D);
-					}
-				}
-			}
-		}
-
-		// Check all prox pads for collisions
-		checkProxpadCollisions(minecraft);
-
-		// If not in a gui...
-		if (currGui == null) {
-			// Do keyboard checks
-			// TODO: Move to separate thread
-			checkForKeyCommands();
-
-			// Check for a sign to be clicked
-			if (!doNotCheckForClicks) {
-				if (Mouse.isButtonDown(1) || Mouse.isButtonDown(0)) {
-					if (minecraft != null && minecraft.objectMouseOver != null) {
-						Point3D hoverPoint = new Point3D(
-								minecraft.objectMouseOver.blockX,
-								minecraft.objectMouseOver.blockY,
-								minecraft.objectMouseOver.blockZ);
-						// Get the item held by the player
-						ItemStack heldStack = minecraft.thePlayer
-								.getCurrentEquippedItem();
-						int held = 0;
-						if (heldStack != null) {
-							held = heldStack.itemID;
-						}
-
-						if (BlockSign.getSignBlockType(hoverPoint,
-								minecraft.theWorld) != null) {
-							// A sign has been clicked!
-							// Perform some functions of
-							// BlockSign.blockActivated
-							if ((held == 270 || held == 274 || held == 285
-									|| held == 278 || held == 257)
-									&& !BlockSign.clickHeld) {
-								BlockSign.clickHeld = true;
-								MCDittyRightClickCheckThread t = new MCDittyRightClickCheckThread();
-								t.start();
-
-								// Pickaxe! "Pick" a sign to test.
-								TileEntity blockEntity = minecraft.theWorld
-										.getBlockTileEntity(hoverPoint.x,
-												hoverPoint.y, hoverPoint.z);
-								if (blockEntity instanceof TileEntitySign) {
-									((TileEntitySign) blockEntity).picked = !((TileEntitySign) blockEntity).picked;
-									if (((TileEntitySign) blockEntity).picked) {
-										pickedSigns
-												.add((TileEntitySign) blockEntity);
-										BlockSign.writeChatMessage(
-												minecraft.theWorld,
-												"§2Picked a sign. ("
-														+ pickedSigns.size()
-														+ " picked)");
-									} else {
-										pickedSigns
-												.remove((TileEntitySign) blockEntity);
-										BlockSign.writeChatMessage(
-												minecraft.theWorld,
-												"§2Un-picked a sign. ("
-														+ pickedSigns.size()
-														+ " left)");
-									}
-								}
-							} else {
-								// Manually trigger blockActivated
-								((BlockSign) Block.signPost).blockActivated(
-										minecraft.theWorld, hoverPoint.x,
-										hoverPoint.y, hoverPoint.z,
-										minecraft.thePlayer);
-							}
-						} else {
-							// If not aiming at a sign
-							if ((held == 270 || held == 274 || held == 285
-									|| held == 278 || held == 257)
-									&& !BlockSign.clickHeld) {
-								BlockSign.clickHeld = true;
-								MCDittyRightClickCheckThread t = new MCDittyRightClickCheckThread();
-								t.start();
-
-								// Pickaxe! "Unpick" all signs.
-
-								if (pickedSigns.size() > 0) {
-									for (TileEntitySign t1 : pickedSigns) {
-										t1.picked = false;
-									}
-									pickedSigns.clear();
-
-									BlockSign.writeChatMessage(
-											minecraft.theWorld,
-											"§2Unpicked all signs.");
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		// Check queues for any events to process from songs
-		processLyricsRequests();
-		processParticleRequests(minecraft);
-
-		// Finish and return
-		lastTickGui = currGui;
-		return true;
 	}
 
 	public void processLyricsRequests() {
@@ -687,6 +690,31 @@ public class MCDitty {
 			return candidateValue;
 		}
 	}
+	
+	public static boolean isIDPickaxe (int id) {
+		// Order of checks: iron, wood, stone, diamond, gold
+		return (id == 257 || id == 270 || id == 274
+				|| id == 278 || id == 285);
+	}
+	
+	public static boolean isIDAxe (int id) {
+		return (id == 258 || id == 271 || id == 275
+				|| id == 279 || id == 286);
+	}
+	
+	public static boolean isIDShovel (int id) {
+		return (id == 256 || id == 269 || id == 273
+				|| id == 277 || id == 284);
+	}
+	
+	public static boolean isIDHoe (int id) {
+		return (id >= 290 && id <= 294);
+	}
+	
+	public static boolean idIDSword (int id) {
+		return (id == 267 || id == 268 || id == 272
+				|| id == 276 || id == 283);
+	}
 
 	public void checkForKeyCommands() {
 		keypressHandler.update();
@@ -698,7 +726,10 @@ public class MCDitty {
 	 * 
 	 * @param minecraft
 	 */
-	public void checkProxpadCollisions(Minecraft minecraft) {
+	public void updateProxpads(Minecraft minecraft) {
+		// Debug proxpads by showing corners with particles
+		showProxpadCorners(minecraft);
+		
 		// Set up any prox pads that still need their bounding boxes defined
 		addBBsToNewProxpads();
 
@@ -1250,9 +1281,10 @@ public class MCDitty {
 								GetMinecraft.instance().theWorld);
 						GetMinecraft.instance().theWorld.addEntityToWorld(
 								12345678, hookEntity);
-						//System.out.println("Adding MCDitty tick hook entity");
+						// System.out.println("Adding MCDitty tick hook entity");
 					} else {
-						//System.out.println ("Tick hook entity already added!");
+						// System.out.println
+						// ("Tick hook entity already added!");
 					}
 				}
 				return;
