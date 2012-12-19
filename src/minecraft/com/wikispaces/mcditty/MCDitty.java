@@ -727,6 +727,11 @@ public class MCDitty {
 	 * @param minecraft
 	 */
 	public void updateProxpads(Minecraft minecraft) {
+		// Eschew all proxpad updates and activations if MCDitty is off
+		if (MCDittyConfig.turnedOff) {
+			return;
+		}
+		
 		// Debug proxpads by showing corners with particles
 		showProxpadCorners(minecraft);
 		

@@ -63,10 +63,13 @@ public class KeypressProcessor {
 				Keyboard.KEY_D, KeyBinding.CTRL_KEYS);
 		DEFAULT_BINDINGS.add(menuBinding);
 
-		KeyBinding showErrorsBinding = new KeyBinding(
-				"Show No Errors (Silent Mode)", "showErrors", Keyboard.KEY_S,
-				KeyBinding.CTRL_KEYS);
+		KeyBinding showErrorsBinding = new KeyBinding("Hide Errors",
+				"showErrors", Keyboard.KEY_S, KeyBinding.CTRL_KEYS);
 		DEFAULT_BINDINGS.add(showErrorsBinding);
+
+		KeyBinding mcdittyOffBinding = new KeyBinding("Turn Off MCDitty",
+				"mcdittyOff", Keyboard.KEY_O, KeyBinding.CTRL_KEYS);
+		DEFAULT_BINDINGS.add(mcdittyOffBinding);
 
 		KeyBinding playBookBinding = new KeyBinding("Play Held Book",
 				"playBook", Keyboard.KEY_B, KeyBinding.CTRL_KEYS);
@@ -167,6 +170,18 @@ public class KeypressProcessor {
 		} else if (action.equalsIgnoreCase("playBook")) {
 			// Play currently held book
 			BookPlayer.playHeldBook(GetMinecraft.instance().thePlayer);
+		} else if (action.equalsIgnoreCase("mcdittyOff")) {
+			// Toggle MCDitty on and off
+			MCDittyConfig.turnedOff = !MCDittyConfig.turnedOff;
+			try {
+				MCDittyConfig.writeConfigFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			BlockSign.writeChatMessage(GetMinecraft.instance().theWorld,
+					(MCDittyConfig.turnedOff) ? "MCDitty: §cOff"
+							: "MCDitty: §aOn");
 		}
 	}
 

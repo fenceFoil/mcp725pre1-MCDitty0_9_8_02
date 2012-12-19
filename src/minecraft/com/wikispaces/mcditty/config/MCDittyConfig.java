@@ -192,6 +192,11 @@ public class MCDittyConfig {
 	public static boolean showErrorsOnSigns = true;
 
 	/**
+	 * Whether to act as though MCDitty isn't there
+	 */
+	public static boolean turnedOff = false;
+
+	/**
 	 * Note: Strips newlines, leaving spaces
 	 * 
 	 * @return the no play tokens from file or an empty string
@@ -545,6 +550,14 @@ public class MCDittyConfig {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+					} else if (lineIn.startsWith("MCDittyOff=")) {
+						lineIn = lineIn.replace("MCDittyOff=", "");
+						try {
+							turnedOff = Boolean.parseBoolean(lineIn);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					} else if (lineIn.startsWith("SignColorSlider=")) {
 						lineIn = lineIn.replace("SignColorSlider=", "");
 						try {
@@ -674,6 +687,12 @@ public class MCDittyConfig {
 			configOut.newLine();
 			configOut.write("ShowWelcomeMessage="
 					+ Boolean.toString(showWelcomeMessage));
+			configOut.newLine();
+			configOut.newLine();
+			configOut
+					.write("Whether MCDitty plays ditties. Possible values: true false");
+			configOut.newLine();
+			configOut.write("MCDittyOff=" + Boolean.toString(turnedOff));
 			configOut.newLine();
 			configOut.newLine();
 			configOut
