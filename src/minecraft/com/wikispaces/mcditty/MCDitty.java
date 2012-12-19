@@ -323,43 +323,6 @@ public class MCDitty {
 	 */
 	public boolean onTick(float partialTick, Minecraft minecraft) {
 		// Do in any tick, not just in game (see below section)
-
-		// Check for gui reopens
-		if (reopenBookGui) {
-			GetMinecraft.instance().displayGuiScreen(
-					new GuiScreenBook(GetMinecraft.instance().thePlayer,
-							reopenBookGuiBook.getBookItem(), reopenBookGuiBook
-									.isBookUnsigned()));
-
-			// // Save newly imported book in editor
-			// DIDN'T WORK: BOOK WASN"T COUNTED AS "MODIFIED"
-			// try {
-			// Method sendBookToServerMethod = GetMinecraft
-			// .getUniqueParameterMethodFromClass(
-			// reopenBookGuiBookGui.getClass(),
-			// reopenBookGuiBookGui, boolean.class);
-			// if (sendBookToServerMethod != null) {
-			// try {
-			// sendBookToServerMethod.invoke(reopenBookGuiBookGui, false);
-			// } catch (InvocationTargetException e) {
-			// // TODO Auto-generated catch
-			// // block
-			// e.printStackTrace();
-			// }
-			//
-			// }
-			// } catch (IllegalArgumentException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// } catch (IllegalAccessException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
-
-			reopenBookGui = false;
-		}
-		// TODO: Refactor above into a method
-
 		GuiScreen currentScreen = com.wikispaces.mcditty.GetMinecraft
 				.instance().currentScreen;
 		if (currentScreen != null) {
@@ -1988,15 +1951,5 @@ public class MCDitty {
 			BOOKGUI_EXPORT_BUTTON.setBookGui(gui);
 			controlList.add(BOOKGUI_EXPORT_BUTTON);
 		}
-	}
-
-	private static boolean reopenBookGui = false;
-	private static GuiScreenBook reopenBookGuiBookGui = null;
-	private static WrappedBook reopenBookGuiBook = null;
-
-	public static void reopenBookGui(GuiScreenBook g, WrappedBook b) {
-		reopenBookGui = true;
-		reopenBookGuiBookGui = g;
-		reopenBookGuiBook = b;
 	}
 }
