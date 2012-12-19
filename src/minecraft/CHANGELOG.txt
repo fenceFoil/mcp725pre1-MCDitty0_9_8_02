@@ -11,12 +11,9 @@ FUTURE Late October, 2012: Version 0.9.7 +
 - Signs naming skulls
 - Signs with animated faces, rotations, etc.
 - Skinned signs?
-- Sign note particles color coded by pitch, voice
 Show emitter stats in sign editor keyword help
 
 - Keywords: accelerate, crescendo, decrescendo, decellerate, autochord, triplet, appregiator?
-
-- Added an assortment of particles to Emitter
 
 - TODO: Fix pitches in 1_3EffectPitches.txt
 
