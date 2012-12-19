@@ -432,7 +432,7 @@ public class MCDitty {
 												+ " left)");
 							}
 						}
-					} else {
+					} else if (!isIDAxe(held)){
 						// Manually trigger blockActivated
 						((BlockSign) Block.signPost).blockActivated(
 								minecraft.theWorld, hoverPoint.x,
