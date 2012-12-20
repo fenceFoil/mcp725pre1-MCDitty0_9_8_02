@@ -491,7 +491,7 @@ public class WrappedBook {
 				} else {
 					// Remove page tag
 					// TODO: Sync this with WrappedBook's pages.
-					bookItem.func_77983_a("pages", pagesTagList);
+					bookItem.setTagInfo("pages", pagesTagList);
 				}
 
 				String serverInstructionHeader = "MC|BEdit";

@@ -64,7 +64,7 @@ public class TileEntitySkullRenderer2 extends TileEntitySpecialRenderer
                 {
                     String var9 = "http://skins.minecraft.net/MinecraftSkins/" + StringUtils.stripControlCodes(par7Str) + ".png";
 
-                    if (!field_82397_a.tileEntityRenderer.renderEngine.func_82773_c(var9))
+                    if (!field_82397_a.tileEntityRenderer.renderEngine.hasImageData(var9))
                     {
                         field_82397_a.tileEntityRenderer.renderEngine.obtainImageData(var9, new ImageBufferDownload());
                     }

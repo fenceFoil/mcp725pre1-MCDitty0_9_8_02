@@ -1309,3 +1309,16 @@
 /WorldSettings.java
 /WorldType.java
 /WrongUsageException.java
+/BehaviorDispenseFirework.java
+/EnchantmentThorns.java
+/EntityFireworkOverlayFX.java
+/EntityFireworkRocket.java
+/EntityFireworkSparkFX.java
+/EntityFireworkStarterFX.java
+/ItemBook.java
+/ItemEnchantedBook.java
+/ItemFirework.java
+/ItemFireworkCharge.java
+/RecipeFireworks.java
+/ScheduledSound.java
+/TileEntityMobSpawnerSpawnData.java
