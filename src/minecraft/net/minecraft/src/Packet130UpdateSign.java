@@ -73,9 +73,6 @@ public class Packet130UpdateSign extends Packet {
 		id = nextID;
 		nextID++;
 
-		// IF YOU ARE READING THIS AND THE SIGN CLEARING BUG IS GONE, DELETE
-		// THIS SOURCE
-
 		// // Handle color codes
 		// if (signColorCode != null) {
 		// signLines[2] += "%" + signColorCode;
@@ -85,120 +82,6 @@ public class Packet130UpdateSign extends Packet {
 		// par2
 		// + ":" + par3 + ":" + signLines[0] + "," + signLines[1] + ","
 		// + signLines[2] + "," + signLines[3]);
-
-		Throwable stackTraceGetter = new Throwable();
-		//stackTraceGetter.printStackTrace(System.out);
-		StackTraceElement[] stackTrace = stackTraceGetter.getStackTrace();
-		for (StackTraceElement s : stackTrace) {
-			if (!MCDittyConfig.MC_CURRENT_VERSION.equals("1.4.4")) {
-				System.out
-						.println("MCDitty Mod: UPDATE WARNING (to coder): Update the class name for PlayerInstance in the constructor for Packet130UpdateSign.class, used in filtering buggy SSP packets.");
-			}
-			/*
-			 * if (s.getClassName().endsWith("PlayerInstance") ||
-			 * s.getClassName().endsWith("il")) { if (signIsBlank(signLines)) {
-			 * // System.out.println("*****  Glitchy glitchy packet! *****"); //
-			 * System.out.println("*****  Intercepting. *****");
-			 * 
-			 * // Minecraft 1.4.4 added sign debug messages that foil my // old
-			 * // interception method of //
-			 * "throw the packet's x, y, and z into the Hinterlands."
-			 * 
-			 * // System.out.println("Original line was " + signLines[0]);
-			 * 
-			 * // Mark the text in this packet as buggy crap signLines[0] =
-			 * TileEntitySign.INVALID_PACKET_LINE;
-			 * 
-			 * // System.out.println("Replacing with " + signLines[0]); }
-			 * 
-			 * return; }
-			 */
-		}
-
-		//
-		// // Check that this is not a buggy duplicate packet
-		// // Still necessary for SMP: the above code doesn't work for a
-		// // non-integrated server
-		// // This attacks the symptoms of buggy packets; the above code
-		// attacked
-		// // the source
-		//
-		// // First, discard expired (1.5 sec) packets from recentPackets
-		// for (int i = 0; i < recentPackets.size(); i++) {
-		// Packet130Info inf = recentPackets.get(i);
-		// if (System.currentTimeMillis() - inf.timeConstructed > 1500) {
-		// // old packet
-		// recentPackets.remove(i);
-		// i--;
-		// }
-		// }
-		//
-		// // Then, check to see if this packet is a bugged out duplicate
-		// // If its text is blank and the previous packets were not blank, it
-		// is a
-		// // bugged out sign packet.
-		//
-		// // Check blankness
-		// int blankLines = 0;
-		// for (int i = 0; i < 4; i++) {
-		// if (signLines[i].trim().equals("")) {
-		// blankLines++;
-		// }
-		// }
-		// if (blankLines == 4) {
-		// // System.out.println("Sign is blank; glitchiness testing starting");
-		// // Sign packet is blanked; check to see if it is a glitch
-		// // Has a previous packet been sent for this sign recently with text
-		// // in it?
-		// for (Packet130Info i : recentPackets) {
-		// if (i.packet.xPosition == xPosition
-		// && i.packet.yPosition == yPosition
-		// && i.packet.zPosition == zPosition) {
-		// //System.out.println("Previous recent packets exist");
-		// // In same block
-		// // Was previous packet blank too, or did it have text?
-		// boolean previousSignPacketWasBlank = true;
-		// for (String l : i.packet.signLines) {
-		// //System.out.println(l);
-		// if (l.trim().length() > 0) {
-		// previousSignPacketWasBlank = false;
-		// break;
-		// }
-		// }
-		// if (previousSignPacketWasBlank) {
-		// // This packet is fine. Let it be.
-		// //System.out
-		// // .println("Previous packet was blank too; false alarm");
-		// } else {
-		// // This packet would've caused the sign to flicker
-		// // and/or lose its text. Replace the glitchy blank text
-		// // with the correct text.
-		// //signLines = i.packet.signLines;
-		//
-		// // This is crap. Delete it if you see it again looking
-		// // at this code.
-		// // TileEntity t =
-		// // GetMinecraft.instance().theWorld.getBlockTileEntity(xPosition,
-		// // yPosition, zPosition);
-		// // if (t instanceof TileEntitySign) {
-		// // TileEntitySign ts = (TileEntitySign) t;
-		// // for (int c=0;c<4;c++) {
-		// // ts.signText[c] = i.packet.signLines[c];
-		// // }
-		// // }
-		//
-		// System.out.println("Fixed a glitched sign packet!");
-		// xPosition = Integer.MAX_VALUE;
-		// yPosition = Integer.MAX_VALUE;
-		// zPosition = Integer.MAX_VALUE;
-		// }
-		// }
-		// }
-		// }
-		//
-		// recentPackets.add(new Packet130Info((Packet130UpdateSign)
-		// this.clone(),
-		// System.currentTimeMillis()));
 	}
 
 	private static boolean signIsBlank(String[] sArr) {

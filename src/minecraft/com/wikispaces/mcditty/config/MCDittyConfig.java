@@ -63,7 +63,7 @@ public class MCDittyConfig {
 	/**
 	 * Minecraft version that the mod is designed for.
 	 */
-	public static final String MC_CURRENT_VERSION = "1.4.4";
+	public static final String MC_CURRENT_VERSION = "1.4.6";
 
 	/**
 	 * Constants representing volume modes
