@@ -82,9 +82,7 @@ public class WrappedBook {
 	// Determines whether I forgot to add a new "validPageLength" method for
 	// this version of MC
 	static {
-		if (MCDittyConfig.MC_CURRENT_VERSION.equalsIgnoreCase("1.3.2")
-				|| MCDittyConfig.MC_CURRENT_VERSION.equalsIgnoreCase("1.3.1")
-				|| MCDittyConfig.MC_CURRENT_VERSION.equalsIgnoreCase("1.4.0") || MCDittyConfig.MC_CURRENT_VERSION.equalsIgnoreCase("1.4.4")) {
+		if (MCDittyConfig.MC_CURRENT_VERSION.equalsIgnoreCase("1.4.6")) {
 			// All is right
 			usePageLengthValidatorVersion = 1;
 		} else {
