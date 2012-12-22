@@ -624,8 +624,8 @@ public class BlockSign extends BlockContainer {
 			if (dittyProperties.getErrorMessages().size() <= 0) {
 				// Handle muting before playing a song
 				if (dittyProperties.getMuting()) {
-					// Mute: stop all playing music
-					mutePlayingDitties();
+					// Mute: stop all playing music except this music
+					mutePlayingDitties(dittyProperties.getDittyID());
 				}
 
 				// If applicable, save midi of song
@@ -1962,11 +1962,12 @@ public class BlockSign extends BlockContainer {
 
 	/**
 	 * Instructs all playing mcditty songs to mute themselves.
+	 * @param  
 	 */
-	public static void mutePlayingDitties() {
+	public static void mutePlayingDitties(int... exceptedDittyIDs) {
 		MuteDittyThread t = new MuteDittyThread(
 				DittyPlayerThread.jFuguePlayerThreads,
-				MCDitty.getPlayMidiSequencers());
+				MCDitty.getPlayMidiSequencers(), exceptedDittyIDs);
 		t.start();
 	}
 

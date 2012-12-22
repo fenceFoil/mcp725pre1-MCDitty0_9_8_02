@@ -41,11 +41,13 @@ import com.wikispaces.mcditty.ditty.DittyPlayerThread;
 public class MuteDittyThread extends Thread {
 	private ConcurrentLinkedQueue<DittyPlayerThread> players;
 	private LinkedList<Sequencer> playMidiSequencers;
+	private int[] exceptedDittyIDs;
 
 	public MuteDittyThread(ConcurrentLinkedQueue<DittyPlayerThread> players,
-			LinkedList<Sequencer> playMidiSequencers) {
+			LinkedList<Sequencer> playMidiSequencers, int[] exceptedDittyIDs) {
 		this.players = players;
 		this.playMidiSequencers = playMidiSequencers;
+		this.exceptedDittyIDs = exceptedDittyIDs;
 		setName("Ditty Muter");
 	}
 
@@ -57,7 +59,9 @@ public class MuteDittyThread extends Thread {
 	@Override
 	public void run() {
 		for (DittyPlayerThread player : players) {
-			player.mute();
+			if (!isInArray(player.getDitty().getDittyID(), exceptedDittyIDs)) {
+				player.mute();
+			}
 		}
 
 		for (Sequencer sequencer : playMidiSequencers) {
@@ -70,6 +74,15 @@ public class MuteDittyThread extends Thread {
 				sequencer.close();
 			}
 		}
+	}
+
+	public boolean isInArray(int value, int[] array) {
+		for (int i : array) {
+			if (i == value) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

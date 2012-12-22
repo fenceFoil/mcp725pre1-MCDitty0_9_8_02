@@ -736,4 +736,8 @@ public class DittyPlayerThread extends Thread implements
 			}
 		}
 	}
+
+	public Ditty getDitty() {
+		return ditty;
+	}
 }
