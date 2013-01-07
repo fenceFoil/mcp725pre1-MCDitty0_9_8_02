@@ -59,7 +59,7 @@ public class MCDittyConfig {
 	/**
 	 * Current MCDitty version.
 	 */
-	public static final String CURRENT_VERSION = "0.9.8.02";
+	public static final String CURRENT_VERSION = "0.9.8.03";
 	/**
 	 * Minecraft version that the mod is designed for.
 	 */
