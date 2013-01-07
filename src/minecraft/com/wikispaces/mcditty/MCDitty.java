@@ -609,7 +609,7 @@ public class MCDitty {
 						minecraft.theWorld.spawnParticle("smoke", partX, partY,
 								partZ, velX, velY, velZ);
 					} else if (particleRequest.getParticleType().equals(
-							"pissedVillager")) {
+							"villagerFace")) {
 						// Generic particle
 						// Determine location
 						double locationVariance = particleRequest

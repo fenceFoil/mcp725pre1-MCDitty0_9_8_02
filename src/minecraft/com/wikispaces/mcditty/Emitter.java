@@ -80,7 +80,8 @@ public class Emitter {
 		particleHandleMap.put("angry", "angryVillager");
 		particleHandleMap.put("happy", "happyVillager");
 		// Iconcrack, tilecrack
-		particleHandleMap.put("mad", "pissedVillager");
+		particleHandleMap.put("mad", "villagerFace");
+		particleHandleMap.put("face", "villagerFace");
 	}
 
 	public Emitter(CreateEmitterEvent sourceEvent) {
