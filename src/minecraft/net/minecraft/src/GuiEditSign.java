@@ -1248,7 +1248,7 @@ public class GuiEditSign extends GuiScreen implements
 		// Show generic comment help
 		helpTextArea
 				.setText(BlockSign.COMMENT_HIGHLIGHT_CODE
-						+ "Comment:§r\n\nNothing on this line is read as a keyword or music. Comments are used by the keyword GoTo, to specify what sign to read next.");
+						+ "Comment:§r\n\nText that isn't read as music.\n\nGoto and Patt keywords can jump to comments.");
 		return;
 	}
 
@@ -1497,7 +1497,7 @@ public class GuiEditSign extends GuiScreen implements
 				colorCode = "§e";
 				errorMessage = "Constant: §e"
 						+ voiceNumString
-						+ "\n\n§eRemember to define this constant somewhere with the $ token, otherwise this token won't play.";
+						+ "\n\n§eRemember to define this constant somewhere with the $ token, otherwise this token won't do anything.";
 			}
 		} else {
 			// Only first letter has been written
@@ -1541,7 +1541,7 @@ public class GuiEditSign extends GuiScreen implements
 					if (voiceNum == 9) {
 						errorMessage = "9 is the Percussion Voice -- any notes after this token become drum beats and other sounds.";
 					} else {
-						errorMessage = "Good voice.";
+						errorMessage = "Voice: " + voiceNum;
 					}
 				}
 			} else {
@@ -1580,17 +1580,18 @@ public class GuiEditSign extends GuiScreen implements
 			if (LyricKeyword.isValidCueLabel(lyricLabel)) {
 				colorCode = "§a";
 				errorMessage = "Lyric Name: §a" + lyricLabel
-						+ "\n\n§eWill play lyric named " + lyricLabel + ".";
+						+ "\n\n§eWill show lyric:\n§e" + lyricLabel;
 			} else {
 				colorCode = "§c";
-				errorMessage = "Lyric names should only contain letters, numbers, and underscores.";
+				errorMessage = "Lyric names only have letters, numbers, and underscores in them.";
 			}
 		} else {
 			// Only first letter has been written
 			// Make first line red
 			colorCode = "§c";
 
-			errorMessage = "Follow with a lyric name.\n\nLyric tokens trigger lyrics set with the §bLyric§r keyword. See the §bLyric§r keyword's help for more information.";
+			errorMessage = "Follow with a lyric name.\n\n"
+					+ "Lyric tokens trigger lyrics set with the §bLyric§r keyword.";
 		}
 
 		StringBuilder help = new StringBuilder();
@@ -1624,11 +1625,11 @@ public class GuiEditSign extends GuiScreen implements
 				if (tempoNum < 20 || tempoNum > 300) {
 					// Out of range
 					colorCode = "§c";
-					errorMessage = "Tempos are between 20 and 300 BPM.";
+					errorMessage = "Tempos can range between 20 and 300 BPM.";
 				} else {
 					// In range
 					colorCode = "§a";
-					errorMessage = "Good tempo.";
+					errorMessage = "Tempo: " + tempoNum + " BPM";
 				}
 			} else {
 				// Is a constant
@@ -1645,7 +1646,7 @@ public class GuiEditSign extends GuiScreen implements
 					colorCode = "§e";
 					errorMessage = "§eConstant: "
 							+ tempoNumString
-							+ "\n\n§eRemember to define this constant somewhere with the $ token, otherwise this token won't play.";
+							+ "\n\n§eRemember to define this constant somewhere with the $ token, otherwise the tempo won't change.";
 				}
 
 				StringBuilder matchingConstantsList = new StringBuilder();
@@ -1670,11 +1671,12 @@ public class GuiEditSign extends GuiScreen implements
 
 			StringBuilder errorMessageBuilder = new StringBuilder();
 			errorMessageBuilder
-					.append("Follow with a number between 20 and 300 or a constant.\n\nSets the tempo at this time across all voices and layers.\n\n§dConstants:§r\n");
+					.append("Follow with a number between 20 and 300 or a constant.\n\nChanges the tempo at this time in the ditty.\n\n§dConstants:§r\n");
 			for (String s : allTempoKeys) {
 				errorMessageBuilder.append(s).append(" (")
 						.append(allTempoConstants.get(s)).append(" BPM)\n");
 			}
+			errorMessageBuilder.append ("\n Works simultaneously across all voices and layers.");
 			errorMessage = errorMessageBuilder.toString();
 		}
 
@@ -1712,7 +1714,7 @@ public class GuiEditSign extends GuiScreen implements
 				if (instrumentNum < 0 || instrumentNum > 127) {
 					// Out of range
 					colorCode = "§c";
-					errorMessage = "Instruments range from 0 and 127.";
+					errorMessage = "Instruments go from 0 to 127.";
 				} else {
 					// In range
 					colorCode = "§a";
@@ -1845,7 +1847,7 @@ public class GuiEditSign extends GuiScreen implements
 				+ "* An octave number from 0 to 10. (Default is 5)\n"
 				+ "* And a duration.\n"
 				+ "\n"
-				+ "All parts are optional except for the first letter. The duration is one or more letters, each representing a note length:\n"
+				+ "Everything after the first letter is optional. The duration is a combination of one or more letters, representing a note length:\n"
 				+ "* W is a whole note\n"
 				+ "* H is a half note\n"
 				+ "* Q is a quarter note\n"
@@ -1855,9 +1857,9 @@ public class GuiEditSign extends GuiScreen implements
 				+ "* X is a 64th note\n"
 				+ "* O is a 128th note\n"
 				+ "\n"
-				+ "These can be combined; for example, A6wh is a whole note + a half note.\n"
+				+ "For example, Cw is a whole note, and A6wh is a whole note + a half note.\n"
 				+ "\n"
-				+ "Rests are silent notes. They consist of the letter R followed by a duration.\n"
+				+ "Rests are silent. They consist of the letter R followed by a duration.\n"
 				+ "\n"
 				+ "\nFor more detail on notes and every MusicString token, see Chapter 2 of this guide:\n\njfugue.org/howto.html");
 		helpTextArea.setText(help.toString());
@@ -2133,7 +2135,8 @@ public class GuiEditSign extends GuiScreen implements
 		} else if (keyword instanceof GotoKeyword) {
 			// Show matching comments in immediate area
 
-			if (keyword.getWholeKeyword().equalsIgnoreCase("goto") || keyword.getWholeKeyword().equalsIgnoreCase("patt")) {
+			if (keyword.getWholeKeyword().equalsIgnoreCase("goto")
+					|| keyword.getWholeKeyword().equalsIgnoreCase("patt")) {
 				showDefaultKeywordHelp(keyword);
 			} else {
 				GotoKeyword gotoKeyword = (GotoKeyword) keyword;
@@ -2141,7 +2144,8 @@ public class GuiEditSign extends GuiScreen implements
 				// Fill auto-suggest
 				Comment bestMatch = GotoKeyword.getNearestMatchingComment(
 						new Point3D(entitySign.xCoord, entitySign.yCoord,
-								entitySign.zCoord), mc.theWorld, gotoKeyword.getComment());
+								entitySign.zCoord), mc.theWorld, gotoKeyword
+								.getComment());
 				LinkedList<Comment> matchingComments = gotoKeyword
 						.matchingCommentsNearby(new Point3D(entitySign.xCoord,
 								entitySign.yCoord, entitySign.zCoord),
