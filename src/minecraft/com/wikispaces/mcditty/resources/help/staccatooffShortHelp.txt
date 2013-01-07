@@ -1,5 +1,5 @@
 StaccatoOff
 
-Stops all staccato effects on the current voice.
+Removes staccato effects from the current voice.
 
 See: Staccato

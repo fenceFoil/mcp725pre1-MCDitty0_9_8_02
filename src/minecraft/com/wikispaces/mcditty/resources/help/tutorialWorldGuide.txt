@@ -1,4 +1,4 @@
-MCDittyLand is a small castle boasting several example Ditties.
+MCDittyLand is a small castle with several example ditties.
 
 Once MCDittyLand is downloaded (less than 0.25 MB), it is placed in your /saves/ folder automatically.
 

@@ -1,17 +1,14 @@
 Down [distance]
-Goto Keyword
 
-Instead of naturally flowing to the next sign, skip to a sign [distance] down.
-
-Can be combined with other goto keywords. 
+Jump to a sign [distance] blocks below the sign.
 
 §bExamples§r:
-Down
-[Looks down 1 sign]
+Up
+[Looks up 1 sign]
 
-Down 5
-[Looks down 5 signs]
+Up 5
+[Looks up 5 signs]
 
-Down 5
+Up 5
 Right 6
-[Looks down 5 signs, and right 6]
+[Looks up 5 signs, and right 6]

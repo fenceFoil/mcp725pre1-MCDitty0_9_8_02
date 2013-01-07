@@ -1,5 +1,5 @@
 TranOff
 
-Turns off all transposition caused by the Tran keyword.
+Turns off the Tran keyword.
 
 See: Tran

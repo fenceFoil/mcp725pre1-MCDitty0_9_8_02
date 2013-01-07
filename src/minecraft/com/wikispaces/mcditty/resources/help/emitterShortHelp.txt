@@ -1,17 +1,17 @@
 Emitter [Type]
 [Options follow]
 
-Must be on the first line of a sign, and no music or keywords can follow (although comments are allowed).
-
-Emitters create a particle every time a note is played in their ditty. You can customize the particles that it emits and how it emits them with options.
-
 §aTypes:
-Note, Heart, Chaos, Dust, Spore, Crit, CritMag, Smoke, Smoke2, Poof, Spark, Splash, RedFume, SnowHit, Slime, Flake, Happy, Angry, Mad
+Note, Heart, Angry, Chaos, Crit, CritMag, Dust, Face, Flake, Happy, Poof, RedFume, Slime, Smoke, Smoke2, SnowHit, Spark, Splash, Spore
 
-On the lines after, you can specify options:
+Place at the start of a ditty, or whenever you want the particles to start.
+
+Must be on the first line of a sign, and may contain a comment on a following line.
+
+Emitters create a particle every time a note is played in their ditty. You can customize the particles that it emits on the following lines with options.
 
 Options available:
-- Voice [0-15] [0-15], etc.
+- Voice [0-15]
 - Rate [1-99]
 - Color [0-23]
 - Up [-99 to 99]
@@ -20,17 +20,9 @@ Options available:
 - Multi [0-5]
 - Stream [w, h, q, i, s, t, x, or o]
 
-Options can be abbreviated as well:
-- Voice = V
-- Rate = R
-- Color = C
-- Up = U
-- Life = L
-- Time = T
-- Multi = M
-- Stream = S
+Options can be abbreviated: V for Voice, etc.
 
-Option descriptions:
+Descriptions:
 - Voice: Particles emit in time with notes from given voices. Can follow with multiple numbers.
 - Rate: Max particles may appear at one time, for example in the case of chords.
 - Color: The color for note particles.
@@ -49,7 +41,7 @@ Stream i Up 9
 #Emitter1
 ---------------
 
-OR
+OR (Abbreviated)
 
 ---------------
 Emitter Note

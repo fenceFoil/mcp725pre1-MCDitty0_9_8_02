@@ -1,9 +1,10 @@
 SFXInst [Inst]
 [SFX] [Tuning]
 
-Alpha to 1.3 SFX
+§bAlpha to 1.3 SFX
+§bUse SFXInst2 for 1.4 SFX
 
-SFXInst replaces the normal sound of a given instrument with a Minecraft sound effect (SFX). The SFX will be made higher or lower and stretched to play notes. Can be removed with SFXInstOff [Inst].
+SFXInst replaces the normal sound of a given instrument with a Minecraft sound effect (SFX). The SFX will be made higher or lower and stretched to play different notes. Can be removed with SFXInstOff [Inst].
 
 [Inst]: 0 to 127
 Instrument to be replaced.
@@ -16,8 +17,8 @@ Note that if there are multiple sounds for a given SFX (ex: different cat meows)
 
 Note that this keyword tries to activate one 32nd beat BEFORE its location in the ditty to let the SFXInst load.
 
-This keyword may not be immediate: there may be a short pause before the SFX Instrument replaces the normal instrument sound. (Or it may start one note early).
+This keyword may not be immediate: there might be a short pause before the SFX Instrument replaces the normal instrument sound.
 
-On a positive note, SFX instruments are guaranteed to sound precicely the same for every MCDitty user, even if their MIDI intruments vary in sound or volume.
+SFX instruments are guaranteed to sound precicely the same on every computer, while normal MIDI intruments vary in sound or volume.
 
 See: SFX, SFXInstOff

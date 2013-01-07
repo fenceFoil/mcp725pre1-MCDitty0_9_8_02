@@ -1,7 +1,5 @@
 Pattern [number]
 
-Pattern must be on the first line of a sign, and it repeats anything beneath itself [number] times (or once if no number is given). Notably, if there are Goto keywords on the sign, it will go where they point, play what's there, and come back to the pattern sign automatically when the pattern is done.
-
-Repeat is similar, except it can be on any line and can't repeat keywords.
+Pattern repeats anything beneath itself [number] times (or once if no number is given). Notably, if there are Goto keywords on the sign, it will go where they point, play what's there, and come back to the pattern sign automatically when the pattern is done.
 
 §bSee:§r End, Repeat

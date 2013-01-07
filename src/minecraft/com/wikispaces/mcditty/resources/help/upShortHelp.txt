@@ -1,9 +1,6 @@
 Up [distance]
-Goto Keyword
 
-Instead of naturally flowing to the next sign, skip to a sign [distance] up.
-
-Can be combined with other goto keywords. 
+Jump to a sign [distance] blocks up.
 
 §bExamples§r:
 Up

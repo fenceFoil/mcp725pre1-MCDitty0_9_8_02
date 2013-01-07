@@ -1,5 +1,4 @@
-SaveMIDI
-Next line contains the filename
+SaveMIDI [MIDI name on next line]
 
 Saves the ditty as a MIDI file in your .minecraft/midi folder. Only one SaveMIDI keyword is heeded per ditty.
 

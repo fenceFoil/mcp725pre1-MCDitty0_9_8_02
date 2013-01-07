@@ -1,7 +1,9 @@
 NewBot name up
 type
 
-WORK IN PROGRESS: AVOID USING. WILL BE FINISHED IN THE FUTURE.
+§cWORK IN PROGRESS: 
+§cAVOID USING. 
+§cWILL BE FINISHED IN THE FUTURE.
 
 NewBot creates a new bot right on this sign or above it if [above] is given. 
 
@@ -10,4 +12,4 @@ FIRST LINE:
 [up] is optional: how many blocks above sign to put entity. Default is the first suitably-sized space above the sign.
 
 SECOND LINE:
-[type] can only be villager for now.
+[type] can only be 'villager' for now.

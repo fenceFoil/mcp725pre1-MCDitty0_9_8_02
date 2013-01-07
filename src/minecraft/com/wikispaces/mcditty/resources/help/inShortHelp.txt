@@ -1,6 +1,15 @@
 In [distance]
 Goto Keyword
 
-Instead of naturally flowing to the next sign, skip to a sign [distance] behind the sign.
+Jump to a sign [distance] blocks behind the sign.
 
-Can be combined with other goto keywords.
+§bExamples§r:
+Up
+[Looks up 1 sign]
+
+Up 5
+[Looks up 5 signs]
+
+Up 5
+Right 6
+[Looks up 5 signs, and right 6]

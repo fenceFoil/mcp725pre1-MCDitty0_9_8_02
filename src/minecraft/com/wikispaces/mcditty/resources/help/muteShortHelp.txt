@@ -1,7 +1,9 @@
 Mute
 
-If part of a ditty, stops all other playing ditties before this one starts.
+Stops all playing ditties.
 
-You can do the same thing by pressing Ctrl+M.
+If part of a ditty, all other ditties are stopped before this one starts.
+
+You can also mute MCDitty from the keyboard by pressing Ctrl+M.
 
 §bSee:§r OneAtATime

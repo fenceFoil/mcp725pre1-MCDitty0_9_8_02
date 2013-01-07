@@ -1,7 +1,7 @@
 Repeat [times]
 
-Plays any music on the lines beneath [times] times. Doesn't work with keywords or other repeats.
+Plays any music on the lines beneath [times] times. Doesn't work with keywords.
 
-This is a simpler version of Pattern.
+A simpler version of Pattern.
 
 §bSee:§r Pattern

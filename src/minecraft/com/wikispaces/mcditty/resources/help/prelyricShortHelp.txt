@@ -2,11 +2,11 @@ PreLyric [name]
 
 Adds a prefix to all lyrics called [name]. Put the prefix text below the keyword.
 
-For example: to put "<Katisha>" before all YKat lyrics:
+For example: to prefix all YHero lryics with "<Herobrine>":
 
 ------------
-PreLyric Kat
-<Katisha> 
+PreLyric Hero
+<Herobrine> 
 ------------
 
 In Text:

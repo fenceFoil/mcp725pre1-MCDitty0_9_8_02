@@ -1,21 +1,21 @@
 Reset:
 
-A reset is a bit like letting a ditty end, and then starting it again at the keyword reset. Reset:
+A reset is like letting a ditty end, and then starting a new one again. Reset:
 
-- Lets all the music before the keyword play out,
+- Lets all the music before the keyword play out
 - Resets all instruments, the tempo, and the current voice and layer
-- Restores the key to C major.
+- Restores the key to C major
 - Sets all volumes back to 100
 - Turns off effects like Octaves, Staccato, and Tran
 
-before letting things afterward start again.
+Before playing anything after the keyword.
 
-Resets are handy for "breaking up" long or complex songs: they're like the ends of tracks, and starting from one is like starting a the beginning of a song.
+Resets are handy for "breaking up" long or complex songs: they're like the ends of tracks, and starting from one is like starting at the beginning of a song.
 
 Resets do not:
 
-- Remove any JFugue-defined words you defined
-- Change any X-token settings
-- Reset lyric texts or counts
+- Remove any JFugue constants set with the $ token
+- Change any X token settings
+- Reset lyrics
 
 §bSee:§r SyncVoices, SyncWith, Lyric

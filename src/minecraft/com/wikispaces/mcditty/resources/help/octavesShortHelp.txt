@@ -1,6 +1,6 @@
 Octaves [numbers]
 
-Plays the following notes at octaves: same note in multiple octaves simuntaneously.
+Any following notes are played in multiple octaves simuntaneously.
 
 [numbers]: Optional. Default is 1. From -10 to +10. 
 

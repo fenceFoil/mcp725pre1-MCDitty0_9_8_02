@@ -1,9 +1,16 @@
 SyncWith [voice] [optional layer]
 
-Advances (or retreats!) the time of the current voice and layer to match the time of [voice] and [layer]. 
+Advances or retreats the voice to the current time of another voice.
+
+Example:
+
+V0 Aist Btqw
+V1 I10
+SyncWith 0
+Cmajw
 
 If [layer] isn't given, SyncWith syncs with the longest layer in [voice] automatically.
 
-This is like a more-specific SyncVoices.
+A more specific version of SyncVoices.
 
 §bSee:§r Reset, SyncVoices

@@ -1,6 +1,6 @@
-Disco [optional voices]
+Disco [Voices]
 
-0.9.6: EXPERIMENTAL!
+EXPERIMENTAL!
 
 MAY CAUSE LAG IF USED ON HUGE SURFACES. PARAMETERS LIKE [optional voices] WILL CHANGE IN FUTURE VERSIONS, CAUSING SIGNS WITH THIS KEYWORD TO HAVE TO BE MODIFIED.
 
@@ -8,4 +8,4 @@ Still here?
 
 Creates a wool disco floor, that pulses on every note played. If voices are given, it only pulses to them.
 
-To create a working disco floor, put disco sign on a sheet of wool. For best effect, place a floor of glass or ice over the pulsing wool sheet.
+To create a working disco floor, put disco sign on a block of wool. That block and any connected wool blocks with pulse on any note in the given voices.

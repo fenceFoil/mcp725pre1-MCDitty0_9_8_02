@@ -1,10 +1,16 @@
 Staccato [0-8] [length]
 
-Plays all notes in the current voice staccato, shortening them and filling the spaces with rests.
+Plays all notes in the current voice staccato: shorter, with pauses between
 
-[0-8]: Optional. This x 1/8 x note length = how long a note is played. 
-[length]: Optional. How long to play in staccato. If not given, turn off with §bStaccatoOff.
+[0-8]: Optional. Higher means less staccato. 4 is default.
+[length]: Optional. How long to apply staccato effect. 
 
 Following a no-length 'staccato' with a length 'staccato' will apply the length 'staccato's effect, then go back to the no-length one. This way, you can set a staccato up for a whole song, but still be able to add a different staccato for short segments.
+
+Example:
+
+Staccato wh
+
+Applies a staccato effect for a whole + a half note.
 
 See: StaccatoOff

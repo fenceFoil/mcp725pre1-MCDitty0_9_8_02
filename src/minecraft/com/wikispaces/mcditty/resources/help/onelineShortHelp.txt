@@ -1,11 +1,13 @@
 OneLine:
 
-Every line beneath this keyword is combined without spaces. Useful for long or complex chords, tokens, or words.
+Lines beneath this keyword are combined without spaces. Useful for complex chords or music tokens.
+
+Example: 
 
 OneLine
 C#6i*+E#6i*+
 G#6i*
 
-Reads as
+Is read the same as
 
 C#6i*+E#6i*+G#6i*
