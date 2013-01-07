@@ -427,7 +427,7 @@ public class MCDitty {
 														+ " left)");
 							}
 						}
-					} else if (!isIDAxe(held)) {
+					} else if (!isIDAxe(held) && !minecraft.thePlayer.isSneaking()) {
 						// Manually trigger blockActivated
 						((BlockSign) Block.signPost).blockActivated(
 								minecraft.theWorld, hoverPoint.x, hoverPoint.y,
