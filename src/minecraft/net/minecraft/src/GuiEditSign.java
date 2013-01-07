@@ -1540,8 +1540,6 @@ public class GuiEditSign extends GuiScreen implements
 					colorCode = "§a";
 					if (voiceNum == 9) {
 						errorMessage = "9 is the Percussion Voice -- any notes after this token become drum beats and other sounds.";
-					} else {
-						errorMessage = "Voice: " + voiceNum;
 					}
 				}
 			} else {
@@ -1676,7 +1674,8 @@ public class GuiEditSign extends GuiScreen implements
 				errorMessageBuilder.append(s).append(" (")
 						.append(allTempoConstants.get(s)).append(" BPM)\n");
 			}
-			errorMessageBuilder.append ("\n Works simultaneously across all voices and layers.");
+			errorMessageBuilder
+					.append("\n Works simultaneously across all voices and layers.");
 			errorMessage = errorMessageBuilder.toString();
 		}
 
@@ -1833,35 +1832,32 @@ public class GuiEditSign extends GuiScreen implements
 		if (readNotes.size() > 0) {
 			help.append("\n\nEquivalent to:\n");
 			for (JFugueElement e : readNotes) {
-				help.append(e.getMusicString());
+				help.append("§a").append(e.getMusicString());
 			}
 		}
 		if (errorMessage != null) {
 			help.append("\n\n§cCan't Read Token:\n");
 			help.append(errorMessage);
 		}
-		help.append("\n\n* * *\n\nNote tokens consist of several parts, in this order:\n"
+		help.append("\n\n"
+				+ "§bExample notes:\n\n"
+				+ "§bC#h§r C sharp for a quarter note\n"
+				+ "§bEb6i§r E flat (6th octave) for an eighth note\n"
+				+ "§bAqi§r lasts for a quarter note + an eighth note.\n"
 				+ "\n"
-				+ "* The letter A, B, C, D, E, F, or G\n"
-				+ "* A '#' (sharp), a 'b' (flat), or a 'n' (natural)\n"
-				+ "* An octave number from 0 to 10. (Default is 5)\n"
-				+ "* And a duration.\n"
-				+ "\n"
-				+ "Everything after the first letter is optional. The duration is a combination of one or more letters, representing a note length:\n"
-				+ "* W is a whole note\n"
-				+ "* H is a half note\n"
-				+ "* Q is a quarter note\n"
-				+ "* I is an eigth note\n"
-				+ "* S is a sixteenth note\n"
-				+ "* T is a 32th note\n"
-				+ "* X is a 64th note\n"
-				+ "* O is a 128th note\n"
-				+ "\n"
-				+ "For example, Cw is a whole note, and A6wh is a whole note + a half note.\n"
+				+ "§bDuration letters:\n\n"
+				+ "* W -- whole note\n"
+				+ "* H -- half note\n"
+				+ "* Q -- quarter note\n"
+				+ "* I -- eighth note\n"
+				+ "* S -- 16th note\n"
+				+ "* T -- 32th note\n"
+				+ "* X -- 64th note\n"
+				+ "* O -- 128th note\n"
 				+ "\n"
 				+ "Rests are silent. They consist of the letter R followed by a duration.\n"
 				+ "\n"
-				+ "\nFor more detail on notes and every MusicString token, see Chapter 2 of this guide:\n\njfugue.org/howto.html");
+				+ "For more info on notes and every other MusicString token, see this guide:\n\njfugue.org/howto.html");
 		helpTextArea.setText(help.toString());
 	}
 
@@ -2280,7 +2276,7 @@ public class GuiEditSign extends GuiScreen implements
 				}
 
 				// Assemble text to display
-				additionalText.append("Other Instruments\n");
+				additionalText.append("Instruments:\n");
 
 				for (String s : matchingInstruments) {
 					additionalText.append(s).append("\n");
@@ -2290,6 +2286,18 @@ public class GuiEditSign extends GuiScreen implements
 
 				// Show SFX options
 				// COPIED FROM SFX KEYWORD HELP
+
+				// Show warning if using old sounds
+				additionalText.append("§bFrom Minecraft:\n");
+				if (sfxInstKeyword.getSFXSource() != SFXManager
+						.getLatestSource()) {
+					additionalText.append("§6");
+				} else {
+					additionalText.append("§a");
+				}
+				additionalText
+						.append(SFXManager.getSourceName(sfxInstKeyword
+								.getSFXSource())).append("\n\n");
 
 				// Fill sounds auto-suggest
 				ArrayList<String> matchingEffects = new ArrayList<String>();
@@ -2329,7 +2337,6 @@ public class GuiEditSign extends GuiScreen implements
 				}
 				if (matchingEffects.size() > 0) {
 					additionalText.append("§r\n\n");
-					additionalText.append("§eOther SFX:\n");
 					for (String handle : matchingEffects) {
 						// Check for blacklist
 						if (SFXManager.isShorthandOnSFXInstBlacklist(handle,
@@ -2387,20 +2394,25 @@ public class GuiEditSign extends GuiScreen implements
 
 				// Show some standard readouts for sfxinst
 				String[] instruments = Instrument.INSTRUMENT_NAME;
-				allText.append("§bReplace: ")
+				allText.append("§bReplace:§a ")
 						.append(instruments[sfxInstKeyword.getInstrument()])
 						.append("\n");
 				// For SFX, show either "to be selected" or the chosen one
 				if (sfxInstKeyword.getSFXName() == null) {
-					allText.append("§6SFX:§r §6None Chosen\n");
+					allText.append("§bSFX:§6 None Chosen\n");
 				} else {
-					allText.append("§bSFX:§r ")
-							.append(sfxInstKeyword.getSFXName()).append(" (")
-							.append(sfxInstKeyword.getSFXNumber())
-							.append(")\n");
+					allText.append("§bSFX:§a ").append(
+							sfxInstKeyword.getSFXName());
+					if (SFXManager.getNumberOfAlternativesForEffect(
+							sfxInstKeyword.getSFXName(),
+							sfxInstKeyword.getSFXSource()) > 1) {
+						allText.append(" #").append(
+								sfxInstKeyword.getSFXNumber());
+					}
+					allText.append("\n");
 				}
 				// For tuning, either show "unspecifed (C5)" or the tuning
-				allText.append("§bTuning:§r ");
+				allText.append("§bTuning:§a ");
 
 				if (sfxInstKeyword.getCenterPitch() >= 0) {
 					String tuningNote = new Note(
@@ -2414,7 +2426,7 @@ public class GuiEditSign extends GuiScreen implements
 					allText.append(tuningNote);
 				} else {
 					// Show alternate
-					allText.append("Unspecified (C5)");
+					allText.append("§6C5 (Default)");
 				}
 
 				allText.append("\n\n");
