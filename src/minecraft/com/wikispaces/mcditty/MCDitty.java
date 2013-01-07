@@ -48,7 +48,6 @@ import net.minecraft.src.AxisAlignedBB;
 import net.minecraft.src.Block;
 import net.minecraft.src.BlockSign;
 import net.minecraft.src.DestroyBlockProgress;
-import net.minecraft.src.Entity;
 import net.minecraft.src.EntityClientPlayerMP;
 import net.minecraft.src.EntityFX;
 import net.minecraft.src.EntityHeartFX;
@@ -70,7 +69,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.xml.sax.SAXException;
 
-import com.wikispaces.mcditty.books.WrappedBook;
 import com.wikispaces.mcditty.bot.Bot;
 import com.wikispaces.mcditty.bot.VillagerBot;
 import com.wikispaces.mcditty.bot.action.BotAction;
@@ -327,7 +325,7 @@ public class MCDitty {
 
 		// Get the current gui
 		GuiScreen currGui = minecraft.currentScreen;
-		
+
 		// Check whether a gui has just been closed
 		if (currGui == null && lastTickGui != null) {
 			// Just left a gui -- put a anti-click timer up to avoid the click
@@ -351,7 +349,7 @@ public class MCDitty {
 		// TODO: Find a better way of doing this
 		if (slowMinecraft) {
 			try {
-				//System.out.println (sleepOnTickTime);
+				// System.out.println (sleepOnTickTime);
 				Thread.sleep(sleepOnTickTime);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -397,26 +395,23 @@ public class MCDitty {
 					held = heldStack.itemID;
 				}
 
-				if (BlockSign.getSignBlockType(hoverPoint,
-						minecraft.theWorld) != null) {
+				if (BlockSign.getSignBlockType(hoverPoint, minecraft.theWorld) != null) {
 					// A sign has been clicked!
 					// Perform some functions of
 					// BlockSign.blockActivated
-					if (isIDPickaxe(held)
-							&& !BlockSign.clickHeld) {
+					if (isIDPickaxe(held) && !BlockSign.clickHeld) {
 						BlockSign.clickHeld = true;
 						MCDittyRightClickCheckThread t = new MCDittyRightClickCheckThread();
 						t.start();
 
 						// Pickaxe! "Pick" a sign to test.
 						TileEntity blockEntity = minecraft.theWorld
-								.getBlockTileEntity(hoverPoint.x,
-										hoverPoint.y, hoverPoint.z);
+								.getBlockTileEntity(hoverPoint.x, hoverPoint.y,
+										hoverPoint.z);
 						if (blockEntity instanceof TileEntitySign) {
 							((TileEntitySign) blockEntity).picked = !((TileEntitySign) blockEntity).picked;
 							if (((TileEntitySign) blockEntity).picked) {
-								pickedSigns
-										.add((TileEntitySign) blockEntity);
+								pickedSigns.add((TileEntitySign) blockEntity);
 								BlockSign.writeChatMessage(
 										minecraft.theWorld,
 										"§2Picked a sign. ("
@@ -425,19 +420,18 @@ public class MCDitty {
 							} else {
 								pickedSigns
 										.remove((TileEntitySign) blockEntity);
-								BlockSign.writeChatMessage(
-										minecraft.theWorld,
-										"§2Un-picked a sign. ("
-												+ pickedSigns.size()
-												+ " left)");
+								BlockSign
+										.writeChatMessage(minecraft.theWorld,
+												"§2Un-picked a sign. ("
+														+ pickedSigns.size()
+														+ " left)");
 							}
 						}
-					} else if (!isIDAxe(held)){
+					} else if (!isIDAxe(held)) {
 						// Manually trigger blockActivated
 						((BlockSign) Block.signPost).blockActivated(
-								minecraft.theWorld, hoverPoint.x,
-								hoverPoint.y, hoverPoint.z,
-								minecraft.thePlayer);
+								minecraft.theWorld, hoverPoint.x, hoverPoint.y,
+								hoverPoint.z, minecraft.thePlayer);
 					}
 				} else {
 					// If not aiming at a sign
@@ -456,8 +450,7 @@ public class MCDitty {
 							}
 							pickedSigns.clear();
 
-							BlockSign.writeChatMessage(
-									minecraft.theWorld,
+							BlockSign.writeChatMessage(minecraft.theWorld,
 									"§2Unpicked all signs.");
 						}
 					}
@@ -690,30 +683,26 @@ public class MCDitty {
 			return candidateValue;
 		}
 	}
-	
-	public static boolean isIDPickaxe (int id) {
+
+	public static boolean isIDPickaxe(int id) {
 		// Order of checks: iron, wood, stone, diamond, gold
-		return (id == 257 || id == 270 || id == 274
-				|| id == 278 || id == 285);
+		return (id == 257 || id == 270 || id == 274 || id == 278 || id == 285);
 	}
-	
-	public static boolean isIDAxe (int id) {
-		return (id == 258 || id == 271 || id == 275
-				|| id == 279 || id == 286);
+
+	public static boolean isIDAxe(int id) {
+		return (id == 258 || id == 271 || id == 275 || id == 279 || id == 286);
 	}
-	
-	public static boolean isIDShovel (int id) {
-		return (id == 256 || id == 269 || id == 273
-				|| id == 277 || id == 284);
+
+	public static boolean isIDShovel(int id) {
+		return (id == 256 || id == 269 || id == 273 || id == 277 || id == 284);
 	}
-	
-	public static boolean isIDHoe (int id) {
+
+	public static boolean isIDHoe(int id) {
 		return (id >= 290 && id <= 294);
 	}
-	
-	public static boolean idIDSword (int id) {
-		return (id == 267 || id == 268 || id == 272
-				|| id == 276 || id == 283);
+
+	public static boolean idIDSword(int id) {
+		return (id == 267 || id == 268 || id == 272 || id == 276 || id == 283);
 	}
 
 	public void checkForKeyCommands() {
@@ -731,19 +720,15 @@ public class MCDitty {
 		if (MCDittyConfig.turnedOff) {
 			return;
 		}
-		
+
 		// Debug proxpads by showing corners with particles
 		showProxpadCorners(minecraft);
-		
+
 		// Set up any prox pads that still need their bounding boxes defined
 		addBBsToNewProxpads();
 
 		// Find a point in the top and bottom block filled by the player
-		Vec3[] playerPoints = new Vec3[2];
-		playerPoints[0] = Vec3.createVectorHelper(minecraft.thePlayer.posX,
-				minecraft.thePlayer.posY - 0.5d, minecraft.thePlayer.posZ);
-		playerPoints[1] = Vec3.createVectorHelper(minecraft.thePlayer.posX,
-				minecraft.thePlayer.posY - 1.5d, minecraft.thePlayer.posZ);
+		Vec3[] playerPoints = getPlayerCollisionPoints();
 		for (int i = 0; i < proxPadBBs.size(); i++) {
 			ProxPadBoundingBox bb = proxPadBBs.get(i);
 			// if (playerBB == null) {
@@ -756,75 +741,105 @@ public class MCDitty {
 				continue;
 			}
 
-			boolean playerInsideBB = false;
-			for (int currPoint = 0; currPoint < playerPoints.length; currPoint++) {
-				if (bb.getBox().isVecInside(playerPoints[currPoint])) {
-					// System.out.println ("*"+playerPoints[currPoint].yCoord);
-					playerInsideBB = true;
-					if (bb.getLockout() == false) {
-						boolean proxPadValid = false;
+			boolean playerInsideBB = isPlayerCollidingWith(bb.getBox());
+			if (playerInsideBB) {
+				if (bb.getLockout() == false) {
+					boolean proxPadValid = false;
 
-						// Enable lockout
-						bb.setLockout(true);
-						// Read sign text, and if it is a proxpad sign, start
-						// the
-						// song
-						TileEntity signEntity = GetMinecraft.instance().theWorld
-								.getBlockTileEntity(bb.getPadX(), bb.getPadY(),
-										bb.getPadZ());
-						TileEntitySign signTileEntity = (TileEntitySign) signEntity;
-						if (signTileEntity != null) {
-							for (String s : signTileEntity.signText) {
-								// Check this line for the keyword proxpad
-								ParsedKeyword candidateKeyword = SignParser
-										.parseKeyword(s);
-								if (!(candidateKeyword instanceof ProxPadKeyword)) {
-									// If there really appears to be no proxpad,
-									// continue
-									continue;
+					// Enable lockout
+					bb.setLockout(true);
+					// Read sign text, and if it is a proxpad sign, start
+					// the
+					// song
+					TileEntity signEntity = GetMinecraft.instance().theWorld
+							.getBlockTileEntity(bb.getPadX(), bb.getPadY(),
+									bb.getPadZ());
+					TileEntitySign signTileEntity = (TileEntitySign) signEntity;
+					if (signTileEntity != null) {
+						for (String s : signTileEntity.signText) {
+							// Check this line for the keyword proxpad
+							ParsedKeyword candidateKeyword = SignParser
+									.parseKeyword(s);
+							if (!(candidateKeyword instanceof ProxPadKeyword)) {
+								// If there really appears to be no proxpad,
+								// continue
+								continue;
+							}
+
+							ProxPadKeyword k = (ProxPadKeyword) candidateKeyword;
+							// Is proxpad keyword: is the keyword for this
+							// particular proxpad?
+							if (k.getHeight() == bb.getHeight()
+									&& k.getWidth() == bb.getWidth()
+									&& k.getLength() == bb.getDepth()) {
+								// Start tune from this proximity sign
+								if (MCDittyConfig.proxPadsEnabled) {
+									BlockSign.playDittyFromSigns(
+											GetMinecraft.instance().theWorld,
+											bb.getPadX(), bb.getPadY(),
+											bb.getPadZ(), true);
 								}
+								proxPadValid = true;
+								break;
+							} else {
 
-								ProxPadKeyword k = (ProxPadKeyword) candidateKeyword;
-								// Is proxpad keyword: is the keyword for this
-								// particular proxpad?
-								if (k.getHeight() == bb.getHeight()
-										&& k.getWidth() == bb.getWidth()
-										&& k.getLength() == bb.getDepth()) {
-									// Start tune from this proximity sign
-									if (MCDittyConfig.proxPadsEnabled) {
-										BlockSign
-												.playDittyFromSigns(
-														GetMinecraft.instance().theWorld,
-														bb.getPadX(),
-														bb.getPadY(),
-														bb.getPadZ(), true);
-									}
-									proxPadValid = true;
-									break;
-								} else {
-
-								}
 							}
 						}
+					}
 
-						// If the prox pad is attached to a sign that no longer
-						// has
-						// the prox pad keyword on it for this sign,
-						// delete it's bounding box and don't check it again
-						if (!proxPadValid) {
-							proxPadBBs.remove(i);
-							i--;
-						}
+					// If the prox pad is attached to a sign that no longer
+					// has
+					// the prox pad keyword on it for this sign,
+					// delete it's bounding box and don't check it again
+					if (!proxPadValid) {
+						proxPadBBs.remove(i);
+						i--;
 					}
 				}
+
 			}
 
 			// Disable lockout if player has left bb
+			// Could be rephrased as } else { to above if()
 			if (!playerInsideBB) {
 				// Disable lockout
 				bb.setLockout(false);
 			}
 		}
+	}
+
+	/**
+	 * Returns a pair of points, one in the player's head and one in his feet.
+	 * If either of these points is inside a bounding box, the player is
+	 * colliding with that box.
+	 * 
+	 * @return
+	 */
+	private Vec3[] getPlayerCollisionPoints() {
+		Minecraft minecraft = GetMinecraft.instance();
+		Vec3[] playerPoints = new Vec3[2];
+		playerPoints[0] = Vec3.createVectorHelper(minecraft.thePlayer.posX,
+				minecraft.thePlayer.posY - 0.5d, minecraft.thePlayer.posZ);
+		playerPoints[1] = Vec3.createVectorHelper(minecraft.thePlayer.posX,
+				minecraft.thePlayer.posY - 1.5d, minecraft.thePlayer.posZ);
+		return playerPoints;
+	}
+
+	/**
+	 * Returns true if the player is colliding with the given bounding box
+	 * 
+	 * @param bb
+	 * @return
+	 */
+	private boolean isPlayerCollidingWith(AxisAlignedBB bb) {
+		boolean playerInsideBB = false;
+		Vec3[] playerPoints = getPlayerCollisionPoints();
+		for (int currPoint = 0; currPoint < playerPoints.length; currPoint++) {
+			if (bb.isVecInside(playerPoints[currPoint])) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -1663,6 +1678,16 @@ public class MCDitty {
 		proxPadBBs.add(proxPad);
 	}
 
+	public static void onSignLoaded(int x, int y, int z, String[] text) {
+		TileEntitySign sign = new TileEntitySign();
+		sign.xCoord = x;
+		sign.yCoord = y;
+		sign.zCoord = z;
+		sign.signText = text;
+
+		onSignLoaded(sign);
+	}
+
 	/**
 	 * Processes text on signs as they are loaded, checking for keywords ect.
 	 * 
@@ -1733,44 +1758,6 @@ public class MCDitty {
 				continue;
 			}
 		}
-	}
-
-	public static void onSignLoaded(int x, int y, int z, String[] text) {
-		TileEntitySign sign = new TileEntitySign();
-		sign.xCoord = x;
-		sign.yCoord = y;
-		sign.zCoord = z;
-		sign.signText = text;
-
-		// XXX: If you are reading this, future man/woman, remove this code:
-		// failed experiment.
-		//
-		// // Look for sign color codes
-		// // OnSignLoaded(Entity) does the same thing, but this explicitly
-		// looks
-		// // for the tileEntity in the world and edits it
-		// TileEntity entity = GetMinecraft.instance().theWorld
-		// .getBlockTileEntity(x, y, z);
-		// if (entity == null) {
-		// System.out.println ("Entity is null.");
-		// } else if (!(entity instanceof TileEntitySign)) {
-		// System.out.println ("Entity is not a tileentitysign");
-		// }
-		// if (entity != null && entity instanceof TileEntitySign) {
-		// TileEntitySign entitySign = (TileEntitySign) entity;
-		// System.out.println ("-");
-		// String colorCode = TileEntitySignRenderer
-		// .getSignColorCode(text);
-		// System.out.println ("+");
-		// if (colorCode != null) {
-		// sign.signColorCode = colorCode;
-		// entitySign.signColorCode = colorCode;
-		// TileEntitySignRenderer
-		// .removeSignColorCodes(text);
-		// }
-		// }
-
-		onSignLoaded(sign);
 	}
 
 	/**
