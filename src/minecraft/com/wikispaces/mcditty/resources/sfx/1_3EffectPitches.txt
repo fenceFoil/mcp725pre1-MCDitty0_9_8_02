@@ -39,13 +39,13 @@ random.click1:A5
 mob.cowhurt1:G#5
 mob.cowhurt2:G#5
 mob.cowhurt3:A#5
-note.harp1:F#3
-note.hihat1:F#3
-note.piano1:F#3
-note.bassattack1:F#3
-note.snare1:F#3
-note.bd1:F#3
-note.pling1:F#3
+note.harp1:F#4
+note.hat1:F#4
+note.piano1:F#4
+note.bassattack1:F#4
+note.snare1:F#4
+note.bd1:F#4
+note.pling1:F#4
 END OF EFFECTS
 
 meow1 is WRONG
