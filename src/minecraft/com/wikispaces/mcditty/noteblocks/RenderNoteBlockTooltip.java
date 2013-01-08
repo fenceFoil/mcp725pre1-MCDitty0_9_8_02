@@ -21,12 +21,15 @@
  * along with MCDitty. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
-package net.minecraft.src;
+package com.wikispaces.mcditty.noteblocks;
+
+import net.minecraft.src.Entity;
+import net.minecraft.src.EntityNoteFX;
+import net.minecraft.src.FontRenderer;
+import net.minecraft.src.Render;
+import net.minecraft.src.Tessellator;
 
 import org.lwjgl.opengl.GL11;
-
-import com.wikispaces.mcditty.EntityNoteBlockTooltip;
-import com.wikispaces.mcditty.Point3D;
 
 public class RenderNoteBlockTooltip extends Render {
 	@Override

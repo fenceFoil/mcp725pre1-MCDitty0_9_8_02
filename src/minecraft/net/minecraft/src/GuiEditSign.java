@@ -1246,9 +1246,9 @@ public class GuiEditSign extends GuiScreen implements
 	 */
 	private void showCommentHelp(Comment comment) {
 		// Show generic comment help
-		helpTextArea
-				.setText(BlockSign.COMMENT_HIGHLIGHT_CODE
-						+ "Comment:§r\n\nText that isn't read as music.\n\nGoto and Patt keywords can jump to comments.");
+		helpTextArea.setText(BlockSign.COMMENT_HIGHLIGHT_CODE + "Comment:§r\n"
+				+ "\n" + "Text that isn't read as music.\n" + "\n"
+				+ "Goto and Patt keywords can jump to signs with comments.");
 		return;
 	}
 

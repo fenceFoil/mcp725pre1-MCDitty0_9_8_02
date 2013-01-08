@@ -21,14 +21,15 @@
  * along with MCDitty. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
-package com.wikispaces.mcditty;
+package com.wikispaces.mcditty.noteblocks;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 
 import net.minecraft.src.Entity;
 import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.TileEntityNote;
+
+import com.wikispaces.mcditty.Point3D;
 
 /**
  *
