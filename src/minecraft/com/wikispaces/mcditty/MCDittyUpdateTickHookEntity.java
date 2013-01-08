@@ -43,6 +43,7 @@ public class MCDittyUpdateTickHookEntity extends Entity {
 	 */
 	public MCDittyUpdateTickHookEntity(World par1World) {
 		super(par1World);
+		ignoreFrustumCheck = true;
 	}
 
 	@Override
