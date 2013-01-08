@@ -159,7 +159,7 @@ public class KeypressProcessor {
 			MCDittyConfig.showErrors = !MCDittyConfig.showErrors;
 			MCDittyConfig.showErrorsOnSigns = MCDittyConfig.showErrors;
 			try {
-				MCDittyConfig.writeConfigFile();
+				MCDittyConfig.flush();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -174,7 +174,7 @@ public class KeypressProcessor {
 			// Toggle MCDitty on and off
 			MCDittyConfig.turnedOff = !MCDittyConfig.turnedOff;
 			try {
-				MCDittyConfig.writeConfigFile();
+				MCDittyConfig.flush();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

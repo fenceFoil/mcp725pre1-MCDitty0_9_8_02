@@ -195,6 +195,7 @@ public class MCDittyConfig {
 	 * Whether to act as though MCDitty isn't there
 	 */
 	public static boolean turnedOff = false;
+	private static boolean enableNoteblockTooltips = true;
 
 	/**
 	 * Note: Strips newlines, leaving spaces
@@ -325,7 +326,7 @@ public class MCDittyConfig {
 				deleteConfigFile();
 				// Write a new one that is up to date
 				try {
-					writeConfigFile();
+					flush();
 					BlockSign.writeChatMessage(world,
 							"§2Updated MCDitty config file to version "
 									+ CURRENT_VERSION + "!");
@@ -372,7 +373,7 @@ public class MCDittyConfig {
 		if (configFile.exists() == false) {
 			// Write a new default version
 			try {
-				writeConfigFile();
+				flush();
 				return false;
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -430,6 +431,14 @@ public class MCDittyConfig {
 						lineIn = lineIn.replace("MidiSavingEnabled=", "");
 						try {
 							midiSavingEnabled = Boolean.parseBoolean(lineIn);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} else if (lineIn.startsWith("NoteblockTooltips=")) {
+						lineIn = lineIn.replace("NoteblockTooltips=", "");
+						try {
+							enableNoteblockTooltips = Boolean.parseBoolean(lineIn);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -659,7 +668,7 @@ public class MCDittyConfig {
 	 * 
 	 * @throws IOException
 	 */
-	public static void writeConfigFile() throws IOException {
+	public static void flush() throws IOException {
 		synchronized (configFile) {
 			// Create MCDitty dir if it does not exist already
 			configFile.getParentFile().mkdirs();
@@ -759,6 +768,10 @@ public class MCDittyConfig {
 					+ Boolean.toString(blinkSignsTexturesEnabled));
 			configOut.newLine();
 			configOut.newLine();
+	configOut.write("NoteblockTooltips="
+			+ Boolean.toString(enableNoteblockTooltips));
+	configOut.newLine();
+	configOut.newLine();
 			configOut
 					.write("Should parts of a ditty, such as keywords and comments, be highlighted (in progress)? (true or false)");
 			configOut.newLine();
@@ -927,6 +940,20 @@ public class MCDittyConfig {
 			if (destination != null) {
 				destination.close();
 			}
+		}
+	}
+
+	public static boolean getBoolean(String key) {
+		if (key.equalsIgnoreCase("enableNoteblockTooltips")) {
+			return enableNoteblockTooltips;
+		} else {
+			return false;
+		}
+	}
+
+	public static void setBoolean(String key, boolean value) {
+		if (key.equalsIgnoreCase("enableNoteblockTooltips")) {
+			enableNoteblockTooltips = value;
 		}
 	}
 

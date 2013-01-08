@@ -51,6 +51,7 @@ public class GuiMCDittySettings extends GuiScreen {
 	private GuiButton useMCMusicVolumeButton;
 	private GuiButton midiMessageButton;
 	private GuiButton noPlayTokensButton;
+	private GuiButton noteBlockTooltipsButton;
 
 	public GuiMCDittySettings() {
 
@@ -132,11 +133,11 @@ public class GuiMCDittySettings extends GuiScreen {
 		// }
 		int volumeMode = MCDittyConfig.getVolumeMode();
 		if (volumeMode == MCDittyConfig.IGNORE_MC_VOLUME) {
-			useMCMusicVolumeButton.displayString = "§aVolume: Max";
+			useMCMusicVolumeButton.displayString = "§aVolume: 100%";
 		} else if (volumeMode == MCDittyConfig.USE_MUSIC_VOLUME) {
-			useMCMusicVolumeButton.displayString = "§aVolume: Minecraft Music";
+			useMCMusicVolumeButton.displayString = "§aVolume: MC Music";
 		} else if (volumeMode == MCDittyConfig.USE_SOUND_VOLUME) {
-			useMCMusicVolumeButton.displayString = "§aVolume: Minecraft Sound";
+			useMCMusicVolumeButton.displayString = "§aVolume: MC Sound";
 		} else {
 			// Unknown mode
 		}
@@ -145,6 +146,12 @@ public class GuiMCDittySettings extends GuiScreen {
 			midiMessageButton.displayString = "§aSaveMIDI Message On";
 		} else {
 			midiMessageButton.displayString = "§cSaveMIDI Message Off";
+		}
+		
+		if (MCDittyConfig.getBoolean("enableNoteblockTooltips")) {
+			noteBlockTooltipsButton.displayString = "§aNoteblock Help On";
+		} else {
+			noteBlockTooltipsButton.displayString = "§cNoteblock Help Off";
 		}
 	}
 
@@ -187,12 +194,15 @@ public class GuiMCDittySettings extends GuiScreen {
 		midiMessageButton = new GuiButton(3100, (width / 3) - 60,
 				100 + yOffset, 120, 20, "");
 		noPlayTokensButton = new GuiButton(3200, (width / 3) * 2 - 60,
-				100 + yOffset, 120, 20, "Edit 'Not Ditty' Tokens");
+				100 + yOffset, 120, 20, "Edit 'No Play' Signs");
+		
+		noteBlockTooltipsButton = new GuiButton(3300, (width / 3) * 2 - 60,
+				130 + yOffset, 120, 20, "Noteblock Tooltips");
 
 		debugButton = new GuiButton(10, 0, height - 30, 100 + yOffset, 20, "");
 
-		signColorSlider = new GuiMCDittySlider(5000, (width / 3) * 2 - 60,
-				130 + yOffset, "Sign Highlight Color",
+		signColorSlider = new GuiMCDittySlider(5000, (width / 2) - 60,
+				155 + yOffset, "Sign Highlight Color",
 				MCDittyConfig.signPlayingHighlightSlider);
 		controlList.add(signColorSlider);
 
@@ -209,6 +219,7 @@ public class GuiMCDittySettings extends GuiScreen {
 		controlList.add(useMCMusicVolumeButton);
 		controlList.add(midiMessageButton);
 		controlList.add(noPlayTokensButton);
+		controlList.add(noteBlockTooltipsButton);
 
 		controlList.add(new MCDittyVersionReadoutGuiElement(100));
 
@@ -258,10 +269,10 @@ public class GuiMCDittySettings extends GuiScreen {
 
 		// Show slider color
 		float[] currColor = sineBowColor((float) (signColorSlider.sliderValue * 2f * Math.PI));
-		drawRect((int) ((float) signColorSlider.xPosition),
-				signColorSlider.yPosition,
-				(int) ((float) signColorSlider.xPosition) + 120,
-				signColorSlider.yPosition + 20,
+		drawRect((int) ((float) signColorSlider.xPosition+1),
+				signColorSlider.yPosition+1,
+				(int) ((float) signColorSlider.xPosition) + 120 - 1,
+				signColorSlider.yPosition + 20 - 1,
 				new Color(currColor[0] / 255f, currColor[1] / 255f,
 						currColor[2] / 255f, 0.5f).getRGB());
 	}
@@ -385,7 +396,7 @@ public class GuiMCDittySettings extends GuiScreen {
 			// Color was selected
 			MCDittyConfig.signPlayingHighlightColor = sineBowColor((float) (signColorSlider.sliderValue * 2 * Math.PI));
 			MCDittyConfig.signPlayingHighlightSlider = signColorSlider.sliderValue;
-			writeConfigFile();
+			flushConfigFile();
 		}
 	}
 
@@ -419,7 +430,7 @@ public class GuiMCDittySettings extends GuiScreen {
 				MCDittyConfig.emitOnlyOneParticle = false;
 			}
 
-			writeConfigFile();
+			flushConfigFile();
 			// } else if (guibutton.id == 300) {
 			// // One particle
 			// BlockSign.emitOnlyOneParticle = !BlockSign.emitOnlyOneParticle;
@@ -439,19 +450,19 @@ public class GuiMCDittySettings extends GuiScreen {
 			}
 			// System.out.println(BlockSign.showErrors + ":"
 			// + BlockSign.onlyFirstErrorShown);
-			writeConfigFile();
+			flushConfigFile();
 		} else if (guibutton.id == 500) {
 			// Save midis
 			MCDittyConfig.midiSavingEnabled = !MCDittyConfig.midiSavingEnabled;
-			writeConfigFile();
+			flushConfigFile();
 		} else if (guibutton.id == 600) {
 			// Blink signs
 			MCDittyConfig.blinkSignsTexturesEnabled = !MCDittyConfig.blinkSignsTexturesEnabled;
-			writeConfigFile();
+			flushConfigFile();
 		} else if (guibutton.id == 700) {
 			// Highlighting
 			MCDittyConfig.highlightEnabled = !MCDittyConfig.highlightEnabled;
-			writeConfigFile();
+			flushConfigFile();
 		} else if (guibutton.id == 800) {
 			// Cycle blink sign times
 			long time = MCDittyConfig.blinkTimeMS;
@@ -473,19 +484,19 @@ public class GuiMCDittySettings extends GuiScreen {
 				time = 0;
 			}
 			MCDittyConfig.blinkTimeMS = time;
-			writeConfigFile();
+			flushConfigFile();
 		} else if (guibutton.id == 900) {
 			// Lyrics enabled
 			MCDittyConfig.lyricsEnabled = !MCDittyConfig.lyricsEnabled;
-			writeConfigFile();
+			flushConfigFile();
 		} else if (guibutton.id == 10) {
 			// Debug enabled
 			MCDittyConfig.debug = !MCDittyConfig.debug;
-			writeConfigFile();
+			flushConfigFile();
 		} else if (guibutton.id == 2000) {
 			// ProxPads enabled
 			MCDittyConfig.proxPadsEnabled = !MCDittyConfig.proxPadsEnabled;
-			writeConfigFile();
+			flushConfigFile();
 		} else if (guibutton.id == 3000) {
 			// Use Music volume enabled
 			if (MCDittyConfig.getVolumeMode() == MCDittyConfig.IGNORE_MC_VOLUME) {
@@ -498,19 +509,23 @@ public class GuiMCDittySettings extends GuiScreen {
 				// Unknown volume mode
 				MCDittyConfig.setVolumeMode(MCDittyConfig.USE_SOUND_VOLUME);
 			}
-			writeConfigFile();
+			flushConfigFile();
 		} else if (guibutton.id == 3100) {
 			// Midi message
 			MCDittyConfig.showMidiMessageEnabled = !MCDittyConfig.showMidiMessageEnabled;
 		} else if (guibutton.id == 3200) {
 			// Edit no play tokens
 			MCDittyConfig.editNoPlayTokens();
+		} else if (guibutton.id == 3300) {
+			boolean noteBlockTooltips = !MCDittyConfig.getBoolean("enableNoteblockTooltips");
+			MCDittyConfig.setBoolean("enableNoteblockTooltips", noteBlockTooltips);
+			flushConfigFile();
 		}
 	}
 
-	private void writeConfigFile() {
+	private void flushConfigFile() {
 		try {
-			MCDittyConfig.writeConfigFile();
+			MCDittyConfig.flush();
 		} catch (IOException e) {
 			// TODO Tell user
 			e.printStackTrace();

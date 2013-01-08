@@ -51,6 +51,7 @@ import net.minecraft.src.DestroyBlockProgress;
 import net.minecraft.src.EntityClientPlayerMP;
 import net.minecraft.src.EntityFX;
 import net.minecraft.src.EntityHeartFX;
+import net.minecraft.src.EntityNoteFX;
 import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiScreenBook;
@@ -58,7 +59,9 @@ import net.minecraft.src.GuiVideoSettings;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.RenderGlobal;
 import net.minecraft.src.RenderManager;
+import net.minecraft.src.RenderNoteBlockTooltip;
 import net.minecraft.src.TileEntity;
+import net.minecraft.src.TileEntityNote;
 import net.minecraft.src.TileEntitySign;
 import net.minecraft.src.TileEntitySignRenderer;
 import net.minecraft.src.Vec3;
@@ -427,7 +430,8 @@ public class MCDitty {
 														+ " left)");
 							}
 						}
-					} else if (!isIDAxe(held) && !minecraft.thePlayer.isSneaking()) {
+					} else if (!isIDAxe(held)
+							&& !minecraft.thePlayer.isSneaking()) {
 						// Manually trigger blockActivated
 						((BlockSign) Block.signPost).blockActivated(
 								minecraft.theWorld, hoverPoint.x, hoverPoint.y,
@@ -456,6 +460,19 @@ public class MCDitty {
 					}
 				}
 			}
+		}
+	}
+
+	private int getNoteBlockValue(Point3D hoverPoint, World world) {
+		TileEntity tile = world.getBlockTileEntity(hoverPoint.x, hoverPoint.y,
+				hoverPoint.z);
+		if (tile != null && tile instanceof TileEntityNote) {
+			TileEntityNote noteTile = (TileEntityNote) tile;
+			byte note = noteTile.note;
+			System.out.println(note);
+			return note;
+		} else {
+			return 0;
 		}
 	}
 
@@ -568,8 +585,17 @@ public class MCDitty {
 								* 0.4d + 0.2d;
 						double partZ = (double) pos.z + rand.nextDouble()
 								* 0.4d + 0.2d;
-						GetMinecraft.instance().theWorld.spawnParticle("note",
-								partX, partY, partZ, xVel, 0D, 0D);
+						// GetMinecraft.instance().theWorld.spawnParticle("note",
+						// partX, partY, partZ, xVel, 0D, 0D);
+						// Manually spawn note particle to take advantage of the
+						// faster constructor which doesn't check for note
+						// blocks
+						// 2.0 number copied from a EntityNoteFX constructor
+						GetMinecraft.instance().effectRenderer
+								.addEffect((EntityFX) new EntityNoteFX(
+										GetMinecraft.instance().theWorld,
+										partX, partY, partZ, xVel, 0d, 0d,
+										2.0f, true));
 					} else if (particleRequest instanceof HeartParticleRequest) {
 						double var2 = rand.nextGaussian() * 0.02D;
 						double var4 = rand.nextGaussian() * 0.02D;
@@ -1105,7 +1131,7 @@ public class MCDitty {
 			// Turn off show welcome message flag
 			MCDittyConfig.showWelcomeMessage = false;
 			try {
-				MCDittyConfig.writeConfigFile();
+				MCDittyConfig.flush();
 			} catch (IOException e) {
 				// TODO Tell user
 				e.printStackTrace();
@@ -1134,7 +1160,7 @@ public class MCDitty {
 
 					MCDittyConfig.lastVersionFound = foundVersion;
 					try {
-						MCDittyConfig.writeConfigFile();
+						MCDittyConfig.flush();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -1239,20 +1265,34 @@ public class MCDitty {
 						e.printStackTrace();
 					}
 
-					// Also register the Hook Entity renderer
+					// Also register all entity renderers
 					if (m != null && m.theWorld != null) {
 						try {
 							Map registeredRenderers = (Map) GetMinecraft
 									.getUniqueTypedFieldFromClass(
 											RenderManager.class, Map.class,
 											RenderManager.instance);
+
 							if (registeredRenderers != null) {
+								// Add mcditty update tick hook entity renderer
 								if (!(registeredRenderers
 										.get(MCDittyUpdateTickHookEntity.class) instanceof RenderMCDittyUpdateHook)) {
+									RenderMCDittyUpdateHook r = new RenderMCDittyUpdateHook();
+									r.setRenderManager(RenderManager.instance);
 									registeredRenderers.put(
 											MCDittyUpdateTickHookEntity.class,
-											new RenderMCDittyUpdateHook());
+											r);
 								}
+
+								// Add note block tooltip renderer
+								if (!(registeredRenderers
+										.get(EntityNoteBlockTooltip.class) instanceof RenderNoteBlockTooltip)) {
+									RenderNoteBlockTooltip r = new RenderNoteBlockTooltip();
+									r.setRenderManager(RenderManager.instance);
+									registeredRenderers.put(
+											EntityNoteBlockTooltip.class, r);
+								}
+
 							}
 						} catch (IllegalArgumentException e) {
 							// TODO Auto-generated catch block
@@ -1974,6 +2014,14 @@ public class MCDitty {
 			controlList.add(BOOKGUI_IMPORT_BUTTON);
 			BOOKGUI_EXPORT_BUTTON.setBookGui(gui);
 			controlList.add(BOOKGUI_EXPORT_BUTTON);
+		}
+	}
+
+	public static void onNoteBlockValueUpdated(TileEntityNote noteTile) {
+		// Create tooltip
+		if (MCDittyConfig.getBoolean ("enableNoteblockTooltips")) {
+			noteTile.getWorldObj().spawnEntityInWorld(
+					new EntityNoteBlockTooltip(noteTile));
 		}
 	}
 }

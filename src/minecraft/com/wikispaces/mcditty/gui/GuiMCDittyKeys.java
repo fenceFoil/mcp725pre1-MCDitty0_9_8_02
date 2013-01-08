@@ -169,7 +169,7 @@ public class GuiMCDittyKeys extends GuiScreen {
 				keyBindings.get(i).setMainKey(par2);
 				settingKey.set(i, false);
 				try {
-					MCDittyConfig.writeConfigFile();
+					MCDittyConfig.flush();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -225,7 +225,7 @@ public class GuiMCDittyKeys extends GuiScreen {
 			}
 		}
 		try {
-			MCDittyConfig.writeConfigFile();
+			MCDittyConfig.flush();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

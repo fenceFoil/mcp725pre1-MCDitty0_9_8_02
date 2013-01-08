@@ -166,7 +166,7 @@ public class GuiMCDitty extends GuiScreen {
 			MCDittyConfig.turnedOff = !MCDittyConfig.turnedOff;
 			turnedOffButton.displayString = getMCDittyTurnedOffText();
 			try {
-				MCDittyConfig.writeConfigFile();
+				MCDittyConfig.flush();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -140,7 +140,7 @@ public class GuiMCDittySoundfont extends GuiScreen {
 									+ " is not a valid SoundFont2 file.";
 						}
 						try {
-							MCDittyConfig.writeConfigFile();
+							MCDittyConfig.flush();
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -154,7 +154,7 @@ public class GuiMCDittySoundfont extends GuiScreen {
 			// unload sound font
 			MCDittyConfig.customSF2.unload();
 			try {
-				MCDittyConfig.writeConfigFile();
+				MCDittyConfig.flush();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
