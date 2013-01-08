@@ -408,22 +408,6 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 		GL11.glNormal3f(0.0F, 0.0F, -1F * f3);
 		GL11.glDepthMask(false);
 
-		// int playerFacing =
-		// MathHelper.floor_double((double)((mc.thePlayer.rotationYaw * 4F) /
-		// 360F) + 0.5D) & 3;
-		// int oppositeFacing;
-		// if (playerFacing >= 2) {
-		// oppositeFacing = playerFacing - 2;
-		// } else {
-		// oppositeFacing = playerFacing + 2;
-		// }
-		//
-		// if (signEntity.blockType == Block.signWall &&
-		// BlockSign.getSignFacing(signEntity.blockMetadata, Block.signWall) ==
-		// playerFacing) {
-		// renderText = false;
-		// }
-
 		// Render sign text
 		if (renderText) {
 			String[] text = signEntity.getSignTextNoCodes();
