@@ -77,19 +77,20 @@ public class Packet62LevelSoundMCDitty extends Packet62LevelSound {
 	public void readPacketData(DataInputStream par1DataInputStream)
 			throws IOException {
 		super.readPacketData(par1DataInputStream);
-		System.out.println("Packet62LevelSoundMCDitty packet read!");
+		//System.out.println("Packet62LevelSoundMCDitty packet read!");
 		if (this.getSoundName().startsWith("note.")) {
-			try {
-				// TODO: Consult a noteblock, if any, before playing the sound
+			// TODO: Consult a noteblock, if necessary, before playing the sound
+//			try {
+//				
 //				GetMinecraft.setUniqueTypedFieldFromClass(
 //						Packet62LevelSound.class, String.class, this, "");
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			} catch (IllegalArgumentException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (IllegalAccessException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}
 	}
 	//
