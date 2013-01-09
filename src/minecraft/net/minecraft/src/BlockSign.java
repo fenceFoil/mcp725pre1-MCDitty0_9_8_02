@@ -3238,9 +3238,9 @@ public class BlockSign extends BlockContainer {
 			return "§cCould not start jar swapper. §bYou can still copy the jar file yourself: rename minecraft.updatedMCDitty.jar to minecraft.jar in the .minecraft/bin folder.";
 		}
 
-		showTextAsLyricNow("* §cA backup of the old minecraft.jar was saved.");
-		showTextAsLyricNow("* §cNew version of MCDitty was downloaded to /.minecraft/MCDitty/versions/");
-		return "§cUpdate successful! Next time you start Minecraft, MCDitty will be updated to version "
+		showTextAsLyricNow("* §dA backup of the old minecraft.jar was saved.");
+		showTextAsLyricNow("* §dNew version of MCDitty was downloaded to /.minecraft/MCDitty/Versions/");
+		return "* §aUpdate successful! §dNext time you start Minecraft, MCDitty will be updated to version "
 				+ downloadCurrentVersion(MCDittyConfig.MC_CURRENT_VERSION);
 	}
 
