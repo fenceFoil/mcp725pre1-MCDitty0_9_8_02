@@ -58,10 +58,10 @@ random.eat1:G3
 random.levelup1:C7
 random.orb1:D#7
 note.harp1:F#4
-note.hat1:F#4
+note.hat1:A5
 note.piano1:F#4
 note.snare1:F#4
-note.bassattack1:F#4
+note.bassattack1:F#3
 note.bd1:F#4
 note.pling1:F#4
 END OF EFFECTS

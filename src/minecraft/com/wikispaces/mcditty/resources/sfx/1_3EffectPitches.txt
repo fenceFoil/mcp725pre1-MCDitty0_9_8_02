@@ -40,9 +40,9 @@ mob.cowhurt1:G#5
 mob.cowhurt2:G#5
 mob.cowhurt3:A#5
 note.harp1:F#4
-note.hat1:F#4
+note.hat1:A5
 note.piano1:F#4
-note.bassattack1:F#4
+note.bassattack1:F#3
 note.snare1:F#4
 note.bd1:F#4
 note.pling1:F#4
