@@ -27,6 +27,13 @@ package net.minecraft.src;
 
 import com.wikispaces.mcditty.MCDitty;
 
+/**
+ * Currently unmodified from vanilla: previous MCDittys used this to get note
+ * block values, and the class must now be included to overwrite the modified
+ * class from before. (NOTE: IN 1.4.8 OR 1.5, this class CAN BE REMOVED from the
+ * classes MCDITTY MODIFIES)
+ * 
+ */
 public class EntityNoteFX extends EntityFX {
 	float noteParticleScale;
 
@@ -52,11 +59,9 @@ public class EntityNoteFX extends EntityFX {
 	 *            ignored
 	 * @param scaleFactor
 	 *            2.0 is the "normal" value
-	 * @param dontCheckForNoteblock
 	 */
 	public EntityNoteFX(World world, double x, double y, double z, double xVel,
-			double yVel, double zVel, float scaleFactor,
-			boolean dontCheckForNoteblock) {
+			double yVel, double zVel, float scaleFactor) {
 		super(world, x, y, z, 0.0D, 0.0D, 0.0D);
 		motionX *= 0.01D;
 		motionY *= 0.01D;
@@ -71,52 +76,20 @@ public class EntityNoteFX extends EntityFX {
 		particleMaxAge = 6;
 		noClip = false;
 		setParticleTextureIndex(64);
-
-		if (!dontCheckForNoteblock) {
-			// Try to set the note value on a tileEntityNoteBlock
-			TileEntity tile = world.getBlockTileEntity((int) (x - 0.5),
-					(int) (y - 1.2), (int) (z - 0.5));
-			if (tile != null && tile instanceof TileEntityNote) {
-				TileEntityNote noteTile = (TileEntityNote) tile;
-				noteTile.note = (byte) (xVel * 24);
-				MCDitty.onNoteBlockValueUpdated(noteTile);
-			}
-		}
 	}
 
 	public static float getBlueForNote(double xVel) {
-		return MathHelper.sin(((float) xVel + 0.6666667F)
-				* (float) Math.PI * 2.0F) * 0.65F + 0.35F;
-	}
-
-	public static float getGreenForNote(double xVel) {
-		return MathHelper.sin(((float) xVel + 0.33333334F)
-				* (float) Math.PI * 2.0F) * 0.65F + 0.35F;
-	}
-
-	public static float getRedForNote(double xVel) {
-		return MathHelper.sin(((float) xVel + 0.0F) * (float) Math.PI
+		return MathHelper.sin(((float) xVel + 0.6666667F) * (float) Math.PI
 				* 2.0F) * 0.65F + 0.35F;
 	}
 
-	/**
-	 * The constructor Minecraft calls on a note particle. Slower because it
-	 * does double duty putting a note value into a noteblock tile entity. (The
-	 * only way to get a noteblock's note value is when the server sends a
-	 * particle and sound event to play a note).
-	 * 
-	 * @param par1World
-	 * @param par2
-	 * @param par4
-	 * @param par6
-	 * @param par8
-	 * @param par10
-	 * @param par12
-	 * @param par14
-	 */
-	public EntityNoteFX(World par1World, double par2, double par4, double par6,
-			double par8, double par10, double par12, float par14) {
-		this(par1World, par2, par4, par6, par8, par10, par12, par14, false);
+	public static float getGreenForNote(double xVel) {
+		return MathHelper.sin(((float) xVel + 0.33333334F) * (float) Math.PI
+				* 2.0F) * 0.65F + 0.35F;
+	}
+
+	public static float getRedForNote(double xVel) {
+		return MathHelper.sin(((float) xVel + 0.0F) * (float) Math.PI * 2.0F) * 0.65F + 0.35F;
 	}
 
 	public void renderParticle(Tessellator par1Tessellator, float par2,

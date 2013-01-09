@@ -98,6 +98,7 @@ import com.wikispaces.mcditty.keyboard.KeypressProcessor;
 import com.wikispaces.mcditty.noteblocks.BlockNoteMCDitty;
 import com.wikispaces.mcditty.noteblocks.EntityNoteBlockTooltip;
 import com.wikispaces.mcditty.noteblocks.RenderNoteBlockTooltip;
+import com.wikispaces.mcditty.noteblocks.TileEntityNoteMCDitty;
 import com.wikispaces.mcditty.particle.BubbleParticleRequest;
 import com.wikispaces.mcditty.particle.HeartParticleRequest;
 import com.wikispaces.mcditty.particle.NoteParticleRequest;
@@ -641,6 +642,25 @@ public class MCDitty {
 	}
 
 	private void handleMouseInput(Minecraft minecraft) {
+		if (minecraft != null && minecraft.objectMouseOver != null) {
+			// Handle the player looking at a noteblock
+			// Get the block the mouse is pointing at
+			Point3D hoverPoint = new Point3D(minecraft.objectMouseOver.blockX,
+					minecraft.objectMouseOver.blockY,
+					minecraft.objectMouseOver.blockZ);
+			// Get the tile entity of the block the mouse is pointing at
+			TileEntity hoverTileEntity = minecraft.theWorld.getBlockTileEntity(
+					hoverPoint.x, hoverPoint.y, hoverPoint.z);
+			if (hoverTileEntity != null
+					&& hoverTileEntity instanceof TileEntityNoteMCDitty) {
+				TileEntityNoteMCDitty noteTile = (TileEntityNoteMCDitty) hoverTileEntity;
+				if (noteTile.noteValueKnown) {
+					// Show tooltip if note value known
+					showNoteblockTooltip(noteTile);
+				}
+			}
+		}
+
 		if (Mouse.isButtonDown(1) || Mouse.isButtonDown(0)) {
 			if (minecraft != null && minecraft.objectMouseOver != null) {
 				Point3D hoverPoint = new Point3D(
@@ -842,17 +862,18 @@ public class MCDitty {
 								* 0.4d + 0.2d;
 						double partZ = (double) pos.z + rand.nextDouble()
 								* 0.4d + 0.2d;
-						// GetMinecraft.instance().theWorld.spawnParticle("note",
-						// partX, partY, partZ, xVel, 0D, 0D);
-						// Manually spawn note particle to take advantage of the
-						// faster constructor which doesn't check for note
-						// blocks
-						// 2.0 number copied from a EntityNoteFX constructor
-						GetMinecraft.instance().effectRenderer
-								.addEffect((EntityFX) new EntityNoteFX(
-										GetMinecraft.instance().theWorld,
-										partX, partY, partZ, xVel, 0d, 0d,
-										2.0f, true));
+						GetMinecraft.instance().theWorld.spawnParticle("note",
+								partX, partY, partZ, xVel, 0D, 0D);
+						// // Manually spawn note particle to take advantage of
+						// the
+						// // faster constructor which doesn't check for note
+						// // blocks
+						// // 2.0 number copied from a EntityNoteFX constructor
+						// GetMinecraft.instance().effectRenderer
+						// .addEffect((EntityFX) new EntityNoteFX(
+						// GetMinecraft.instance().theWorld,
+						// partX, partY, partZ, xVel, 0d, 0d,
+						// 2.0f));
 					} else if (particleRequest instanceof HeartParticleRequest) {
 						double var2 = rand.nextGaussian() * 0.02D;
 						double var4 = rand.nextGaussian() * 0.02D;
@@ -2062,7 +2083,7 @@ public class MCDitty {
 		}
 	}
 
-	public static void onNoteBlockValueUpdated(TileEntityNote noteTile) {
+	public static void showNoteblockTooltip(TileEntityNote noteTile) {
 		// Create tooltip
 		if (MCDittyConfig.getBoolean("enableNoteblockTooltips")) {
 			noteTile.getWorldObj().spawnEntityInWorld(

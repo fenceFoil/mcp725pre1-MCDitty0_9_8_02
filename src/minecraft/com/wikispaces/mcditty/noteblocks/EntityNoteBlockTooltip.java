@@ -24,10 +24,13 @@
 package com.wikispaces.mcditty.noteblocks;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import net.minecraft.src.Entity;
 import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.TileEntityNote;
+
+import org.jfugue.elements.Note;
 
 import com.wikispaces.mcditty.Point3D;
 
@@ -35,7 +38,7 @@ import com.wikispaces.mcditty.Point3D;
  *
  */
 public class EntityNoteBlockTooltip extends Entity {
-	private float life = 4.0f;
+	private float life = 3.0f;
 
 	private Point3D noteBlockPoint;
 
@@ -43,20 +46,43 @@ public class EntityNoteBlockTooltip extends Entity {
 
 	private TileEntityNote noteTile;
 
-	private static final String[] textsPiano = { "F#3", "G3", "G#3", "A3",
-			"A#3", "B3", "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4",
-			"G#4", "A4", "A#4", "B4", "C5", "C#5", "D5", "D#5", "E5", "F5",
-			"F#5" };
+	private static Map<String, Integer> instrumentZeroNotes = new HashMap<String, Integer>();
 
-	private static final String[] textsBass = { "F#2", "G2", "G#2", "A2",
-			"A#2", "B2", "C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3",
-			"G#3", "A3", "A#3", "B3", "C4", "C#4", "D4", "D#4", "E4", "F4",
-			"F#4" };
+	static {
+		// Known and tested
+		instrumentZeroNotes.put("harp", 42); // F#3
+		instrumentZeroNotes.put("bassattack", 30); // F#2
+		instrumentZeroNotes.put("hat", 57); // A4
 
-	private static final String[] textsHiHat = { "A4", "A#4", "B4", "C5",
-			"C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5",
-			"B5", "C6", "C#6", "D6", "D#6", "E6", "F6", "F#6", "G6", "G#6",
-			"A6" };
+		// Percussion sounds: too vague to measure. Just assume
+		instrumentZeroNotes.put("bd", 42); // F#3
+		instrumentZeroNotes.put("snare", 42); // F#3
+	}
+
+	// private static final String[] textsPiano = { "F#3", "G3", "G#3", "A3",
+	// "A#3", "B3", "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4",
+	// "G#4", "A4", "A#4", "B4", "C5", "C#5", "D5", "D#5", "E5", "F5",
+	// "F#5" };
+	//
+	// private static final String[] textsBass = { "F#2", "G2", "G#2", "A2",
+	// "A#2", "B2", "C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3",
+	// "G#3", "A3", "A#3", "B3", "C4", "C#4", "D4", "D#4", "E4", "F4",
+	// "F#4" };
+	//
+	// private static final String[] textsHiHat = { "A4", "A#4", "B4", "C5",
+	// "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5",
+	// "B5", "C6", "C#6", "D6", "D#6", "E6", "F6", "F#6", "G6", "G#6",
+	// "A6" };
+
+	private static String getNoteName(int noteBlockValue, String instrument) {
+		Integer baseValue = instrumentZeroNotes.get(instrument);
+		if (baseValue == null) {
+			// Pick the "default" instrument for noteblocks: piano
+			baseValue = instrumentZeroNotes.get("harp");
+		}
+		
+		return Note.getStringForNote((byte) (noteBlockValue + baseValue));
+	}
 
 	public EntityNoteBlockTooltip(TileEntityNote noteTile) {
 		super(noteTile.getWorldObj());
@@ -70,10 +96,20 @@ public class EntityNoteBlockTooltip extends Entity {
 				noteTile.zCoord));
 
 		// Prevent duplicates
+		// TODO: Revive that one, dispose of this one. For efficiency: REDUCE NUMBER OF THROWN OUT TOOLTIPS!
 		if (activeTooltips.get(noteTile) != null) {
 			EntityNoteBlockTooltip t = activeTooltips.get(noteTile);
 			t.life = 0;
 			t.setDead();
+		}
+		
+		// No point if value is not known
+		if (noteTile instanceof TileEntityNoteMCDitty) {
+			TileEntityNoteMCDitty noteTileMCDitty = (TileEntityNoteMCDitty) noteTile;
+			if (!noteTileMCDitty.noteValueKnown) {
+				life = 0;
+				setDead();
+			}
 		}
 
 		activeTooltips.put(noteTile, this);
@@ -133,15 +169,9 @@ public class EntityNoteBlockTooltip extends Entity {
 	}
 
 	public String getText() {
-		String noteType = BlockNoteMCDitty.getNoteTypeForBlock(worldObj,
+		String noteInstrument = BlockNoteMCDitty.getNoteTypeForBlock(worldObj,
 				noteBlockPoint.x, noteBlockPoint.y, noteBlockPoint.z);
-		if (noteType.equalsIgnoreCase("bassattack")) {
-			return textsBass[noteTile.note];
-		} else if (noteType.equalsIgnoreCase("hat")) {
-			return textsHiHat[noteTile.note];
-		} else {
-			return textsPiano[noteTile.note];
-		}
+		return getNoteName(noteTile.note, noteInstrument);
 	}
 
 	public TileEntityNote getNoteTile() {

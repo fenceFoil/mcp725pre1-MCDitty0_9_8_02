@@ -25,6 +25,7 @@
 package com.wikispaces.mcditty;
 
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 
 import net.minecraft.src.Packet62LevelSound;
@@ -77,21 +78,26 @@ public class Packet62LevelSoundMCDitty extends Packet62LevelSound {
 	public void readPacketData(DataInputStream par1DataInputStream)
 			throws IOException {
 		super.readPacketData(par1DataInputStream);
-		//System.out.println("Packet62LevelSoundMCDitty packet read!");
-		if (this.getSoundName().startsWith("note.")) {
-			// TODO: Consult a noteblock, if necessary, before playing the sound
-//			try {
-//				
-//				GetMinecraft.setUniqueTypedFieldFromClass(
-//						Packet62LevelSound.class, String.class, this, "");
-//			} catch (IllegalArgumentException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (IllegalAccessException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-		}
+		// System.out.println("Packet62LevelSoundMCDitty packet read: "+getSoundName());
+		// if (getSoundName().startsWith("note.harp")) {
+		// // TODO: Consult a noteblock, if necessary, before playing the sound
+		// try {
+		// GetMinecraft.instance().installResource(
+		// "sound3/note/harmonica.ogg",
+		// new File(GetMinecraft.instance().getMinecraftDir()
+		// .toPath()
+		// + "\\resources\\sound3\\note\\harmonica.ogg"));
+		// GetMinecraft.setUniqueTypedFieldFromClass(
+		// Packet62LevelSound.class, String.class, this,
+		// "note.harmonica");
+		// } catch (IllegalArgumentException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// } catch (IllegalAccessException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// }
 	}
 	//
 	// /**

@@ -27,9 +27,13 @@ package com.wikispaces.mcditty.noteblocks;
 import net.minecraft.src.Block;
 import net.minecraft.src.BlockNote;
 import net.minecraft.src.Material;
+import net.minecraft.src.TileEntity;
+import net.minecraft.src.TileEntityNote;
 import net.minecraft.src.World;
+import net.minecraft.src.WorldClient;
 
 import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.MCDitty;
 
 /**
  * The Herobrine of NoteBlock: hijacked into the list of blocks by id instead of
@@ -138,6 +142,20 @@ public class BlockNoteMCDitty extends BlockNote {
 	 */
 	public void onBlockEventReceived(World world, int x, int y, int z,
 			int noteTypeNum, int noteBlockSetting) {
+		// Save note block setting
+		TileEntity tile = world.getBlockTileEntity(x, y, z);
+		if (tile instanceof TileEntityNote) {
+			((TileEntityNote) tile).note = (byte) noteBlockSetting;
+
+			// Try to specify that the value is known
+			if (tile instanceof TileEntityNoteMCDitty) {
+				((TileEntityNoteMCDitty) tile).noteValueKnown = true;
+			}
+
+			// While we're here and have the tile entity, show a tooltip over it
+			MCDitty.showNoteblockTooltip((TileEntityNote) tile);
+		}
+
 		float pitchMultiplier = (float) Math.pow(2.0D,
 				(double) (noteBlockSetting - 12) / 12.0D);
 
@@ -162,7 +180,7 @@ public class BlockNoteMCDitty extends BlockNote {
 	 */
 	public static String getNoteTypeForBlock(World world, int x, int y, int z) {
 		Material baseMaterial = world.getBlockMaterial(x, y - 1, z);
-		
+
 		byte instrumentNum = 0;
 		if (baseMaterial == Material.rock) {
 			instrumentNum = 1;
@@ -192,5 +210,10 @@ public class BlockNoteMCDitty extends BlockNote {
 		default:
 			return "harp";
 		}
+	}
+
+	@Override
+	public TileEntity createNewTileEntity(World par1World) {
+		return new TileEntityNoteMCDitty();
 	}
 }
