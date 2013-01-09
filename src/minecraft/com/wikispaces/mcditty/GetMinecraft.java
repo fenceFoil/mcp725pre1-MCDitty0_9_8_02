@@ -134,6 +134,39 @@ public class GetMinecraft {
 			return minecraftField.get(classInstance);
 		}
 	}
+	
+	/**
+	 * Attempts to find a private field in class c of type fieldType in the
+	 * instance classInstance and returns it. There must be only one field of
+	 * type fieldType for this to work reliably. Can narrow search down to
+	 * static fields only by making classInstance null.
+	 * 
+	 * @param c
+	 * @param fieldType
+	 * @param classInstance
+	 *            null for static fields
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 */
+	public static boolean setUniqueTypedFieldFromClass(Class c, Class fieldType,
+			Object classInstance, Object value) throws IllegalArgumentException,
+			IllegalAccessException {		
+		Field[] minecraftFields = c.getDeclaredFields();
+		Field minecraftField = null;
+		for (Field f : minecraftFields) {
+			if (f.getType() == fieldType) {
+				minecraftField = f;
+				break;
+			}
+		}
+		if (minecraftField == null) {
+			return false;
+		} else {
+			minecraftField.setAccessible(true);
+			minecraftField.set(classInstance, value);
+			return true;
+		}
+	}
 
 	/**
 	 * Attempts to find a method in class c based on its parameters. There must

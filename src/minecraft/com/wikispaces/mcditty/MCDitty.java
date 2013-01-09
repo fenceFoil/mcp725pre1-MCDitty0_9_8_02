@@ -57,6 +57,7 @@ import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiScreenBook;
 import net.minecraft.src.GuiVideoSettings;
 import net.minecraft.src.ItemStack;
+import net.minecraft.src.Packet;
 import net.minecraft.src.RenderGlobal;
 import net.minecraft.src.RenderManager;
 import net.minecraft.src.TileEntity;
@@ -94,6 +95,7 @@ import com.wikispaces.mcditty.gui.GuiMCDittyBookImportButton;
 import com.wikispaces.mcditty.gui.GuiMCDittyMenuButton;
 import com.wikispaces.mcditty.gui.GuiMCDittyVideoMenuButton;
 import com.wikispaces.mcditty.keyboard.KeypressProcessor;
+import com.wikispaces.mcditty.noteblocks.BlockNoteMCDitty;
 import com.wikispaces.mcditty.noteblocks.EntityNoteBlockTooltip;
 import com.wikispaces.mcditty.noteblocks.RenderNoteBlockTooltip;
 import com.wikispaces.mcditty.particle.BubbleParticleRequest;
@@ -292,6 +294,260 @@ public class MCDitty {
 		// "Let's Make Some Music!");
 		// ModLoader.addAchievementDesc(menuAchievement, "Press Ctrl+D",
 		// "Open the MCDitty Menu");
+
+		// Set up modified note block
+		// First, the original Minecraft noteblock must be discarded
+		try {
+			BlockNoteMCDitty.removeNormalNoteBlockFromList();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// Then the new noteblock can be created
+		BlockNoteMCDitty newNoteBlock = new BlockNoteMCDitty(25);
+
+		// Set up modified level sound packet
+		// Put it into Packet's directories of packet types, replacing the
+		// normal level sound packet
+		// Packet.packetClassToIdMap.put(Packet62LevelSoundMCDitty.class,
+		// Integer.valueOf(62));
+		try {
+			Object packetClassToIdMapObj = GetMinecraft
+					.getUniqueTypedFieldFromClass(Packet.class, Map.class, null);
+			if (packetClassToIdMapObj != null) {
+				Map packetClassToIdMap = (Map) packetClassToIdMapObj;
+				packetClassToIdMap.put(Packet62LevelSoundMCDitty.class,
+						Integer.valueOf(62));
+
+				// Also put into the other map of packets
+				// Only do this if the first map was found and added to
+				// successfully
+				Packet.packetIdToClassMap.addKey(62,
+						Packet62LevelSoundMCDitty.class);
+			}
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	/**
+	 * Runs all the most costly parts of loading MCDitty. Called as early in the
+	 * game's loading as possible.
+	 */
+	public void load() {
+		// Enable calling onTickInGame each tick
+		// TODO: REENABLE WHEN MODLOADER COMES BACK!!! REMOVED 1.3.1
+		// ModLoader.setInGameHook(this, true, true);
+
+		// Todo: Add achievement
+
+		long startTime = System.currentTimeMillis();
+		// Init the sound engine (with a Gervill synthesizer)
+		// NOTE: JUDGED TOO EXPENSIVE
+		// try {
+		// Player p = new Player(new SoftSynthesizer());
+		// p.play("Rwww");
+		// } catch (MidiUnavailableException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		long jfugueLoadTime = System.currentTimeMillis() - startTime;
+
+		// Init the SFX table
+		startTime = System.currentTimeMillis();
+		try {
+			SFXManager.load();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (SAXException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		long sfxLoadTime = System.currentTimeMillis() - startTime;
+
+		// Init the Sign Renderer Trig Tables
+		startTime = System.currentTimeMillis();
+		TileEntitySignRenderer.createTrigTables();
+		long trigLoadTime = System.currentTimeMillis() - startTime;
+
+		final MCDitty mcditty = this;
+
+		// Start the entity checker update thread
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					Minecraft m = GetMinecraft.instance();
+					if (m == null) {
+						// System.out.println("mc is null");
+					} else {
+						mcditty.createHookEntity();
+					}
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					// Also register all entity renderers
+					if (m != null && m.theWorld != null) {
+						try {
+							Map registeredRenderers = (Map) GetMinecraft
+									.getUniqueTypedFieldFromClass(
+											RenderManager.class, Map.class,
+											RenderManager.instance);
+
+							if (registeredRenderers != null) {
+								// Add mcditty update tick hook entity renderer
+								if (!(registeredRenderers
+										.get(MCDittyUpdateTickHookEntity.class) instanceof RenderMCDittyUpdateHook)) {
+									RenderMCDittyUpdateHook r = new RenderMCDittyUpdateHook();
+									r.setRenderManager(RenderManager.instance);
+									registeredRenderers.put(
+											MCDittyUpdateTickHookEntity.class,
+											r);
+								}
+
+								// Add note block tooltip renderer
+								if (!(registeredRenderers
+										.get(EntityNoteBlockTooltip.class) instanceof RenderNoteBlockTooltip)) {
+									RenderNoteBlockTooltip r = new RenderNoteBlockTooltip();
+									r.setRenderManager(RenderManager.instance);
+									registeredRenderers.put(
+											EntityNoteBlockTooltip.class, r);
+								}
+
+							}
+						} catch (IllegalArgumentException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (IllegalAccessException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+
+		});
+		t.setName("MCDitty Tick Hook Checker");
+		t.start();
+
+		// Start the decoy sign manager used in the bugfix for 1.4.4 SSP signs
+		// blanking after an edit
+		// decoySignManager = new DecoySignManager();
+		// decoySignManager.start();
+
+		// Load the config file
+		MCDittyConfig.checkConfig(null);
+
+		// System.out.println("MCDitty Load: JFugue: "
+		// + jfugueLoadTime + ", SFX: "
+		// + sfxLoadTime+", SignRendererTrig: "+trigLoadTime);
+	}
+
+	/**
+	 * Run on the first tick of the game.
+	 */
+	public void doFirstTickSetup() {
+		// // Win installed achievement
+		// REMOVED for 1.3.1 update
+		// ModLoader.getMinecraftInstance().thePlayer.addStat(
+		// installedAchievement, 1);
+		// Check to see that the config file is up to date
+		MCDittyConfig.checkConfig(GetMinecraft.instance().theWorld);
+		// Show welcome message, if any
+		if (MCDittyConfig.showWelcomeMessage) {
+			// Show a welcome message
+			GetMinecraft.instance().thePlayer
+					.addChatMessage("§bMCDitty Installed! §ePress Ctrl+"
+							+ Keyboard.getKeyName(keypressHandler
+									.getBindingByAction("menu").getMainKey())
+							+ "§a to open the MCDitty menu.");
+			// Turn off show welcome message flag
+			MCDittyConfig.showWelcomeMessage = false;
+			try {
+				MCDittyConfig.flush();
+			} catch (IOException e) {
+				// TODO Tell user
+				e.printStackTrace();
+			}
+		}
+
+		Thread t = new Thread(new Runnable() {
+
+			public void run() {
+				// Handle new version found alert
+				String foundVersion = BlockSign
+						.downloadCurrentVersion(MCDittyConfig.MC_CURRENT_VERSION);
+				// If new version found is greater than the current AND is
+				// greater
+				// than the last time we checked
+				if (CompareVersion.compareVersions(foundVersion,
+						MCDittyConfig.CURRENT_VERSION) == CompareVersion.GREATER
+						&& !MCDittyConfig.lastVersionFound.equals(foundVersion)) {
+					// Show a message
+					GetMinecraft.instance().thePlayer.addChatMessage("§aA new version of MCDitty (§b"
+							+ foundVersion
+							+ "§a) is available on Auto-Update! §ePress Ctrl+"
+							+ Keyboard.getKeyName(keypressHandler
+									.getBindingByAction("menu").getMainKey())
+							+ " to open the MCDitty menu.");
+
+					MCDittyConfig.lastVersionFound = foundVersion;
+					try {
+						MCDittyConfig.flush();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		t.setName("MCDitty Update Checker");
+		t.start();
+
+		// Get the HashMap with a list of the blocks currently being punched
+		try {
+			// Get Map storing which blocks are damaged
+			RenderGlobal globalRenderer = GetMinecraft.instance().renderGlobal;
+			Field[] globalRendererFields = globalRenderer.getClass()
+					.getDeclaredFields();
+			HashMap damageValues = null;
+			for (Field renderField : globalRendererFields) {
+				// System.out.println (renderField.getType().getName());
+				if (renderField.getType() == Map.class) {
+					renderField.setAccessible(true);
+					damageValues = (HashMap) renderField.get(globalRenderer);
+					break;
+				}
+			}
+
+			if (damageValues != null) {
+				MCDitty.damageValues = damageValues;
+				lastDamageValues = damageValues;
+			}
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -1112,218 +1368,6 @@ public class MCDitty {
 	}
 
 	/**
-	 * Run on the first tick of the game.
-	 */
-	public void doFirstTickSetup() {
-		// // Win installed achievement
-		// REMOVED for 1.3.1 update
-		// ModLoader.getMinecraftInstance().thePlayer.addStat(
-		// installedAchievement, 1);
-		// Check to see that the config file is up to date
-		MCDittyConfig.checkConfig(GetMinecraft.instance().theWorld);
-		// Show welcome message, if any
-		if (MCDittyConfig.showWelcomeMessage) {
-			// Show a welcome message
-			GetMinecraft.instance().thePlayer
-					.addChatMessage("§bMCDitty Installed! §ePress Ctrl+"
-							+ Keyboard.getKeyName(keypressHandler
-									.getBindingByAction("menu").getMainKey())
-							+ "§a to open the MCDitty menu.");
-			// Turn off show welcome message flag
-			MCDittyConfig.showWelcomeMessage = false;
-			try {
-				MCDittyConfig.flush();
-			} catch (IOException e) {
-				// TODO Tell user
-				e.printStackTrace();
-			}
-		}
-
-		Thread t = new Thread(new Runnable() {
-
-			public void run() {
-				// Handle new version found alert
-				String foundVersion = BlockSign
-						.downloadCurrentVersion(MCDittyConfig.MC_CURRENT_VERSION);
-				// If new version found is greater than the current AND is
-				// greater
-				// than the last time we checked
-				if (CompareVersion.compareVersions(foundVersion,
-						MCDittyConfig.CURRENT_VERSION) == CompareVersion.GREATER
-						&& !MCDittyConfig.lastVersionFound.equals(foundVersion)) {
-					// Show a message
-					GetMinecraft.instance().thePlayer.addChatMessage("§aA new version of MCDitty (§b"
-							+ foundVersion
-							+ "§a) is available on Auto-Update! §ePress Ctrl+"
-							+ Keyboard.getKeyName(keypressHandler
-									.getBindingByAction("menu").getMainKey())
-							+ " to open the MCDitty menu.");
-
-					MCDittyConfig.lastVersionFound = foundVersion;
-					try {
-						MCDittyConfig.flush();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-		t.setName("MCDitty Update Checker");
-		t.start();
-
-		// Get the HashMap with a list of the blocks currently being punched
-		try {
-			// Get Map storing which blocks are damaged
-			RenderGlobal globalRenderer = GetMinecraft.instance().renderGlobal;
-			Field[] globalRendererFields = globalRenderer.getClass()
-					.getDeclaredFields();
-			HashMap damageValues = null;
-			for (Field renderField : globalRendererFields) {
-				// System.out.println (renderField.getType().getName());
-				if (renderField.getType() == Map.class) {
-					renderField.setAccessible(true);
-					damageValues = (HashMap) renderField.get(globalRenderer);
-					break;
-				}
-			}
-
-			if (damageValues != null) {
-				MCDitty.damageValues = damageValues;
-				lastDamageValues = damageValues;
-			}
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Runs all the most costly parts of loading MCDitty. Called as early in the
-	 * game's loading as possible.
-	 */
-	public void load() {
-		// Enable calling onTickInGame each tick
-		// TODO: REENABLE WHEN MODLOADER COMES BACK!!! REMOVED 1.3.1
-		// ModLoader.setInGameHook(this, true, true);
-
-		// Todo: Add achievement
-
-		long startTime = System.currentTimeMillis();
-		// Init the sound engine (with a Gervill synthesizer)
-		// NOTE: JUDGED TOO EXPENSIVE
-		// try {
-		// Player p = new Player(new SoftSynthesizer());
-		// p.play("Rwww");
-		// } catch (MidiUnavailableException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		long jfugueLoadTime = System.currentTimeMillis() - startTime;
-
-		// Init the SFX table
-		startTime = System.currentTimeMillis();
-		try {
-			SFXManager.load();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (SAXException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		long sfxLoadTime = System.currentTimeMillis() - startTime;
-
-		// Init the Sign Renderer Trig Tables
-		startTime = System.currentTimeMillis();
-		TileEntitySignRenderer.createTrigTables();
-		long trigLoadTime = System.currentTimeMillis() - startTime;
-
-		final MCDitty mcditty = this;
-
-		// Start the entity checker update thread
-		Thread t = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				while (true) {
-					Minecraft m = GetMinecraft.instance();
-					if (m == null) {
-						// System.out.println("mc is null");
-					} else {
-						mcditty.createHookEntity();
-					}
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					// Also register all entity renderers
-					if (m != null && m.theWorld != null) {
-						try {
-							Map registeredRenderers = (Map) GetMinecraft
-									.getUniqueTypedFieldFromClass(
-											RenderManager.class, Map.class,
-											RenderManager.instance);
-
-							if (registeredRenderers != null) {
-								// Add mcditty update tick hook entity renderer
-								if (!(registeredRenderers
-										.get(MCDittyUpdateTickHookEntity.class) instanceof RenderMCDittyUpdateHook)) {
-									RenderMCDittyUpdateHook r = new RenderMCDittyUpdateHook();
-									r.setRenderManager(RenderManager.instance);
-									registeredRenderers.put(
-											MCDittyUpdateTickHookEntity.class,
-											r);
-								}
-
-								// Add note block tooltip renderer
-								if (!(registeredRenderers
-										.get(EntityNoteBlockTooltip.class) instanceof RenderNoteBlockTooltip)) {
-									RenderNoteBlockTooltip r = new RenderNoteBlockTooltip();
-									r.setRenderManager(RenderManager.instance);
-									registeredRenderers.put(
-											EntityNoteBlockTooltip.class, r);
-								}
-
-							}
-						} catch (IllegalArgumentException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IllegalAccessException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-
-		});
-		t.setName("MCDitty Tick Hook Checker");
-		t.start();
-
-		// Start the decoy sign manager used in the bugfix for 1.4.4 SSP signs
-		// blanking after an edit
-		// decoySignManager = new DecoySignManager();
-		// decoySignManager.start();
-
-		// Load the config file
-		MCDittyConfig.checkConfig(null);
-
-		// System.out.println("MCDitty Load: JFugue: "
-		// + jfugueLoadTime + ", SFX: "
-		// + sfxLoadTime+", SignRendererTrig: "+trigLoadTime);
-	}
-
-	/**
 	 * Tries to create a new entity to hook into Minecraft ticks with, removing
 	 * any old ones.
 	 * 
@@ -2020,7 +2064,7 @@ public class MCDitty {
 
 	public static void onNoteBlockValueUpdated(TileEntityNote noteTile) {
 		// Create tooltip
-		if (MCDittyConfig.getBoolean ("enableNoteblockTooltips")) {
+		if (MCDittyConfig.getBoolean("enableNoteblockTooltips")) {
 			noteTile.getWorldObj().spawnEntityInWorld(
 					new EntityNoteBlockTooltip(noteTile));
 		}
