@@ -89,12 +89,11 @@ public class DittyPlayerThread extends Thread implements
 		DittyPlayerPlayingHookListener, LyricEventReadListener,
 		TempoEventReadListener, MCDittyEventReadListener,
 		ParticleWorthyNoteReadListener, InstrumentEventReadListener {
-	// private String tuneToPlay = "Cmaj";
 
 	private boolean muting = false;
 
-	// public static ConcurrentLinkedQueue<Player> players = new
-	// ConcurrentLinkedQueue<Player>();
+	// private static OpenedSynthPool synthPool = new OpenedSynthPool();
+
 	public static ConcurrentLinkedQueue<DittyPlayerThread> jFuguePlayerThreads = new ConcurrentLinkedQueue<DittyPlayerThread>();
 
 	private Player player;
@@ -122,6 +121,7 @@ public class DittyPlayerThread extends Thread implements
 
 	@Override
 	public void run() {
+
 		jFuguePlayerThreads.add(this);
 
 		if (ditty instanceof SignDitty) {
@@ -155,7 +155,7 @@ public class DittyPlayerThread extends Thread implements
 			player.getRenderer().setInstrumentEventReadListener(this);
 		}
 
-		BlockSign.simpleLog("Starting tune!");
+		BlockSign.simpleLog("Starting ditty!");
 		if (!muting) {
 			try {
 				synchronized (staticPlayerMutex) {
@@ -190,9 +190,11 @@ public class DittyPlayerThread extends Thread implements
 
 		if (ditty instanceof SignDitty) {
 			// Remove this tune from the list of blocked tunes
+			// (Loop until all copies are removed)
 			synchronized (BlockSign.oneAtATimeSignsBlocked) {
-				BlockSign.oneAtATimeSignsBlocked.remove(((SignDitty) ditty)
-						.getStartPoint());
+				while (BlockSign.oneAtATimeSignsBlocked
+						.remove(((SignDitty) ditty).getStartPoint()))
+					;
 			}
 		}
 
@@ -201,50 +203,20 @@ public class DittyPlayerThread extends Thread implements
 	}
 
 	private Player setUpPlayer() {
+		// System.out.println
+		// (System.currentTimeMillis()+": Synth constructing...");
 		synth = new SoftSynthesizer();
 		Player p = null;
-
-		// XXX: Most of this is testing crud
-		// Load a custom soundbank, if specified
-		if (MCDittyConfig.customSF2.isSF2Loaded()) {
-			try {
-				// Synth must be opened early to add instruments
-				synth.open();
-
-				// System.out.println("1");
-				// SF2Soundbank soundbank = MCDittyConfig.customSF2
-				// .getCachedSoundbank();
-				// System.out.println("2");
-				// System.out.println(soundbank.getName() + ":"
-				// + soundbank.getInstruments()[14].getName());
-				// System.out.println(synth.isSoundbankSupported(soundbank));
-				// synth.loadAllInstruments(s);
-				// System.out.println ("3");
-				// Instrument[] instruments = soundbank.getInstruments();
-				//
-				// for (Instrument inst : instruments) {
-				// System.out.println("Bank=" + inst.getPatch().getBank()
-				// + " Patch=" + inst.getPatch().getProgram()
-				// + " Inst=" + inst);
-				// }
-				//
-				// System.out.println("Is supported: "
-				// + synth.isSoundbankSupported(soundbank));
-				// System.out.println("Loaded inst: "
-				// + synth.loadAllInstruments(soundbank));
-				// synth.loadAllInstruments(soundbank);
-
-				// p = new Player(synth);
-			} catch (MidiUnavailableException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		// System.out.println
+		// (System.currentTimeMillis()+": Synth done constructing.");
 
 		// Note the instruments that are now loaded into the synthesizer at the
 		// start of the song (for things that replace them, like SFXInstruments)
 		try {
+			// System.out.println
+			// (System.currentTimeMillis()+": Synth opening");
 			synth.open();
+			// System.out.println (System.currentTimeMillis()+": Synth opened");
 			p = new Player(synth);
 		} catch (MidiUnavailableException e1) {
 			// TODO Auto-generated catch block
@@ -302,7 +274,7 @@ public class DittyPlayerThread extends Thread implements
 		if (MCDittyConfig.debug) {
 			BlockSign.simpleLog("playerHook() called: time=" + time);
 		}
-		
+
 		MCDitty.onDittyTick(ditty.getDittyID(), time);
 
 		// Check for / fire ditty events
@@ -373,27 +345,11 @@ public class DittyPlayerThread extends Thread implements
 		/*
 		 * Select audio file.
 		 */
-		File audioFile = SFXManager.getEffectFile(SFXManager.getAllEffects(timedEvent.getSfxSource())
-				.get(timedEvent.getSfxName()), timedEvent.getSfxNumber(), timedEvent.getSfxSource());
-//		OggDecoder decoder = null;
-//		try {
-//			decoder = new OggDecoder(audioFile.toURI().toURL());
-//		} catch (MalformedURLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//
-//		/*
-//		 * Decode the content of the file into a byte array.
-//		 */
-//		// Big enough to hold 60 seconds of 4 byte per sample CD audio
-//		ByteBuffer rawDecoderOutputBuffer = ByteBuffer.allocate(41000 * 4 * 30);
-//		AudioFormat bufferFormat = decoder.toBuffer(rawDecoderOutputBuffer,
-//				true);
-//		byte[] soundData = new byte[rawDecoderOutputBuffer.position()];
-//		rawDecoderOutputBuffer.position(0);
-//		rawDecoderOutputBuffer.get(soundData);
-		
+		File audioFile = SFXManager.getEffectFile(
+				SFXManager.getAllEffects(timedEvent.getSfxSource()).get(
+						timedEvent.getSfxName()), timedEvent.getSfxNumber(),
+				timedEvent.getSfxSource());
+
 		CodecJOrbis codec = new CodecJOrbis();
 		try {
 			codec.initialize(audioFile.toURI().toURL());
@@ -403,7 +359,7 @@ public class DittyPlayerThread extends Thread implements
 		}
 		SoundBuffer readAudio = codec.readAll();
 		codec.cleanup();
-		
+
 		/*
 		 * Convert the decoded audio into the correct format for soundfonts
 		 * e.g.16 bit signed, little endian
@@ -411,11 +367,12 @@ public class DittyPlayerThread extends Thread implements
 		 * (In practice, this usually seems to involve simply toggling the
 		 * "endian-ness")
 		 */
-		AudioFormat sf2Format = new AudioFormat(readAudio.audioFormat.getSampleRate(), 16,
+		AudioFormat sf2Format = new AudioFormat(
+				readAudio.audioFormat.getSampleRate(), 16,
 				readAudio.audioFormat.getChannels(), true, false);
 		AudioInputStream audioStream = new AudioInputStream(
-				new ByteArrayInputStream(readAudio.audioData), readAudio.audioFormat,
-				readAudio.audioData.length);
+				new ByteArrayInputStream(readAudio.audioData),
+				readAudio.audioFormat, readAudio.audioData.length);
 		AudioInputStream converterAudioStream = AudioSystem
 				.getAudioInputStream(sf2Format, audioStream);
 
@@ -453,7 +410,7 @@ public class DittyPlayerThread extends Thread implements
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}	
+		}
 
 		byte[] convertedSoundData = sounddataOutputStream.toByteArray();
 
@@ -502,7 +459,7 @@ public class DittyPlayerThread extends Thread implements
 
 		// Save SF2 instrument to cache
 		cachedSFXInstruments.put(timedEvent.getEventID(), sf2);
-		
+
 		// Cleanup read audio for sample
 		readAudio.cleanup();
 	}
@@ -729,7 +686,7 @@ public class DittyPlayerThread extends Thread implements
 						// Instrument found.
 						// Load it
 						synth.loadInstrument(i);
-						//System.out.println(i.getName());
+						// System.out.println(i.getName());
 						break;
 					}
 				}
