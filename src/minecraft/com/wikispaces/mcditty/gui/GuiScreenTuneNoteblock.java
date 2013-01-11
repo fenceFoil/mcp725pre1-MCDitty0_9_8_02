@@ -54,6 +54,7 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 
 	private class PianoKeyboard {
 		private class PianoKey {
+			public static final int TALLEST_KEY_HEIGHT = 60;
 			public int width;
 			public int height;
 			public int noteMIDIValue;
@@ -77,7 +78,7 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 					label = rawLabel;
 				} else {
 					width = 25;
-					height = 60;
+					height = TALLEST_KEY_HEIGHT;
 					color = 0xaaffffff;
 					label = rawLabel;
 				}
@@ -154,6 +155,16 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 
 		public void draw(GuiScreen screen, boolean noteConfirmed) {
 			int startX = screen.width / 2 - getTotalWidth() / 2;
+
+			int bgColor = 0x888888;
+			if (noteConfirmed) {
+				bgColor = bgColor | 0x44000000;
+			} else {
+				bgColor = bgColor | 0xFF000000;
+			}
+			screen.drawRect(startX - 5, y - 5, screen.width / 2
+					+ getTotalWidth() / 2 + 5, y
+					+ (rowHeight * (pianoKeys[0].length-1))+PianoKey.TALLEST_KEY_HEIGHT + 5, bgColor);
 
 			int currY = y;
 			for (int j = 0; j < keyboardHeight; j++) {
@@ -309,6 +320,13 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 
 		private Point2D getMousePositionOnKeyboard(int mx, int my,
 				GuiScreen screen) {
+			// First, do not highlight a key if the mouse has not moved from
+			// center of screen (as when gui is first opened)
+			if (Math.abs((mx - screen.width / 2)) < 3
+					&& Math.abs((my - screen.height / 2)) < 3) {
+				return null;
+			}
+
 			int startX = screen.width / 2 - getTotalWidth() / 2;
 
 			int currY = this.y;
@@ -371,7 +389,7 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 		if (transpostionSlider != null) {
 			label = transpostionSlider.displayString;
 		}
-		transpostionSlider = new GuiMCDittySlider(1000, width - 150, 15, label,
+		transpostionSlider = new GuiMCDittySlider(1000, width - 150, 40, label,
 				persistantTranspose);
 		controlList.add(transpostionSlider);
 
@@ -405,7 +423,7 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 				EntityNoteBlockTooltip.instrumentZeroNotes.get(BlockNoteMCDitty
 						.getNoteTypeForBlock(mc.theWorld, tile.xCoord,
 								tile.yCoord, tile.zCoord))
-						+ noteModifier, 80);
+						+ noteModifier, 70);
 		k.setSelectedKey(selectedX, selectedY);
 		keyboard = k;
 	}
@@ -417,11 +435,11 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 	 */
 	@Override
 	public void drawScreen(int par1, int par2, float par3) {
-		drawDefaultBackground();
+		// drawDefaultBackground();
 
 		// Draw label at top of screen
-		drawCenteredString(fontRenderer, "Tuning Noteblock", width / 2, 15,
-				0xffffff);
+//		drawCenteredString(fontRenderer, "Tuning Noteblock", width / 2, 15,
+//				0xffffff);
 
 		// Draw instrument type
 		drawCenteredString(
@@ -430,10 +448,10 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 						+ BlockNoteMCDitty.getScreenName(BlockNoteMCDitty
 								.getNoteTypeForBlock(mc.theWorld, tile.xCoord,
 										tile.yCoord, tile.zCoord)), width - 90,
-				50, 0xffffff);
+				25, 0xffffff);
 
 		// Draw instruction text
-		drawString(fontRenderer, "Keyboard:", 50, 15, 0xffffff);
+		drawString(fontRenderer, "Keyboard:", 50, 25, 0xffffff);
 		String chooseKeyText = String
 				.format("Move with %1$s, %2$s, %3$s, and %4$s",
 						new Object[] {
@@ -441,11 +459,11 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 								Keyboard.getKeyName(mc.gameSettings.keyBindLeft.keyCode),
 								Keyboard.getKeyName(mc.gameSettings.keyBindBack.keyCode),
 								Keyboard.getKeyName(mc.gameSettings.keyBindRight.keyCode) });
-		drawString(fontRenderer, chooseKeyText, 20, 35, 0xaaaaaa);
+		drawString(fontRenderer, chooseKeyText, 20, 40, 0xaaaaaa);
 		String exitKeyText = String.format("Select with %1$s",
 				new Object[] { Keyboard
 						.getKeyName(mc.gameSettings.keyBindJump.keyCode) });
-		drawString(fontRenderer, exitKeyText, 20, 45, 0xaaaaaa);
+		drawString(fontRenderer, exitKeyText, 20, 50, 0xaaaaaa);
 
 		// Draw keyboard diagram
 		keyboard.draw(this, tuningAndExiting);
@@ -595,11 +613,11 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 			// Only update this every fourth frame
 			if (frameCount % 2 == 0) {
 
-				boolean exit = false;
+				boolean readyToExit = false;
 
 				if (keyboard.getSelectedKeyNum() < 0) {
 					// If nothing is selected, don't tune
-					exit = true;
+					readyToExit = true;
 				} else {
 					// IF something is selected
 
@@ -632,12 +650,12 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 							clickNoteblock();
 							clicksToGo--;
 						} else {
-							exit = true;
+							readyToExit = true;
 						}
 					}
 				}
 
-				if (exit) {
+				if (readyToExit && keyboard.getSelectedKeyNum() == tile.note) {
 					closeGui();
 				}
 			}
@@ -682,7 +700,9 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 	 */
 	@Override
 	protected void mouseClicked(int x, int y, int button) {
-		tuningAndExiting = keyboard.isClickOnKeyboard(x, y, this);
+		if (!tuningAndExiting) {
+			tuningAndExiting = keyboard.isClickOnKeyboard(x, y, this);
+		}
 
 		super.mouseClicked(x, y, button);
 	}
