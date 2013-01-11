@@ -29,14 +29,21 @@ import java.util.LinkedList;
 
 import net.minecraft.src.Block;
 import net.minecraft.src.BlockNote;
+import net.minecraft.src.BlockSign;
 import net.minecraft.src.Material;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntityNote;
+import net.minecraft.src.TileEntitySign;
 import net.minecraft.src.World;
 
 import com.wikispaces.mcditty.GetMinecraft;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.Point3D;
+import com.wikispaces.mcditty.config.MCDittyConfig;
+import com.wikispaces.mcditty.ditty.event.CueEvent;
+import com.wikispaces.mcditty.particle.ParticleRequest;
+import com.wikispaces.mcditty.signs.SignParser;
+import com.wikispaces.mcditty.signs.keywords.NoteblockTriggerKeyword;
 
 /**
  * The Herobrine of NoteBlock: hijacked into the list of blocks by id instead of
@@ -165,11 +172,14 @@ public class BlockNoteMCDitty extends BlockNote {
 				((TileEntityNoteMCDitty) tile).noteValueKnown = true;
 			}
 
-			// While we're here and have the tile entity, show a tooltip over it
-			MCDitty.showNoteblockTooltip((TileEntityNote) tile);
+			if (!MCDittyConfig.turnedOff) {
+				// While we're here and have the tile entity, show a tooltip
+				// over it
+				MCDitty.showNoteblockTooltip((TileEntityNote) tile);
 
-			// And show a lyric too
-			activateAnyAdjacentSigns((TileEntityNote) tile);
+				// And show a lyric too
+				activateAnyAdjacentSigns((TileEntityNote) tile);
+			}
 		}
 
 		float pitchMultiplier = (float) Math.pow(2.0D,
@@ -186,19 +196,103 @@ public class BlockNoteMCDitty extends BlockNote {
 	}
 
 	private void activateAnyAdjacentSigns(TileEntityNote tile) {
-		// First, look for signs
-		LinkedList<Point3D> candidatePoints = new LinkedList<Point3D>();
-		candidatePoints.add(new Point3D(tile.xCoord, tile.yCoord,
-				tile.zCoord - 1));
-		candidatePoints.add(new Point3D(tile.xCoord + 1, tile.yCoord,
-				tile.zCoord));
-		candidatePoints.add(new Point3D(tile.xCoord, tile.yCoord,
-				tile.zCoord + 1));
-		candidatePoints.add(new Point3D(tile.xCoord - 1, tile.yCoord,
-				tile.zCoord));
-		
-		
+		// Don't activate signs if MCDitty is off or a gui is open
+		if (MCDittyConfig.turnedOff
+				|| GetMinecraft.instance().currentScreen != null) {
+			return;
+		}
 
+		// First, look for signs
+		// Start @ north go counterclockwise
+		LinkedList<Point3D> nearby = new LinkedList<Point3D>();
+		nearby.add(new Point3D(tile.xCoord, tile.yCoord, tile.zCoord - 1));
+		nearby.add(new Point3D(tile.xCoord - 1, tile.yCoord, tile.zCoord));
+		nearby.add(new Point3D(tile.xCoord, tile.yCoord, tile.zCoord + 1));
+		nearby.add(new Point3D(tile.xCoord + 1, tile.yCoord, tile.zCoord));
+
+		// Sort out non-signs and wall signs not attached to noteblock
+		int lastNull = 0;
+		for (int i = 0; i < nearby.size(); i++) {
+			// If point has no sign, ignore it
+			Block blockType = BlockSign.getSignBlockType(nearby.get(i),
+					tile.getWorldObj());
+			if (blockType == null || blockType == Block.signPost) {
+				// Not a sign, or definitely not attached to noteblock
+				nearby.set(i, null);
+				lastNull = i;
+			} else if (blockType == signWall) {
+				// Ignore wall signs not attached to noteblock
+				TileEntity signTile = (TileEntity) tile.getWorldObj()
+						.getBlockTileEntity(nearby.get(i).x, nearby.get(i).y,
+								nearby.get(i).z);
+				if (signTile == null || !(signTile instanceof TileEntitySign)) {
+					// If the sign's tile entity can't be found, ignore sign
+					nearby.set(i, null);
+					lastNull = i;
+					continue;
+				}
+
+				if (!BlockSign.getBlockAttachedTo((TileEntitySign) signTile)
+						.equals(new Point3D(tile.xCoord, tile.yCoord,
+								tile.zCoord))) {
+					// Sign isn't attached to noteblock. Ignore.
+					nearby.set(i, null);
+					lastNull = i;
+				}
+			}
+		}
+
+		// Start activating signs beginning at the last empty spot found
+		for (int i = 0; i < nearby.size(); i++) {
+			// Offset lastNull by i
+			int currPoint = (lastNull + i) % nearby.size();
+
+			// Activate
+			Point3D point = nearby.get(currPoint);
+			if (point != null) {
+				activateAdjacentSign(point, tile);
+			}
+		}
+
+		// Combine and display any lyrics
+		flushActivatedLyrics();
+	}
+
+	private void flushActivatedLyrics() {
+		StringBuilder lyric = new StringBuilder();
+		for (String s : lyricBuffer) {
+			lyric.append(s);
+		}
+		MCDitty.addLyricToQueue(new CueEvent(lyric.toString()));
+		lyricBuffer.clear();
+	}
+
+	private boolean areSignsAtOpposites(LinkedList<Point3D> nearby) {
+		return (nearby.get(0) == null) && (nearby.get(2) == null);
+	}
+
+	private LinkedList<String> lyricBuffer = new LinkedList<String>();
+
+	private void activateAdjacentSign(Point3D signPoint, TileEntityNote noteTile) {
+		TileEntity tileEntity = noteTile.getWorldObj().getBlockTileEntity(
+				signPoint.x, signPoint.y, signPoint.z);
+		if (tileEntity instanceof TileEntitySign) {
+			TileEntitySign tile = (TileEntitySign) tileEntity;
+
+			if (SignParser.parseKeyword(tile.getSignTextNoCodes()[0]) instanceof NoteblockTriggerKeyword) {
+				// Start ditty
+				BlockSign.playDittyFromSigns(noteTile.getWorldObj(),
+						signPoint.x, signPoint.y, signPoint.z, true);
+			} else {
+				// Read lyric
+				lyricBuffer.add(BlockSign.readLyricFromSign(0,
+						tile.getSignTextNoCodes(), ""));
+			}
+		}
+
+		for (int i = 0; i < 8; i++) {
+			MCDitty.requestParticle(new ParticleRequest(signPoint, "snowshovel"));
+		}
 	}
 
 	/**

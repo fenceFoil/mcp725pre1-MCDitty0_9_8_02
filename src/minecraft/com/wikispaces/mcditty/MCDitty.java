@@ -668,7 +668,7 @@ public class MCDitty {
 	}
 
 	private void handleMouseInput(Minecraft minecraft) {
-		if (minecraft != null && minecraft.objectMouseOver != null) {
+		if (minecraft != null && minecraft.objectMouseOver != null && !MCDittyConfig.turnedOff) {
 			// Handle the player looking at a noteblock
 			// Get the block the mouse is pointing at
 			Point3D hoverPoint = new Point3D(minecraft.objectMouseOver.blockX,
