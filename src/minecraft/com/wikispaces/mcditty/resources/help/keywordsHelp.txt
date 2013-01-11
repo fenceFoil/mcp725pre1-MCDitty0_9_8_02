@@ -6,7 +6,7 @@ Repeat, Volume, Staccato, StaccatoOff, Tran, TranOff, Octaves, OctavesOff, Accel
 §aSync:
 Reset, SyncVoices, SyncWith
 §aTriggers:
-Area, Proximity
+Area, Proximity, [Ditty]
 §aDitty:
 OneAtATime, IsDitty, SaveMIDI
 §aEffects:
@@ -17,4 +17,4 @@ OneLine
 Disco, NewBot
 
 §bNew:
-SFXInst2, Tran, Octaves, PreLyric, Accel, Patt
+SFXInst2, Patt, [Ditty]
