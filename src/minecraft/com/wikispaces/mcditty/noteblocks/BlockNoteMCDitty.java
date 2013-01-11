@@ -24,16 +24,19 @@
  */
 package com.wikispaces.mcditty.noteblocks;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+
 import net.minecraft.src.Block;
 import net.minecraft.src.BlockNote;
 import net.minecraft.src.Material;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntityNote;
 import net.minecraft.src.World;
-import net.minecraft.src.WorldClient;
 
 import com.wikispaces.mcditty.GetMinecraft;
 import com.wikispaces.mcditty.MCDitty;
+import com.wikispaces.mcditty.Point3D;
 
 /**
  * The Herobrine of NoteBlock: hijacked into the list of blocks by id instead of
@@ -44,6 +47,16 @@ import com.wikispaces.mcditty.MCDitty;
  * 
  */
 public class BlockNoteMCDitty extends BlockNote {
+	public static HashMap<String, String> screenNames = new HashMap<String, String>();
+
+	static {
+		screenNames.put("harp", "Piano");
+		screenNames.put("bd", "Bass Drum");
+		screenNames.put("bassattack", "Double Bass");
+		screenNames.put("hat", "Hi-Hat");
+		screenNames.put("snare", "Snare Drum");
+	}
+
 	public static void removeNormalNoteBlockFromList()
 			throws IllegalArgumentException, IllegalAccessException {
 		Object blockListObj = GetMinecraft.getUniqueTypedFieldFromClass(
@@ -154,6 +167,9 @@ public class BlockNoteMCDitty extends BlockNote {
 
 			// While we're here and have the tile entity, show a tooltip over it
 			MCDitty.showNoteblockTooltip((TileEntityNote) tile);
+
+			// And show a lyric too
+			activateAnyAdjacentSigns((TileEntityNote) tile);
 		}
 
 		float pitchMultiplier = (float) Math.pow(2.0D,
@@ -167,6 +183,40 @@ public class BlockNoteMCDitty extends BlockNote {
 		world.spawnParticle("note", (double) x + 0.5D, (double) y + 1.2D,
 				(double) z + 0.5D, (double) noteBlockSetting / 24.0D, 0.0D,
 				0.0D);
+	}
+
+	private void activateAnyAdjacentSigns(TileEntityNote tile) {
+		// First, look for signs
+		LinkedList<Point3D> candidatePoints = new LinkedList<Point3D>();
+		candidatePoints.add(new Point3D(tile.xCoord, tile.yCoord,
+				tile.zCoord - 1));
+		candidatePoints.add(new Point3D(tile.xCoord + 1, tile.yCoord,
+				tile.zCoord));
+		candidatePoints.add(new Point3D(tile.xCoord, tile.yCoord,
+				tile.zCoord + 1));
+		candidatePoints.add(new Point3D(tile.xCoord - 1, tile.yCoord,
+				tile.zCoord));
+		
+		
+
+	}
+
+	/**
+	 * Chimes the given noteblock at the specified pitch without changing
+	 * anything about the noteblock.
+	 * 
+	 * @param tile
+	 * @param noteblockValueToSimulate
+	 */
+	public static void chimeBlockAtPitch(TileEntityNoteMCDitty tile,
+			int noteblockValueToSimulate) {
+		float pitchMultiplier = (float) Math.pow(2.0D,
+				(double) (noteblockValueToSimulate - 12) / 12.0D);
+		String noteType = getNoteTypeForBlock(tile.getWorldObj(), tile.xCoord,
+				tile.yCoord, tile.zCoord);
+		tile.getWorldObj().playSound((double) tile.xCoord + 0.5D,
+				(double) tile.yCoord + 0.5D, (double) tile.zCoord + 0.5D,
+				"note." + noteType, 3.0F, pitchMultiplier, true);
 	}
 
 	/**
@@ -215,5 +265,9 @@ public class BlockNoteMCDitty extends BlockNote {
 	@Override
 	public TileEntity createNewTileEntity(World par1World) {
 		return new TileEntityNoteMCDitty();
+	}
+
+	public static String getScreenName(String instrumentName) {
+		return screenNames.get(instrumentName);
 	}
 }

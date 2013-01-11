@@ -26,6 +26,8 @@ package com.wikispaces.mcditty;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,7 +53,6 @@ import net.minecraft.src.DestroyBlockProgress;
 import net.minecraft.src.EntityClientPlayerMP;
 import net.minecraft.src.EntityFX;
 import net.minecraft.src.EntityHeartFX;
-import net.minecraft.src.EntityNoteFX;
 import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiScreenBook;
@@ -335,6 +336,31 @@ public class MCDitty {
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+
+		// Add a TileEntity mapping for TileEntityNoteMCDitty
+		try {
+			Object[] maps = GetMinecraft.getAllUniqueTypedFieldsFromClass(
+					TileEntity.class, Map.class, null);
+			if (maps != null) {
+				for (Object o:maps) {
+					if (o instanceof Map) {
+						Map m = (Map) o;
+						
+						if (m.get("Music") != null) {
+							m.put("Music", TileEntityNoteMCDitty.class);
+						} else {
+							m.put(TileEntityNoteMCDitty.class, "Music");
+						}
+					}
+				}
+			}
+		} catch (IllegalArgumentException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IllegalAccessException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 
 	}
