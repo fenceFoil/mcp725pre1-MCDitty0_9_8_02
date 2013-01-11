@@ -59,7 +59,7 @@ public class MCDittyConfig {
 	/**
 	 * Current MCDitty version.
 	 */
-	public static final String CURRENT_VERSION = "0.9.8.03";
+	public static final String CURRENT_VERSION = "0.9.8.04";
 	/**
 	 * Minecraft version that the mod is designed for.
 	 */
@@ -196,6 +196,7 @@ public class MCDittyConfig {
 	 */
 	public static boolean turnedOff = false;
 	private static boolean enableNoteblockTooltips = true;
+	private static boolean noteblockTuner_mute = false;
 
 	/**
 	 * Note: Strips newlines, leaving spaces
@@ -438,7 +439,8 @@ public class MCDittyConfig {
 					} else if (lineIn.startsWith("NoteblockTooltips=")) {
 						lineIn = lineIn.replace("NoteblockTooltips=", "");
 						try {
-							enableNoteblockTooltips = Boolean.parseBoolean(lineIn);
+							enableNoteblockTooltips = Boolean
+									.parseBoolean(lineIn);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -615,6 +617,15 @@ public class MCDittyConfig {
 					} else if (lineIn.startsWith("EndOfLineTune=")) {
 						lineIn = lineIn.replace("EndOfLineTune=", "");
 						setEndOfLineTune(lineIn);
+					} else if (lineIn.startsWith("noteblockTuner.mute=")) {
+						lineIn = lineIn.replace("noteblockTuner.mute=", "");
+						try {
+							setBoolean("noteblockTuner.mute",
+									Boolean.parseBoolean(lineIn));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					} else if (lineIn.startsWith("SignPlayingHighlight=")) {
 						lineIn = lineIn.replace("SignPlayingHighlight=", "");
 						try {
@@ -768,10 +779,10 @@ public class MCDittyConfig {
 					+ Boolean.toString(blinkSignsTexturesEnabled));
 			configOut.newLine();
 			configOut.newLine();
-	configOut.write("NoteblockTooltips="
-			+ Boolean.toString(enableNoteblockTooltips));
-	configOut.newLine();
-	configOut.newLine();
+			configOut.write("NoteblockTooltips="
+					+ Boolean.toString(enableNoteblockTooltips));
+			configOut.newLine();
+			configOut.newLine();
 			configOut
 					.write("Should parts of a ditty, such as keywords and comments, be highlighted (in progress)? (true or false)");
 			configOut.newLine();
@@ -809,6 +820,10 @@ public class MCDittyConfig {
 					.write("The sign editor's current mode. (Normal Mode is 0)");
 			configOut.newLine();
 			configOut.write("SignEditorMode=" + signEditorMode);
+			configOut.newLine();
+			configOut.newLine();
+			configOut.write("noteblockTuner.mute="
+					+ getBoolean("noteblockTuner.mute"));
 			configOut.newLine();
 			configOut.newLine();
 			configOut
@@ -946,6 +961,8 @@ public class MCDittyConfig {
 	public static boolean getBoolean(String key) {
 		if (key.equalsIgnoreCase("enableNoteblockTooltips")) {
 			return enableNoteblockTooltips;
+		} else if (key.equalsIgnoreCase("noteblockTuner.mute")) {
+			return noteblockTuner_mute;
 		} else {
 			return false;
 		}
@@ -954,6 +971,8 @@ public class MCDittyConfig {
 	public static void setBoolean(String key, boolean value) {
 		if (key.equalsIgnoreCase("enableNoteblockTooltips")) {
 			enableNoteblockTooltips = value;
+		} else if (key.equalsIgnoreCase("noteblockTuner.mute")) {
+			noteblockTuner_mute = value;
 		}
 	}
 
