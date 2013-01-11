@@ -204,13 +204,17 @@ public class KeypressProcessor {
 
 			// First, check to see if player is looking at a noteblock
 			Minecraft minecraft = GetMinecraft.instance();
-			Point3D hoverPoint = new Point3D(minecraft.objectMouseOver.blockX,
-					minecraft.objectMouseOver.blockY,
-					minecraft.objectMouseOver.blockZ);
-			if (minecraft.theWorld.getBlockId(hoverPoint.x, hoverPoint.y,
-					hoverPoint.z) == Block.music.blockID) {
-				minecraft.displayGuiScreen(new GuiScreenTuneNoteblock(
-						hoverPoint));
+			if (minecraft.objectMouseOver != null) {
+				Point3D hoverPoint = new Point3D(
+						minecraft.objectMouseOver.blockX,
+						minecraft.objectMouseOver.blockY,
+						minecraft.objectMouseOver.blockZ);
+				if (minecraft.theWorld.getBlockId(hoverPoint.x, hoverPoint.y,
+						hoverPoint.z) == Block.music.blockID) {
+					minecraft.displayGuiScreen(new GuiScreenTuneNoteblock(
+							hoverPoint));
+
+				}
 			}
 		}
 	}
