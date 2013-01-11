@@ -30,6 +30,7 @@ import com.wikispaces.mcditty.signs.keywords.ExplicitGotoKeyword;
 import com.wikispaces.mcditty.signs.keywords.GotoKeyword;
 import com.wikispaces.mcditty.signs.keywords.LyricKeyword;
 import com.wikispaces.mcditty.signs.keywords.NewBotKeyword;
+import com.wikispaces.mcditty.signs.keywords.NoteblockTriggerKeyword;
 import com.wikispaces.mcditty.signs.keywords.OctavesKeyword;
 import com.wikispaces.mcditty.signs.keywords.OctavesOffKeyword;
 import com.wikispaces.mcditty.signs.keywords.ParsedKeyword;
@@ -74,7 +75,7 @@ public class SignParser {
 			"proxpad", "volume", "area", "goto", "savemidi", "playmidi",
 			"emitter", "sfxinst2", "sfxinst", "sfxinstoff", "newbot",
 			"staccato", "staccatooff", "tran", "tranoff", "octaves",
-			"octavesoff", "prelyric", "accel", "patt" };
+			"octavesoff", "prelyric", "accel", "patt", "[ditty]", "ditty"};
 
 	/**
 	 * Prevent people from instantiating this class of static methods
@@ -240,6 +241,8 @@ public class SignParser {
 			return AccelerateKeyword.parse(rawLine);
 		} else if (keyword.equals("patt")) {
 			return PattKeyword.parse(rawLine);
+		} else if (keyword.equals("ditty") || keyword.equals("[ditty]")) {
+			return new NoteblockTriggerKeyword(rawLine);
 		} else {
 			// Unknown or simple (no arguments) keyword
 			ParsedKeyword k = new ParsedKeyword(rawLine);

@@ -519,6 +519,16 @@ public class BlockSign extends BlockContainer {
 			}
 		}
 
+		// If it isn't, play it
+		// If oneAtATimeOn is true, go ahead and instantly add this ditty to the
+		// block list
+		// Will happen again later, but it should take effect as soon as
+		// possible (this call) so that ditties read in close succession don't
+		// both start
+		if (oneAtATimeOn) {
+			oneAtATimeSignsBlocked.add(new Point3D(x, y, z));
+		}
+
 		// TODO: If signs have been picked and there isn't a whitelist given,
 		// set the whitelist to all picked signs
 		if (signWhitelist == null && MCDitty.getPickedSigns().size() > 0) {
@@ -755,7 +765,7 @@ public class BlockSign extends BlockContainer {
 	private static StringBuilder readPattern(Point3D startPoint, World world,
 			LinkedList<SignLogPoint> signsReadList, SignDitty ditty,
 			int subpatternLevel, LinkedList<Point3D> signWhitelist) {
-		MCDitty.slowDownMC(2);
+		//MCDitty.slowDownMC(2);
 
 		// Contains musicstring read from pattern
 		StringBuilder readMusicString = new StringBuilder();
@@ -1078,7 +1088,8 @@ public class BlockSign extends BlockContainer {
 
 						// Note that we are back on the original sign in the
 						// musicstring
-						ditty.addMusicStringTokens(readMusicString, SIGN_START_TOKEN + currSignIDNum, false);
+						ditty.addMusicStringTokens(readMusicString,
+								SIGN_START_TOKEN + currSignIDNum, false);
 
 						// // Ignore the contents of this sign; it has been
 						// // read by readPattern already.
@@ -1260,7 +1271,8 @@ public class BlockSign extends BlockContainer {
 										.addDittyEvent(new PlayMidiDittyEvent(
 												midiSaveFile, ditty
 														.getDittyID()));
-								ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
+								ditty.addMusicStringTokens(readMusicString,
+										TIMED_EVENT_TOKEN + eventID, false);
 							}
 
 							// Regardless of whether the sign is heeded:
@@ -1316,7 +1328,8 @@ public class BlockSign extends BlockContainer {
 						}
 
 						// Add comboline to the music buffer
-						if (!ditty.addMusicStringTokens(readMusicString, comboLine.trim(), true)) {
+						if (!ditty.addMusicStringTokens(readMusicString,
+								comboLine.trim(), true)) {
 							// If the comboline contained errors, highlight all
 							// lines in comboLine
 							for (int i = line + 1; i < signText.length; i++) {
@@ -1371,7 +1384,8 @@ public class BlockSign extends BlockContainer {
 								// eliminates duplicate errors
 								checkForErrors = false;
 							}
-							if (!ditty.addMusicStringTokens(readMusicString, comboLine.trim(), checkForErrors)) {
+							if (!ditty.addMusicStringTokens(readMusicString,
+									comboLine.trim(), checkForErrors)) {
 								// If the comboline contained errors, highlight
 								// all lines in comboLine
 								for (int i = line + 1; i < signText.length; i++) {
@@ -1393,7 +1407,8 @@ public class BlockSign extends BlockContainer {
 						// musicstring-neutral token
 						// Do not check for errors! The token is a MCDitty-only
 						// token.
-						ditty.addMusicStringTokens(readMusicString, getResetToken(), false);
+						ditty.addMusicStringTokens(readMusicString,
+								getResetToken(), false);
 					} else if (keyword.equals("lyric")) {
 						// Lyric keyword
 
@@ -1413,39 +1428,8 @@ public class BlockSign extends BlockContainer {
 						}
 
 						// Get lyric's text
-						String lyricText = "";
-						int startLine = line + 1;
-						for (int lyricTextLine = startLine; lyricTextLine < LINES_ON_A_SIGN; lyricTextLine++) {
-							if (signText[lyricTextLine].trim().endsWith("-")) {
-								// Handle split words
-								lyricText += signText[lyricTextLine].substring(
-										0, signText[lyricTextLine]
-												.lastIndexOf("-"));
-							} else if (signText[lyricTextLine].trim().length() > 0) {
-								String lyricLineFromSign = signText[lyricTextLine];
-
-								// Trim whitespace off of JUST THE END of a line
-								// Also remove lines that consist wholly of
-								// whitespace
-								while (lyricLineFromSign
-										.charAt(lyricLineFromSign.length() - 1) == ' ') {
-									lyricLineFromSign = lyricLineFromSign
-											.substring(
-													0,
-													lyricLineFromSign.length() - 1);
-								}
-
-								lyricText += lyricLineFromSign + " ";
-							}
-						}
-						// Add color code
-						lyricText = l.getColorCode().replace('&', '§')
-								+ lyricText;
-
-						// Replace inline color codes
-						for (String s : colorCodeChars) {
-							lyricText = lyricText.replace("&" + s, "§" + s);
-						}
+						String lyricText = readLyricFromSign(line + 1,
+								signText, l.getColorCode());
 
 						// Adding to existing lyric?
 						if (MCDittyConfig.lyricsEnabled) {
@@ -1475,39 +1459,8 @@ public class BlockSign extends BlockContainer {
 						}
 
 						// Get lyric's text
-						String lyricText = "";
-						int startLine = line + 1;
-						for (int lyricTextLine = startLine; lyricTextLine < LINES_ON_A_SIGN; lyricTextLine++) {
-							if (signText[lyricTextLine].trim().endsWith("-")) {
-								// Handle split words
-								lyricText += signText[lyricTextLine].substring(
-										0, signText[lyricTextLine]
-												.lastIndexOf("-"));
-							} else if (signText[lyricTextLine].trim().length() > 0) {
-								String lyricLineFromSign = signText[lyricTextLine];
-
-								// Trim whitespace off of JUST THE END of a line
-								// Also remove lines that consist wholly of
-								// whitespace
-								while (lyricLineFromSign
-										.charAt(lyricLineFromSign.length() - 1) == ' ') {
-									lyricLineFromSign = lyricLineFromSign
-											.substring(
-													0,
-													lyricLineFromSign.length() - 1);
-								}
-
-								lyricText += lyricLineFromSign + " ";
-							}
-						}
-						// Add color code
-						lyricText = l.getColorCode().replace('&', '§')
-								+ lyricText;
-
-						// Replace inline color codes
-						for (String s : colorCodeChars) {
-							lyricText = lyricText.replace("&" + s, "§" + s);
-						}
+						String lyricText = readLyricFromSign(line + 1,
+								signText, l.getColorCode());
 
 						// Adding to existing lyric?
 						if (MCDittyConfig.lyricsEnabled) {
@@ -1525,14 +1478,16 @@ public class BlockSign extends BlockContainer {
 						ditty.setForceGoodDittyDetect(true);
 					} else if (keyword.equals("syncvoices")) {
 						// Add a token
-						ditty.addMusicStringTokens(readMusicString, SYNC_VOICES_TOKEN, false);
+						ditty.addMusicStringTokens(readMusicString,
+								SYNC_VOICES_TOKEN, false);
 					} else if (keyword.equals("syncwith")) {
 						// Read arguments
 						SyncWithKeyword k = SyncWithKeyword.parse(currLine);
 
 						// Finally, add token
 						if (k.getLayer() != -1000) {
-							ditty.addMusicStringTokens(readMusicString, SYNC_WITH_TOKEN + "V" + k.getVoice() + "L"
+							ditty.addMusicStringTokens(readMusicString,
+									SYNC_WITH_TOKEN + "V" + k.getVoice() + "L"
 											+ k.getLayer(), false);
 						} else {
 							ditty.addMusicStringTokens(
@@ -1550,7 +1505,8 @@ public class BlockSign extends BlockContainer {
 						int eventID = ditty.addDittyEvent(new SFXMCDittyEvent(k
 								.getEffectName(), -1, ditty.getDittyID()));
 						// Add token
-						ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
+						ditty.addMusicStringTokens(readMusicString,
+								TIMED_EVENT_TOKEN + eventID, false);
 					} else if (keyword.equals("disco")) {
 						// Handle disco floors
 
@@ -1572,7 +1528,8 @@ public class BlockSign extends BlockContainer {
 					} else if (keyword.equals("volume")) {
 						// Inserts a volume token into the song
 						VolumeKeyword k = VolumeKeyword.parse(currLine);
-						ditty.addMusicStringTokens(readMusicString, getAdjustedVolumeToken(k.getVolume(), ditty),
+						ditty.addMusicStringTokens(readMusicString,
+								getAdjustedVolumeToken(k.getVolume(), ditty),
 								false);
 					} else if (keyword.equals("emitter")) {
 						// Creates a create emitter event in the ditty, with
@@ -1595,7 +1552,8 @@ public class BlockSign extends BlockContainer {
 									.addDittyEvent(new CreateEmitterEvent(k,
 											-1, ditty.getDittyID(),
 											currSignPoint.clone()));
-							ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
+							ditty.addMusicStringTokens(readMusicString,
+									TIMED_EVENT_TOKEN + eventID, false);
 						}
 						// No more music on sign
 						break;
@@ -1622,7 +1580,8 @@ public class BlockSign extends BlockContainer {
 							int eventID = ditty
 									.addDittyEvent(new SFXInstrumentEvent(k,
 											-1, ditty.getDittyID()));
-							ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
+							ditty.addMusicStringTokens(readMusicString,
+									TIMED_EVENT_TOKEN + eventID, false);
 						}
 						// Skip ahead a couple of lines (keyword is 2 lines
 						// long)
@@ -1635,7 +1594,8 @@ public class BlockSign extends BlockContainer {
 						int eventID = ditty
 								.addDittyEvent(new SFXInstrumentOffEvent(k, -1,
 										ditty.getDittyID()));
-						ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
+						ditty.addMusicStringTokens(readMusicString,
+								TIMED_EVENT_TOKEN + eventID, false);
 					} else if (keyword.equals("newbot")) {
 						// TODO: Move sign parsing so that it happens just once
 						// per sign
@@ -1674,7 +1634,8 @@ public class BlockSign extends BlockContainer {
 
 							// Add the event to the ditty
 							int eventID = ditty.addDittyEvent(botEvent);
-							ditty.addMusicStringTokens(readMusicString, TIMED_EVENT_TOKEN + eventID, false);
+							ditty.addMusicStringTokens(readMusicString,
+									TIMED_EVENT_TOKEN + eventID, false);
 						}
 						// Skip ahead a couple of lines (keyword is 2 lines
 						// long)
@@ -1689,7 +1650,8 @@ public class BlockSign extends BlockContainer {
 								staccatoKeyword.getEighths(),
 								staccatoKeyword.getDuration());
 
-						ditty.addMusicStringTokens(readMusicString, staccatoToken, false);
+						ditty.addMusicStringTokens(readMusicString,
+								staccatoToken, false);
 					} else if (keyword.equals("staccatooff")) {
 						ditty.addMusicStringTokens(
 								readMusicString,
@@ -1738,6 +1700,8 @@ public class BlockSign extends BlockContainer {
 								k.getDuration());
 						ditty.addMusicStringTokens(readMusicString, token,
 								false);
+					} else if (keyword.equals("ditty") || keyword.equals("[ditty]")) {
+
 					} else {
 						// Unrecognized keyword; announce with error
 						ditty.addErrorMessage("§b"
@@ -1747,8 +1711,8 @@ public class BlockSign extends BlockContainer {
 					}
 				} else {
 					// Line contians music
-					boolean noErrors = ditty.addMusicStringTokens(readMusicString,
-							currLine, true);
+					boolean noErrors = ditty.addMusicStringTokens(
+							readMusicString, currLine, true);
 					if (!noErrors) {
 						ditty.addErrorHighlight(currSignPoint, line);
 					}
@@ -1845,6 +1809,49 @@ public class BlockSign extends BlockContainer {
 		MCDitty.stopMCSlowdown();
 
 		return readMusicString;
+	}
+
+	/**
+	 * Combines text below startLine into a single-line lyric. Handles hyphens
+	 * and whitespace.
+	 * 
+	 * @param startLine
+	 * @param signText
+	 * @param colorCode
+	 * @return
+	 */
+	public static String readLyricFromSign(int startLine, String[] signText,
+			String colorCode) {
+		String lyricText = "";
+
+		for (int lyricTextLine = startLine; lyricTextLine < LINES_ON_A_SIGN; lyricTextLine++) {
+			if (signText[lyricTextLine].trim().endsWith("-")) {
+				// Handle split words
+				lyricText += signText[lyricTextLine].substring(0,
+						signText[lyricTextLine].lastIndexOf("-"));
+			} else if (signText[lyricTextLine].trim().length() > 0) {
+				String lyricLineFromSign = signText[lyricTextLine];
+
+				// Trim whitespace off of JUST THE END of a line
+				// Also remove lines that consist wholly of
+				// whitespace
+				while (lyricLineFromSign.charAt(lyricLineFromSign.length() - 1) == ' ') {
+					lyricLineFromSign = lyricLineFromSign.substring(0,
+							lyricLineFromSign.length() - 1);
+				}
+
+				lyricText += lyricLineFromSign + " ";
+			}
+		}
+		// Add color code
+		lyricText = colorCode.replace('&', '§') + lyricText;
+
+		// Replace inline color codes
+		for (String s : colorCodeChars) {
+			lyricText = lyricText.replace("&" + s, "§" + s);
+		}
+
+		return lyricText;
 	}
 
 	private static String getMinecraftAdjustedVolumeToken(int volumePercent) {
@@ -1962,7 +1969,8 @@ public class BlockSign extends BlockContainer {
 
 	/**
 	 * Instructs all playing mcditty songs to mute themselves.
-	 * @param  
+	 * 
+	 * @param
 	 */
 	public static void mutePlayingDitties(int... exceptedDittyIDs) {
 		MuteDittyThread t = new MuteDittyThread(

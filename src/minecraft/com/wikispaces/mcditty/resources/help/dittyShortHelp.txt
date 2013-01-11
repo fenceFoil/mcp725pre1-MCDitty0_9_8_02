@@ -1,0 +1,5 @@
+Ditty
+
+When the noteblock this sign is attached to chimes, the sign is played as a ditty.
+
+Usually signs attached to noteblocks are treated as lyrics.
