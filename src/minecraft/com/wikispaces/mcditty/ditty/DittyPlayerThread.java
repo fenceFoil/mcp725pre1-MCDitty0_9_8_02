@@ -92,7 +92,7 @@ public class DittyPlayerThread extends Thread implements
 
 	private boolean muting = false;
 
-	// private static OpenedSynthPool synthPool = new OpenedSynthPool();
+	private static SoftSynthPool synthPool;
 
 	public static ConcurrentLinkedQueue<DittyPlayerThread> jFuguePlayerThreads = new ConcurrentLinkedQueue<DittyPlayerThread>();
 
@@ -113,6 +113,16 @@ public class DittyPlayerThread extends Thread implements
 	public DittyPlayerThread(Ditty ditty) {
 		this.ditty = ditty;
 		setName("Ditty Player");
+		
+		// Set up synthpool if not done already
+		setUpSynthPool();
+	}
+
+	public static void setUpSynthPool() {
+		if (synthPool == null) {
+			synthPool = new SoftSynthPool();
+			synthPool.start();
+		}
 	}
 
 	// public void setDitty(Ditty prop) {
@@ -176,6 +186,9 @@ public class DittyPlayerThread extends Thread implements
 		try {
 			synchronized (staticPlayerMutex) {
 				player.close();
+				if (synth != null && synth.isOpen()) {
+					synth.close();
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -203,25 +216,17 @@ public class DittyPlayerThread extends Thread implements
 	}
 
 	private Player setUpPlayer() {
-		// System.out.println
-		// (System.currentTimeMillis()+": Synth constructing...");
-		synth = new SoftSynthesizer();
+		SoftSynthesizer synth = synthPool.getOpenedSynth();
 		Player p = null;
-		// System.out.println
-		// (System.currentTimeMillis()+": Synth done constructing.");
-
-		// Note the instruments that are now loaded into the synthesizer at the
-		// start of the song (for things that replace them, like SFXInstruments)
 		try {
-			// System.out.println
-			// (System.currentTimeMillis()+": Synth opening");
-			synth.open();
-			// System.out.println (System.currentTimeMillis()+": Synth opened");
 			p = new Player(synth);
 		} catch (MidiUnavailableException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		
+		// Note the instruments that are now loaded into the synthesizer at the
+		// start of the song (for things that replace them, like SFXInstruments)
 		originalSynthInstruments = synth.getLoadedInstruments();
 		return p;
 	}

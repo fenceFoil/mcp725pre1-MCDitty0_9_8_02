@@ -80,6 +80,7 @@ import com.wikispaces.mcditty.config.MCDittyConfig;
 import com.wikispaces.mcditty.disco.DiscoFloor;
 import com.wikispaces.mcditty.disco.DiscoFloorDoneListener;
 import com.wikispaces.mcditty.disco.MeasureDiscoFloorThread;
+import com.wikispaces.mcditty.ditty.DittyPlayerThread;
 import com.wikispaces.mcditty.ditty.event.CreateBotEvent;
 import com.wikispaces.mcditty.ditty.event.CreateEmitterEvent;
 import com.wikispaces.mcditty.ditty.event.CueEvent;
@@ -386,6 +387,9 @@ public class MCDitty {
 		// // TODO Auto-generated catch block
 		// e.printStackTrace();
 		// }
+		
+		// Cache a few synths
+		DittyPlayerThread.setUpSynthPool();
 		long jfugueLoadTime = System.currentTimeMillis() - startTime;
 
 		// Init the SFX table
