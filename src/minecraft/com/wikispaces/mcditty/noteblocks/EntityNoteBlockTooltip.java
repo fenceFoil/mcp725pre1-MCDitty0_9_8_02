@@ -46,7 +46,7 @@ public class EntityNoteBlockTooltip extends Entity {
 
 	private TileEntityNote noteTile;
 
-	private static Map<String, Integer> instrumentZeroNotes = new HashMap<String, Integer>();
+	public static Map<String, Integer> instrumentZeroNotes = new HashMap<String, Integer>();
 
 	static {
 		// Known and tested

@@ -96,13 +96,13 @@ public class GuiMCDittyKeys extends GuiScreen {
 		// Create buttons
 		for (int i = 0; i < keyBindings.size(); i++) {
 			KeyBinding b = keyBindings.get(i);
-			GuiButton button = new GuiButton(i, (width / 2) + 80, 50 + 30 * i,
+			GuiButton button = new GuiButton(i, (width / 2) + 80, 20 + 30 * i,
 					70, 20, "");
 			keyButtons.add(button);
 			controlList.add(button);
 			settingKey.add(false);
 			
-			GuiButton modButton = new GuiButton(i+500, (width / 2), 50 + 30 * i, 70, 20, "");
+			GuiButton modButton = new GuiButton(i+500, (width / 2), 20 + 30 * i, 70, 20, "");
 			keyModButtons.add(modButton);
 			controlList.add(modButton);
 		}
@@ -125,9 +125,9 @@ public class GuiMCDittyKeys extends GuiScreen {
 		drawDefaultBackground();
 		updateButtonLabels();
 
-		// Draw label at top of screen
-		drawCenteredString(fontRenderer, "Keyboard Commands", width / 2, 25,
-				0x4444bb);
+//		// Draw label at top of screen
+//		drawCenteredString(fontRenderer, "Keyboard Commands", width / 2, 25,
+//				0x4444bb);
 
 		// Draw button labels
 		for (int i = 0; i < keyButtons.size(); i++) {
@@ -140,11 +140,11 @@ public class GuiMCDittyKeys extends GuiScreen {
 			}
 
 			int labelWidth = fontRenderer.getStringWidth(labelString);
-			fontRenderer.drawString(labelString, (width / 2) - labelWidth - 10,
-					56 + 30 * i, 0xffffff);
+			fontRenderer.drawString(labelString, width / 8 * 2 - (labelWidth / 2),
+					26 + 30 * i, 0xffffff);
 			
 			// Draw + between mod button and main key button
-			fontRenderer.drawString("+", (width / 2) + 72, 56+30*i, 0xffffff);
+			fontRenderer.drawString("+", (width / 2) + 72, 26+30*i, 0xffffff);
 		}
 
 		super.drawScreen(par1, par2, par3);

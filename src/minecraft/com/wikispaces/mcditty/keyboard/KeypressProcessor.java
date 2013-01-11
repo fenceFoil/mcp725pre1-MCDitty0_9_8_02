@@ -33,15 +33,18 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.src.Block;
 import net.minecraft.src.BlockSign;
 import net.minecraft.src.EnumOS;
 
 import org.lwjgl.input.Keyboard;
 
 import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.books.BookPlayer;
 import com.wikispaces.mcditty.config.MCDittyConfig;
 import com.wikispaces.mcditty.gui.GuiMCDitty;
+import com.wikispaces.mcditty.gui.GuiScreenTuneNoteblock;
 
 public class KeypressProcessor {
 
@@ -53,6 +56,7 @@ public class KeypressProcessor {
 			+ File.separator + "MCDitty" + File.separator + "keys.txt");
 
 	private static final LinkedList<KeyBinding> DEFAULT_BINDINGS = new LinkedList<KeyBinding>();
+	public static final int TUNE_NOTEBLOCK_KEY_UNSET = 234233;
 	static {
 		// Set up default key bindings
 		KeyBinding muteBinding = new KeyBinding("Mute", "mute", Keyboard.KEY_M,
@@ -75,6 +79,11 @@ public class KeypressProcessor {
 				"playBook", Keyboard.KEY_B, KeyBinding.CTRL_KEYS);
 		DEFAULT_BINDINGS.add(playBookBinding);
 
+		KeyBinding tuneNoteblockBinding = new KeyBinding("Tune Noteblock",
+				"tuneNoteblock", TUNE_NOTEBLOCK_KEY_UNSET,
+				KeyBinding.SHIFT_KEYS);
+		DEFAULT_BINDINGS.add(tuneNoteblockBinding);
+
 		// KeyBinding inspireBookBinding = new KeyBinding(
 		// "Improvise Ditty From Book", "inspireBook", Keyboard.KEY_I,
 		// KeyBinding.CTRL_KEYS);
@@ -83,6 +92,14 @@ public class KeypressProcessor {
 
 	public void update() {
 		for (KeyBinding b : bindings) {
+			// Since the Minecraft gamesetttings can't be read when the static{}
+			// block is called, they are used here instead in setting up the
+			// tune noteblock key
+			if (b.getMainKey() == TUNE_NOTEBLOCK_KEY_UNSET) {
+				b.setMainKey(GetMinecraft.instance().gameSettings.keyBindForward.keyCode);
+				writeConfig();
+			}
+
 			if (b.isLastState()) {
 				// Wait for release
 				if (!Keyboard.isKeyDown(b.getMainKey())) {
@@ -182,6 +199,19 @@ public class KeypressProcessor {
 			BlockSign.writeChatMessage(GetMinecraft.instance().theWorld,
 					(MCDittyConfig.turnedOff) ? "MCDitty: §cOff"
 							: "MCDitty: §aOn");
+		} else if (action.equalsIgnoreCase("tuneNoteblock")) {
+			// Show tune noteblock dialog
+
+			// First, check to see if player is looking at a noteblock
+			Minecraft minecraft = GetMinecraft.instance();
+			Point3D hoverPoint = new Point3D(minecraft.objectMouseOver.blockX,
+					minecraft.objectMouseOver.blockY,
+					minecraft.objectMouseOver.blockZ);
+			if (minecraft.theWorld.getBlockId(hoverPoint.x, hoverPoint.y,
+					hoverPoint.z) == Block.music.blockID) {
+				minecraft.displayGuiScreen(new GuiScreenTuneNoteblock(
+						hoverPoint));
+			}
 		}
 	}
 
