@@ -216,7 +216,7 @@ public class DittyPlayerThread extends Thread implements
 	}
 
 	private Player setUpPlayer() {
-		SoftSynthesizer synth = synthPool.getOpenedSynth();
+		synth = synthPool.getOpenedSynth();
 		Player p = null;
 		try {
 			p = new Player(synth);
