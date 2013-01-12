@@ -280,7 +280,7 @@ public class BlockSign extends BlockContainer {
 	/**
 	 * List of signs under a OneAtATime block from being activated.
 	 */
-	public static LinkedList<Point3D> oneAtATimeSignsBlocked = new LinkedList<Point3D>();
+	public static final LinkedList<Point3D> oneAtATimeSignsBlocked = new LinkedList<Point3D>();
 
 	/**
 	 * Lets the block know when one of its neighbor changes. Doesn't know which
@@ -290,32 +290,32 @@ public class BlockSign extends BlockContainer {
 	@Override
 	public void onNeighborBlockChange(World par1World, int par2, int par3,
 			int par4, int par5) {
-		// Redstone properties similar to BlockNote: Check whether this sign is
-		// powered by redstone
-		if (par5 > 0) {
-			boolean isBeingPoweredNow = par1World
-					.isBlockIndirectlyGettingPowered(par2, par3, par4);
-			TileEntitySign tileEntitySign = (TileEntitySign) par1World
-					.getBlockTileEntity(par2, par3, par4);
-
-			boolean lastRedstoneState;
-			if (tileEntitySign != null) {
-				lastRedstoneState = tileEntitySign.redstoneState;
-			} else {
-				// Just say that lastRedstoneState is on.
-				lastRedstoneState = true;
-			}
-
-			if (tileEntitySign != null
-					&& lastRedstoneState != isBeingPoweredNow) {
-				if (isBeingPoweredNow) {
-					playDittyFromSigns(par1World, par2, par3, par4);
-				}
-
-				// Set the lastRedstoneState flag in the TileEntitySign
-				tileEntitySign.redstoneState = isBeingPoweredNow;
-			}
-		}
+//		// Redstone properties similar to BlockNote: Check whether this sign is
+//		// powered by redstone
+//		if (par5 > 0) {
+//			boolean isBeingPoweredNow = par1World
+//					.isBlockIndirectlyGettingPowered(par2, par3, par4);
+//			TileEntitySign tileEntitySign = (TileEntitySign) par1World
+//					.getBlockTileEntity(par2, par3, par4);
+//
+//			boolean lastRedstoneState;
+//			if (tileEntitySign != null) {
+//				lastRedstoneState = tileEntitySign.redstoneState;
+//			} else {
+//				// Just say that lastRedstoneState is on.
+//				lastRedstoneState = true;
+//			}
+//
+//			if (tileEntitySign != null
+//					&& lastRedstoneState != isBeingPoweredNow) {
+//				if (isBeingPoweredNow) {
+//					playDittyFromSigns(par1World, par2, par3, par4);
+//				}
+//
+//				// Set the lastRedstoneState flag in the TileEntitySign
+//				tileEntitySign.redstoneState = isBeingPoweredNow;
+//			}
+//		}
 
 		// Rest of method is by Mojang AB: Check whether the block the sign is
 		// mounted on has broken.
@@ -466,9 +466,18 @@ public class BlockSign extends BlockContainer {
 
 	public static void playDittyFromSigns(final World world, final int x,
 			final int y, final int z, final boolean oneAtATimeOn) {
+		// First, check to see if this sign is blocked from activating by a
+		// OneAtATime keyword
+		synchronized (oneAtATimeSignsBlocked) {
+			if (oneAtATimeSignsBlocked.contains(new Point3D(x, y, z))) {
+				// Blocked.
+				return;
+			}
+		}
+
 		Thread t = new PlayDittyFromSignWorkThread(world, x, y, z,
 				oneAtATimeOn, false, null);
-		t.setPriority(Thread.MAX_PRIORITY);
+		t.setPriority(Thread.MIN_PRIORITY);
 		t.start();
 	}
 
@@ -505,29 +514,32 @@ public class BlockSign extends BlockContainer {
 		// ":"
 		// + z);
 
-		long startTime = System.nanoTime();
-
-		// Update config file
-		MCDittyConfig.checkConfig(world);
-
 		// First, check to see if this sign is blocked from activating by a
 		// OneAtATime keyword
+		// NOTE: CODE COPIED FROM playDittyFromSigns()
+		// Bad Dobby, Bad Dobby!
 		synchronized (oneAtATimeSignsBlocked) {
 			if (oneAtATimeSignsBlocked.contains(new Point3D(x, y, z))) {
 				// Blocked.
 				return null;
 			}
+
+			// If oneAtATimeOn is true, go ahead and instantly add this ditty to
+			// the
+			// block list
+			// Will happen again later, but it should take effect as soon as
+			// possible (this call) so that ditties read in close succession
+			// don't
+			// both start
+			if (oneAtATimeOn) {
+				oneAtATimeSignsBlocked.add(new Point3D(x, y, z));
+			}
 		}
 
-		// If it isn't, play it
-		// If oneAtATimeOn is true, go ahead and instantly add this ditty to the
-		// block list
-		// Will happen again later, but it should take effect as soon as
-		// possible (this call) so that ditties read in close succession don't
-		// both start
-		if (oneAtATimeOn) {
-			oneAtATimeSignsBlocked.add(new Point3D(x, y, z));
-		}
+		long startTime = System.nanoTime();
+
+		// Update config file
+		MCDittyConfig.checkConfig(world);
 
 		// TODO: If signs have been picked and there isn't a whitelist given,
 		// set the whitelist to all picked signs
@@ -765,7 +777,7 @@ public class BlockSign extends BlockContainer {
 	private static StringBuilder readPattern(Point3D startPoint, World world,
 			LinkedList<SignLogPoint> signsReadList, SignDitty ditty,
 			int subpatternLevel, LinkedList<Point3D> signWhitelist) {
-		//MCDitty.slowDownMC(2);
+		// MCDitty.slowDownMC(2);
 
 		// Contains musicstring read from pattern
 		StringBuilder readMusicString = new StringBuilder();
@@ -1700,7 +1712,8 @@ public class BlockSign extends BlockContainer {
 								k.getDuration());
 						ditty.addMusicStringTokens(readMusicString, token,
 								false);
-					} else if (keyword.equals("ditty") || keyword.equals("[ditty]")) {
+					} else if (keyword.equals("ditty")
+							|| keyword.equals("[ditty]")) {
 
 					} else {
 						// Unrecognized keyword; announce with error

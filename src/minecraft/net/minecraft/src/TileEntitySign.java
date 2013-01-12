@@ -33,9 +33,6 @@ import com.wikispaces.mcditty.Point3D;
  */
 
 public class TileEntitySign extends TileEntity {
-	public static final String INVALID_PACKET_LINE = "BUGGY-PACKET";
-
-	public boolean redstoneState = false;
 
 	public boolean startBlinking = false;
 	public boolean blinking = false;
@@ -106,12 +103,6 @@ public class TileEntitySign extends TileEntity {
 	 */
 	@Override
 	public void onInventoryChanged() {
-//		if (signText[0].equals(INVALID_PACKET_LINE)) {
-//			signText = lastSignText;
-//		}
-
-//		lastSignText = copySignText();
-//
 		super.onInventoryChanged();
 	}
 
@@ -146,7 +137,7 @@ public class TileEntitySign extends TileEntity {
 			}
 		}
 
-		// // MCDitty: Check for any proxpads
+		// MCDitty: Check for any proxpads
 		MCDitty.onSignLoaded(this);
 	}
 
@@ -192,35 +183,6 @@ public class TileEntitySign extends TileEntity {
 		} else {
 			signColorCode = null;
 		}
-
-		// // Reset in case of invalid packet
-		// if (checkForInvalidText) {
-		// if (signText[0].equals(INVALID_PACKET_LINE)) {
-		// // An invalid packet has changed this sign's text!
-		// // Reset to last valid saved text
-		// String[] lastKnownGoodText = null;
-		// if (pastTexts != null) {
-		// while (pastTexts.size() > 0) {
-		// String[] s = pastTexts.pollLast();
-		//
-		// if (s != null && s[0].equals(INVALID_PACKET_LINE)) {
-		// // Keep checking
-		// continue;
-		// } else if (s != null) {
-		// lastKnownGoodText = s;
-		// break;
-		// }
-		// }
-		// }
-		//
-		// if (lastKnownGoodText != null) {
-		// signText = lastKnownGoodText;
-		// }
-		//
-		// pastTexts = null;
-		// checkForInvalidText = false;
-		// }
-		// }
 	}
 
 	/**
@@ -327,10 +289,10 @@ public class TileEntitySign extends TileEntity {
 		names.put("6", "Orange");
 		names.put("7", "Grey");
 		names.put("8", "Stone");
-		names.put("9", "L. Blue");
+		names.put("9", "Lt Blue");
 		names.put("a", "Lime");
 		names.put("b", "Sky");
-		names.put("c", "L. Red");
+		names.put("c", "Lt Red");
 		names.put("d", "Pink");
 		names.put("e", "Yellow");
 		names.put("f", "White");
@@ -377,18 +339,4 @@ public class TileEntitySign extends TileEntity {
 
 		return "" + codeCycle.toCharArray()[currIndex];
 	}
-
-	// public void setInvalidPacketIncoming(boolean b) {
-	// lastText = copyOfSignText(signText);
-	// invalidPacketIncoming = b;
-	// }
-
-	// public void prepareToResetIncomingInvalidPacket() {
-	// if (pastTexts == null) {
-	// pastTexts = new LinkedList<String[]>();
-	// }
-	//
-	// pastTexts.add(copyOfSignText(signText));
-	// checkForInvalidText = true;
-	// }
 }
