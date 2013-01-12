@@ -162,9 +162,21 @@ public class BlockNoteMCDitty extends BlockNote {
 	 */
 	public void onBlockEventReceived(World world, int x, int y, int z,
 			int noteTypeNum, int noteBlockSetting) {
+
 		// Save note block setting
 		TileEntity tile = world.getBlockTileEntity(x, y, z);
 		if (tile instanceof TileEntityNote) {
+			// Decide if noteblock is being tuned
+			boolean isTuning = false;
+			if (tile instanceof TileEntityNoteMCDitty) {
+				TileEntityNoteMCDitty mcdittyNoteTile = (TileEntityNoteMCDitty) tile;
+				if (mcdittyNoteTile.noteValueKnown
+						&& noteBlockSetting != mcdittyNoteTile.note) {
+					// Is tuning
+					isTuning = true;
+				}
+			}
+
 			((TileEntityNote) tile).note = (byte) noteBlockSetting;
 
 			// Try to specify that the value is known
@@ -177,8 +189,10 @@ public class BlockNoteMCDitty extends BlockNote {
 				// over it
 				MCDitty.showNoteblockTooltip((TileEntityNote) tile);
 
-				// And show a lyric too
-				activateAnyAdjacentSigns((TileEntityNote) tile);
+				if (!isTuning) {
+					// And show a lyric too
+					activateAnyAdjacentSigns((TileEntityNote) tile);
+				}
 			}
 		}
 
