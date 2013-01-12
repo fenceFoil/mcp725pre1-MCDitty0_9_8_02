@@ -33,6 +33,7 @@ import com.sun.media.sound.SoftSynthesizer;
  * 
  */
 public class SoftSynthPool extends Thread {
+	private static final long SYNTH_CACHE_CHECK_TIME = 5000;
 	private Object cachedSynthMutex = new Object();
 	private SoftSynthesizer cachedSynth = null;
 
@@ -44,23 +45,27 @@ public class SoftSynthPool extends Thread {
 		// Disabled -- observed large memory usage increase after synths cached
 		// and left open for several minutes
 
-		// System.out.println ("Synth Cache started");
-		// while (true) {
-		// if (cachedSynth == null &&
-		// DittyPlayerThread.jFuguePlayerThreads.size() <= 0) {
-		// System.out.println("Filling synth cache");
-		// synchronized (cachedSynthMutex ) {
-		// cachedSynth = createOpenedSynth();
-		// }
-		// cachedSynth = createOpenedSynth();
-		// System.out.println("Done.");
-		// }
-		// try {
-		// Thread.sleep(10000);
-		// } catch (InterruptedException e) {
-		// e.printStackTrace();
-		// }
-		// }
+		System.out.println("Synth Cache started");
+		while (true) {
+			updatePool();
+			try {
+				Thread.sleep(SYNTH_CACHE_CHECK_TIME);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void updatePool() {
+		if (cachedSynth == null
+				&& DittyPlayerThread.jFuguePlayerThreads.size() <= 0) {
+			System.out.println("Filling synth cache");
+			synchronized (cachedSynthMutex) {
+				cachedSynth = createOpenedSynth();
+			}
+			cachedSynth = createOpenedSynth();
+			System.out.println("Done.");
+		}
 	}
 
 	private SoftSynthesizer createOpenedSynth() {
