@@ -23,9 +23,14 @@
  */
 package com.wikispaces.mcditty.ditty;
 
+import java.util.LinkedList;
+
 import javax.sound.midi.MidiUnavailableException;
 
+import org.lwjgl.input.Keyboard;
+
 import com.sun.media.sound.SoftSynthesizer;
+import com.wikispaces.mcditty.GetMinecraft;
 
 /**
  * Responsible for caching a number of synthesizers ready to play ditties at a
@@ -33,9 +38,11 @@ import com.sun.media.sound.SoftSynthesizer;
  * 
  */
 public class SoftSynthPool extends Thread {
-	private static final long SYNTH_CACHE_CHECK_TIME = 5000;
+	private static long SYNTH_CACHE_CHECK_TIME = 3000;
+	private static int POOL_SIZE = 3;
 	private Object cachedSynthMutex = new Object();
-	private SoftSynthesizer cachedSynth = null;
+	// private SoftSynthesizer cachedSynth = null;
+	private LinkedList<SoftSynthesizer> pool = new LinkedList<SoftSynthesizer>();
 
 	@Override
 	public void run() {
@@ -45,7 +52,7 @@ public class SoftSynthPool extends Thread {
 		// Disabled -- observed large memory usage increase after synths cached
 		// and left open for several minutes
 
-		System.out.println("Synth Cache started");
+		// System.out.println("Synth Cache started");
 		while (true) {
 			updatePool();
 			try {
@@ -57,14 +64,26 @@ public class SoftSynthPool extends Thread {
 	}
 
 	private void updatePool() {
-		if (cachedSynth == null
-				&& DittyPlayerThread.jFuguePlayerThreads.size() <= 0) {
-			System.out.println("Filling synth cache");
+		boolean isWalkingForward = false;
+		if (GetMinecraft.instance() != null
+				&& GetMinecraft.instance().gameSettings != null
+				&& GetMinecraft.instance().gameSettings.keyBindForward != null) {
+			isWalkingForward = Keyboard
+					.isKeyDown(GetMinecraft.instance().gameSettings.keyBindForward.keyCode);
+		}
+		if (pool.size() < POOL_SIZE
+				&& DittyPlayerThread.jFuguePlayerThreads.size() <= 0
+				&& !isWalkingForward) {
+			// System.out.println("Adding a new synth to the cache.");
 			synchronized (cachedSynthMutex) {
-				cachedSynth = createOpenedSynth();
+				pool.add(createOpenedSynth());
 			}
-			cachedSynth = createOpenedSynth();
-			System.out.println("Done.");
+			// System.out.println("Done.");
+		} else if (pool.size() > POOL_SIZE) {
+			synchronized (cachedSynthMutex) {
+				// System.out.println("Removing a synth from the cache");
+				pool.poll().close();
+			}
 		}
 	}
 
@@ -84,19 +103,17 @@ public class SoftSynthPool extends Thread {
 	 * @return
 	 */
 	public SoftSynthesizer getOpenedSynth() {
-		if (cachedSynth != null) {
-			// Try to use the cached synth
-			synchronized (cachedSynthMutex) {
-				SoftSynthesizer returnSynth = cachedSynth;
-				// Mark cached synth as used
-				cachedSynth = null;
-				// Return the cached synth
-				return returnSynth;
+		synchronized (cachedSynthMutex) {
+			if (pool.size() > 0) {
+				// Try to use the cached synth
+				// System.out.println("Using pool synth. Remaining = "
+				// + pool.size());
+				return pool.pollLast();
 			}
 		}
 
 		// Still here? A new synth must then be created
-		System.out.println("Creating new synth to return...");
+		// System.out.println("Synth pool empty: creating new synth.");
 		return createOpenedSynth();
 	}
 

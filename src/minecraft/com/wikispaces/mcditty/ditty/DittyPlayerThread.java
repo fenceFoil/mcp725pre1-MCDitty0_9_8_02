@@ -113,7 +113,7 @@ public class DittyPlayerThread extends Thread implements
 	public DittyPlayerThread(Ditty ditty) {
 		this.ditty = ditty;
 		setName("Ditty Player");
-		
+
 		// Set up synthpool if not done already
 		setUpSynthPool();
 	}
@@ -216,7 +216,10 @@ public class DittyPlayerThread extends Thread implements
 	}
 
 	private Player setUpPlayer() {
+		// Ask the synthpool to get or create a synth and open it
 		synth = synthPool.getOpenedSynth();
+		
+		// Create a Player
 		Player p = null;
 		try {
 			p = new Player(synth);
@@ -224,7 +227,7 @@ public class DittyPlayerThread extends Thread implements
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
+
 		// Note the instruments that are now loaded into the synthesizer at the
 		// start of the song (for things that replace them, like SFXInstruments)
 		originalSynthInstruments = synth.getLoadedInstruments();
