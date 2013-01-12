@@ -51,7 +51,7 @@ public class PlayDittyFromSignWorkThread extends Thread {
 		this.one = oneAtATimeOn;
 		this.limitToSigns = limitToSigns;
 
-		setName("MCDitty Sign Ditty Player - " + x + ":" + y + ":" + z);
+		setName("MCDitty Sign Ditty Reader - " + x + ":" + y + ":" + z);
 	}
 
 	/*
