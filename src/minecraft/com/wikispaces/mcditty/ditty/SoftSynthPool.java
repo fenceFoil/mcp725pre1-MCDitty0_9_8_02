@@ -23,12 +23,16 @@
  */
 package com.wikispaces.mcditty.ditty;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
+import javax.sound.midi.Instrument;
 import javax.sound.midi.MidiUnavailableException;
 
+import org.jfugue.Player;
 import org.lwjgl.input.Keyboard;
 
+import com.sun.media.sound.SF2Soundbank;
 import com.sun.media.sound.SoftSynthesizer;
 import com.wikispaces.mcditty.GetMinecraft;
 
@@ -74,14 +78,17 @@ public class SoftSynthPool extends Thread {
 		if (pool.size() < POOL_SIZE
 				&& DittyPlayerThread.jFuguePlayerThreads.size() <= 0
 				&& !isWalkingForward) {
-			// System.out.println("Adding a new synth to the cache.");
+			System.out.println("Adding a new synth to the cache. n="
+					+ pool.size());
+			SoftSynthesizer newSynth = createOpenedSynth();
 			synchronized (cachedSynthMutex) {
-				pool.add(createOpenedSynth());
+				pool.add(newSynth);
 			}
 			// System.out.println("Done.");
-		} else if (pool.size() > POOL_SIZE) {
+		} else if (pool.size() > 2 * POOL_SIZE) {
 			synchronized (cachedSynthMutex) {
-				// System.out.println("Removing a synth from the cache");
+				System.out.println("Removing a synth from the cache n="
+						+ pool.size());
 				pool.poll().close();
 			}
 		}
@@ -106,15 +113,30 @@ public class SoftSynthPool extends Thread {
 		synchronized (cachedSynthMutex) {
 			if (pool.size() > 0) {
 				// Try to use the cached synth
-				// System.out.println("Using pool synth. Remaining = "
-				// + pool.size());
+				System.out.println("Using pool synth. Remaining = "
+						+ pool.size());
 				return pool.pollLast();
 			}
 		}
 
 		// Still here? A new synth must then be created
-		// System.out.println("Synth pool empty: creating new synth.");
+		System.out.println("Synth pool empty: creating new synth.");
 		return createOpenedSynth();
+	}
+
+	public void returnUsedSynth(SoftSynthesizer synth,
+			HashMap<Integer, SF2Soundbank> cachedSFXInstruments,
+			Instrument[] originalSynthInstruments) {
+		// TODO: First strip out all SFXInstruments
+
+		// // TEMP: Only put back in pool if not SFXInstruments were loaded
+		// if (cachedSFXInstruments.size() <= 0) {
+		// synchronized (cachedSynthMutex) {
+		// pool.add(synth);
+		// }
+		// } else {
+		synth.close();
+		// }
 	}
 
 }
