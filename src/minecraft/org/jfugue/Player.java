@@ -521,6 +521,39 @@ public class Player {
 					+ e.getMessage());
 		}
 	}
+	
+	/**
+	 * Closes MIDI resources - be sure to call this after play() has returned.
+	 */
+	public void close(boolean closeSynth) {
+		if (softClose == true) {
+			// System.out.println("softClose");
+			Sequencer seq = getSequencer();
+			seq.stop();
+			seq.setTickPosition(0);
+			seq.start();
+			return;
+		}
+		try {
+			getSequencer().getTransmitter().close();
+		} catch (MidiUnavailableException e) {
+			e.printStackTrace(); // To change body of catch statement use File |
+									// Settings | File Templates.
+		}
+		getSequencer().close();
+		if (closeSynth) {
+		try {
+			if (synth != null) {
+				synth.close();
+			} else if (MidiSystem.getSynthesizer() != null) {
+				MidiSystem.getSynthesizer().close();
+			}
+		} catch (MidiUnavailableException e) {
+			throw new JFugueException(JFugueException.GENERAL_ERROR
+					+ e.getMessage());
+		}
+		}
+	}
 
 	private void setStarted(boolean started) {
 		this.started = started;

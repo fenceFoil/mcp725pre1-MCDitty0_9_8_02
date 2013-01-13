@@ -185,11 +185,13 @@ public class DittyPlayerThread extends Thread implements
 		BlockSign.simpleLog("Done playing a MusicString");
 		try {
 			synchronized (staticPlayerMutex) {
-				player.close();
-				if (synth != null && synth.isOpen()) {
-					synth.close();
-				}
+				player.close(false);
+//				if (synth != null && synth.isOpen()) {
+//					synth.close();
+//				}
+				// Handles the synth; closes it if it wants
 			}
+			synthPool.returnUsedSynth(synth, cachedSFXInstruments, originalSynthInstruments);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -275,7 +277,7 @@ public class DittyPlayerThread extends Thread implements
 	private long lastTimeChecked = 0;
 	private float lastTempo = 0.0f;
 
-	private Synthesizer synth;
+	private SoftSynthesizer synth;
 
 	@Override
 	public void playerHook(long time, float tempo) {
@@ -499,7 +501,7 @@ public class DittyPlayerThread extends Thread implements
 			Synthesizer synth2) {
 		Instrument restoreInstrument = null;
 
-		System.out.println("8");
+		//System.out.println("8");
 
 		// Find the instrument to restore
 		for (Instrument i : originalSynthInstruments) {
@@ -514,7 +516,7 @@ public class DittyPlayerThread extends Thread implements
 
 		if (restoreInstrument != null) {
 			// Load it into the synthesizer again
-			System.out.println("9");
+			//System.out.println("9");
 			synth2.loadInstrument(restoreInstrument);
 		}
 	}

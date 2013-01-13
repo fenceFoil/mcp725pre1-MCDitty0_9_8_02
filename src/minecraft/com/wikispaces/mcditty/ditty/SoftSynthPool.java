@@ -42,8 +42,8 @@ import com.wikispaces.mcditty.GetMinecraft;
  * 
  */
 public class SoftSynthPool extends Thread {
-	private static long SYNTH_CACHE_CHECK_TIME = 3000;
-	private static int POOL_SIZE = 3;
+	private static long SYNTH_CACHE_CHECK_TIME = 4000;
+	private static int POOL_SIZE = 5;
 	private Object cachedSynthMutex = new Object();
 	// private SoftSynthesizer cachedSynth = null;
 	private LinkedList<SoftSynthesizer> pool = new LinkedList<SoftSynthesizer>();
@@ -76,7 +76,7 @@ public class SoftSynthPool extends Thread {
 					.isKeyDown(GetMinecraft.instance().gameSettings.keyBindForward.keyCode);
 		}
 		if (pool.size() < POOL_SIZE
-				&& DittyPlayerThread.jFuguePlayerThreads.size() <= 0
+				//&& DittyPlayerThread.jFuguePlayerThreads.size() <= 0
 				&& !isWalkingForward) {
 			System.out.println("Adding a new synth to the cache. n="
 					+ pool.size());
