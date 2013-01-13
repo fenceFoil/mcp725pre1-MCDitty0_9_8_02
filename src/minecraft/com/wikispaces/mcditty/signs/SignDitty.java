@@ -77,6 +77,10 @@ public class SignDitty extends Ditty {
 
 	private boolean oneAtATime;
 
+
+
+	private LinkedList<MaxPlaysLockPoint> maxPlayLockPoints = new LinkedList<MaxPlaysLockPoint>();
+
 	/**
 	 * 
 	 */
@@ -160,6 +164,14 @@ public class SignDitty extends Ditty {
 	 */
 	public boolean isOneAtATime() {
 		return oneAtATime;
+	}
+
+	public void addMaxPlayLockPoint(Point3D currSignPoint, int maxPlays) {
+		maxPlayLockPoints.add(new MaxPlaysLockPoint(currSignPoint, maxPlays));
+	}
+
+	public LinkedList<MaxPlaysLockPoint> getMaxPlayLockPoints() {
+		return maxPlayLockPoints;
 	}
 
 }

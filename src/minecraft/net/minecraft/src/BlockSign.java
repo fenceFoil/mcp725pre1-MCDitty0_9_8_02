@@ -66,6 +66,7 @@ import com.wikispaces.mcditty.gui.GuiMCDittyChangelog;
 import com.wikispaces.mcditty.particle.ParticleRequest;
 import com.wikispaces.mcditty.resources.MCDittyResourceManager;
 import com.wikispaces.mcditty.signs.Comment;
+import com.wikispaces.mcditty.signs.MaxPlaysLockPoint;
 import com.wikispaces.mcditty.signs.ParsedSign;
 import com.wikispaces.mcditty.signs.SignDitty;
 import com.wikispaces.mcditty.signs.SignLine;
@@ -77,6 +78,7 @@ import com.wikispaces.mcditty.signs.keywords.EmitterKeyword;
 import com.wikispaces.mcditty.signs.keywords.ExplicitGotoKeyword;
 import com.wikispaces.mcditty.signs.keywords.GotoKeyword;
 import com.wikispaces.mcditty.signs.keywords.LyricKeyword;
+import com.wikispaces.mcditty.signs.keywords.MaxPlaysKeyword;
 import com.wikispaces.mcditty.signs.keywords.NewBotKeyword;
 import com.wikispaces.mcditty.signs.keywords.OctavesKeyword;
 import com.wikispaces.mcditty.signs.keywords.OctavesOffKeyword;
@@ -102,6 +104,8 @@ public class BlockSign extends BlockContainer {
 	private boolean isFreestanding;
 
 	private static boolean isMCDittyLoaded = false;
+
+	private static LinkedList<MaxPlaysLockPoint> maxPlaysLockPoints = new LinkedList<MaxPlaysLockPoint>();
 
 	protected BlockSign(int par1, Class par2Class, boolean par3) {
 		super(par1, Material.wood);
@@ -290,32 +294,33 @@ public class BlockSign extends BlockContainer {
 	@Override
 	public void onNeighborBlockChange(World par1World, int par2, int par3,
 			int par4, int par5) {
-//		// Redstone properties similar to BlockNote: Check whether this sign is
-//		// powered by redstone
-//		if (par5 > 0) {
-//			boolean isBeingPoweredNow = par1World
-//					.isBlockIndirectlyGettingPowered(par2, par3, par4);
-//			TileEntitySign tileEntitySign = (TileEntitySign) par1World
-//					.getBlockTileEntity(par2, par3, par4);
-//
-//			boolean lastRedstoneState;
-//			if (tileEntitySign != null) {
-//				lastRedstoneState = tileEntitySign.redstoneState;
-//			} else {
-//				// Just say that lastRedstoneState is on.
-//				lastRedstoneState = true;
-//			}
-//
-//			if (tileEntitySign != null
-//					&& lastRedstoneState != isBeingPoweredNow) {
-//				if (isBeingPoweredNow) {
-//					playDittyFromSigns(par1World, par2, par3, par4);
-//				}
-//
-//				// Set the lastRedstoneState flag in the TileEntitySign
-//				tileEntitySign.redstoneState = isBeingPoweredNow;
-//			}
-//		}
+		// // Redstone properties similar to BlockNote: Check whether this sign
+		// is
+		// // powered by redstone
+		// if (par5 > 0) {
+		// boolean isBeingPoweredNow = par1World
+		// .isBlockIndirectlyGettingPowered(par2, par3, par4);
+		// TileEntitySign tileEntitySign = (TileEntitySign) par1World
+		// .getBlockTileEntity(par2, par3, par4);
+		//
+		// boolean lastRedstoneState;
+		// if (tileEntitySign != null) {
+		// lastRedstoneState = tileEntitySign.redstoneState;
+		// } else {
+		// // Just say that lastRedstoneState is on.
+		// lastRedstoneState = true;
+		// }
+		//
+		// if (tileEntitySign != null
+		// && lastRedstoneState != isBeingPoweredNow) {
+		// if (isBeingPoweredNow) {
+		// playDittyFromSigns(par1World, par2, par3, par4);
+		// }
+		//
+		// // Set the lastRedstoneState flag in the TileEntitySign
+		// tileEntitySign.redstoneState = isBeingPoweredNow;
+		// }
+		// }
 
 		// Rest of method is by Mojang AB: Check whether the block the sign is
 		// mounted on has broken.
@@ -580,6 +585,25 @@ public class BlockSign extends BlockContainer {
 		SignDitty dittyProperties = new SignDitty();
 		StringBuilder musicStringToPlay = readPattern(startPoint, world,
 				signsReadList, dittyProperties, 0, signWhitelist);
+
+		// If MaxPlays is exceeded somewhere in the ditty, cancel play
+		for (MaxPlaysLockPoint p : dittyProperties.getMaxPlayLockPoints()) {
+			boolean foundOnList = false;
+			for (MaxPlaysLockPoint pointList : maxPlaysLockPoints) {
+				if (pointList.point.equals(p.point)) {
+					// Found!
+					pointList.maxPlays++;
+					foundOnList = true;
+					if (pointList.maxPlays > p.maxPlays) {
+						return null;
+					}
+				}
+			}
+			
+			if (!foundOnList) {
+				maxPlaysLockPoints.add(new MaxPlaysLockPoint(p.point, 1));
+			}
+		}
 
 		// If this ditty was started from something like a proximity sign, turn
 		// on the "oneAtATime" keyword's property by default
@@ -1714,7 +1738,13 @@ public class BlockSign extends BlockContainer {
 								false);
 					} else if (keyword.equals("ditty")
 							|| keyword.equals("[ditty]")) {
-
+						// Do nothing here
+					} else if (keyword.equals("maxplays")) {
+						// Add maxplay lock point
+						MaxPlaysKeyword k = (MaxPlaysKeyword) SignParser
+								.parseKeyword(currLine);
+						ditty.addMaxPlayLockPoint(currSignPoint,
+								k.getMaxPlays());
 					} else {
 						// Unrecognized keyword; announce with error
 						ditty.addErrorMessage("§b"
