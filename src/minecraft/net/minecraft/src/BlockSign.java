@@ -1745,6 +1745,9 @@ public class BlockSign extends BlockContainer {
 								.parseKeyword(currLine);
 						ditty.addMaxPlayLockPoint(currSignPoint,
 								k.getMaxPlays());
+					} else if (keyword.equals("playlast")) {
+						// Set playlast to true
+						ditty.setPlayLast(true);
 					} else {
 						// Unrecognized keyword; announce with error
 						ditty.addErrorMessage("§b"
@@ -2016,10 +2019,7 @@ public class BlockSign extends BlockContainer {
 	 * @param
 	 */
 	public static void mutePlayingDitties(int... exceptedDittyIDs) {
-		MuteDittyThread t = new MuteDittyThread(
-				DittyPlayerThread.jFuguePlayerThreads,
-				MCDitty.getPlayMidiSequencers(), exceptedDittyIDs);
-		t.start();
+		new MuteDittyThread(exceptedDittyIDs).start();
 	}
 
 	/**
@@ -2454,16 +2454,16 @@ public class BlockSign extends BlockContainer {
 			// Attached to wall. Note the different ordering.
 			if (signMetadata == 0x02) {
 				// North
-				return FACES_NORTH;
+				return 180;
 			} else if (signMetadata == 0x03) {
 				// South
-				return FACES_SOUTH;
+				return 0;
 			} else if (signMetadata == 0x04) {
 				// West
-				return FACES_WEST;
+				return 90;
 			} else if (signMetadata == 0x05) {
 				// East
-				return FACES_EAST;
+				return 270;
 			} else {
 				// Cannot happen. Something is wrong.
 				// System.out
@@ -3443,19 +3443,19 @@ public class BlockSign extends BlockContainer {
 
 	public static void initMCDittyMod() {
 		if (mcDittyMod == null) {
-			// TODO: Replace skull renderer
-			try {
-				Map map = (Map) GetMinecraft.getUniqueTypedFieldFromClass(
-						TileEntityRenderer.class, Map.class,
-						TileEntityRenderer.instance);
-				map.put(TileEntitySkull.class, new TileEntitySkullRenderer2());
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			// TODO: Replace skull renderer
+//			try {
+//				Map map = (Map) GetMinecraft.getUniqueTypedFieldFromClass(
+//						TileEntityRenderer.class, Map.class,
+//						TileEntityRenderer.instance);
+//				map.put(TileEntitySkull.class, new TileEntitySkullRenderer2());
+//			} catch (IllegalArgumentException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (IllegalAccessException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 
 			// Start MCDitty!
 			mcDittyMod = new MCDitty();
