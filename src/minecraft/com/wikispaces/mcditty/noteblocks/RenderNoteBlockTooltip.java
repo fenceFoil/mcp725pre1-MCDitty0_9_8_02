@@ -41,7 +41,7 @@ public class RenderNoteBlockTooltip extends Render {
 
 	private void renderNoteBlockTooltip(EntityNoteBlockTooltip entity,
 			double x, double y, double z, float var8, float maybeTime) {
-		renderLivingLabel(entity, entity.getText(), x, y, z, 32);
+		renderLivingLabel(entity, entity.getText(), x, y, z, 15);
 	}
 
 	private void renderLivingLabel(EntityNoteBlockTooltip entity,
