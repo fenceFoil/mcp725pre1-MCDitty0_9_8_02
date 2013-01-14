@@ -149,9 +149,9 @@ public class GuiMCDittySettings extends GuiScreen {
 		}
 		
 		if (MCDittyConfig.getBoolean("enableNoteblockTooltips")) {
-			noteBlockTooltipsButton.displayString = "§aNoteblock Help On";
+			noteBlockTooltipsButton.displayString = "§aNoteblock Tags On";
 		} else {
-			noteBlockTooltipsButton.displayString = "§cNoteblock Help Off";
+			noteBlockTooltipsButton.displayString = "§cNoteblock Tags Off";
 		}
 	}
 
