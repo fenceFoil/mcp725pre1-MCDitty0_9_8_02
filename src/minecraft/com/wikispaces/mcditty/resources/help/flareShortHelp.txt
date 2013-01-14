@@ -1,0 +1,10 @@
+Flare [type] [up]
+
+Shoots particles into the air [up] blocks above sign until the end of the ditty, or the next FlaresOff keyword.
+
+§aTypes:
+Note, Heart, Angry, Chaos, Crit, CritMag, Dust, Face, Flake, Happy, Poof, RedFume, Slime, Smoke, Smoke2, SnowHit, Spark, Splash, Spore
+
+[Up] can be negative.
+
+See: Emitter

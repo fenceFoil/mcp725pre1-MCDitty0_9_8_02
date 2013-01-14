@@ -1,0 +1,9 @@
+MaxPlays [Number]
+
+A ditty containing this keyword can only be played [number] times.
+
+Resets when you exit Minecraft.
+
+Good for making NPC dialogs that only appear once.
+
+[Number] is 1 by default.

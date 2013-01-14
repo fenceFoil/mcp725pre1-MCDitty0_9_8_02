@@ -4,11 +4,11 @@ Emitter [Type]
 §aTypes:
 Note, Heart, Angry, Chaos, Crit, CritMag, Dust, Face, Flake, Happy, Poof, RedFume, Slime, Smoke, Smoke2, SnowHit, Spark, Splash, Spore
 
-Place at the start of a ditty, or whenever you want the particles to start.
+Emitters create a particle every time a note is played. You can customize the particles that it emits on the following lines with options.
 
-Must be on the first line of a sign, and may contain a comment on a following line.
+Place wherever you want the particles to start. If placed in middle of a ditty, particles start then.
 
-Emitters create a particle every time a note is played in their ditty. You can customize the particles that it emits on the following lines with options.
+You can put a comment on an emitter sign.
 
 Options available:
 - Voice [0-15]
