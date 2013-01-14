@@ -475,13 +475,11 @@ public class MCDitty {
 		t.setName("MCDitty Tick Hook Checker");
 		t.start();
 
-		// Start the decoy sign manager used in the bugfix for 1.4.4 SSP signs
-		// blanking after an edit
-		// decoySignManager = new DecoySignManager();
-		// decoySignManager.start();
-
 		// Load the config file
 		MCDittyConfig.checkConfig(null);
+		
+		// Start downloading resources, if required
+		//MCDittyResourceDownloaderThread t = new MCDittyResou
 
 		// System.out.println("MCDitty Load: JFugue: "
 		// + jfugueLoadTime + ", SFX: "
@@ -672,7 +670,7 @@ public class MCDitty {
 	}
 
 	private void handleMouseInput(Minecraft minecraft) {
-		if (minecraft != null && minecraft.objectMouseOver != null && !MCDittyConfig.turnedOff) {
+		if (minecraft != null && minecraft.objectMouseOver != null && !MCDittyConfig.mcdittyOff) {
 			// Handle the player looking at a noteblock
 			// Get the block the mouse is pointing at
 			Point3D hoverPoint = new Point3D(minecraft.objectMouseOver.blockX,
@@ -1051,7 +1049,7 @@ public class MCDitty {
 	 */
 	public void updateProxpads(Minecraft minecraft) {
 		// Eschew all proxpad updates and activations if MCDitty is off
-		if (MCDittyConfig.turnedOff) {
+		if (MCDittyConfig.mcdittyOff) {
 			return;
 		}
 

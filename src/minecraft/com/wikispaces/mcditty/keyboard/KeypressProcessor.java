@@ -189,7 +189,7 @@ public class KeypressProcessor {
 			BookPlayer.playHeldBook(GetMinecraft.instance().thePlayer);
 		} else if (action.equalsIgnoreCase("mcdittyOff")) {
 			// Toggle MCDitty on and off
-			MCDittyConfig.turnedOff = !MCDittyConfig.turnedOff;
+			MCDittyConfig.incrementMCDittyOffState();
 			try {
 				MCDittyConfig.flush();
 			} catch (IOException e) {
@@ -197,8 +197,7 @@ public class KeypressProcessor {
 				e.printStackTrace();
 			}
 			BlockSign.writeChatMessage(GetMinecraft.instance().theWorld,
-					(MCDittyConfig.turnedOff) ? "MCDitty: §cOff"
-							: "MCDitty: §aOn");
+					MCDittyConfig.getMCDittyTurnedOffText());
 		} else if (action.equalsIgnoreCase("tuneNoteblock")) {
 			// Show tune noteblock dialog
 

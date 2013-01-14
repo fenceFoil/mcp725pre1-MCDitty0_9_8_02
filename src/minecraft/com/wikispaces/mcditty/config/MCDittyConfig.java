@@ -33,6 +33,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.InvalidPropertiesFormatException;
+import java.util.Properties;
 
 import com.wikispaces.mcditty.CachedCustomSoundfont;
 import com.wikispaces.mcditty.CompareVersion;
@@ -71,7 +73,7 @@ public class MCDittyConfig {
 	public static final int IGNORE_MC_VOLUME = 100;
 	public static final int USE_MUSIC_VOLUME = 200;
 	public static final int USE_SOUND_VOLUME = 0;
-	private static final String UPDATE_MESSAGE = "<MCDitty> New! Press Shift+W to tune a noteblock!";
+	private static final String UPDATE_MESSAGE = "<MCDitty> New! Signs on noteblocks create lyrics.";
 
 	/**
 	 * The custom soundfont selected by the player
@@ -87,6 +89,24 @@ public class MCDittyConfig {
 	 */
 	public static File oldConfigFile = new File(Minecraft.getMinecraftDir()
 			.getPath() + File.separator + "MCDittyConfig.txt");
+
+	/**
+	 * The properties file used by MCDitty after 0.9.9.01
+	 */
+	public static File xmlSettingsFile = new File(Minecraft.getMinecraftDir()
+			.getPath()
+			+ File.separator
+			+ "MCDitty"
+			+ File.separator
+			+ "MCDittySettings.xml");
+
+	private static Properties defaultProperties = new Properties();
+	static {
+		// SET UP DEFAULT PROPERTIES
+		defaultProperties.setProperty("enableNoteblockTooltips", "true");
+	}
+
+	private static Properties properties = new Properties(defaultProperties);
 
 	/**
 	 * The config file used by MCDitty in and after 0.9.7
@@ -195,9 +215,7 @@ public class MCDittyConfig {
 	/**
 	 * Whether to act as though MCDitty isn't there
 	 */
-	public static boolean turnedOff = false;
-	private static boolean enableNoteblockTooltips = true;
-	private static boolean noteblockTuner_mute = false;
+	public static boolean mcdittyOff = false;
 
 	/**
 	 * Note: Strips newlines, leaving spaces
@@ -285,14 +303,6 @@ public class MCDittyConfig {
 		return noPlayTokens.split(" ");
 	}
 
-	public static String getEndOfLineTune() {
-		return endOfLineTune;
-	}
-
-	public static void setEndOfLineTune(String lineIn) {
-		endOfLineTune = lineIn;
-	}
-
 	/**
 	 * Checks whether the config file has been loaded. If not, this loads it. If
 	 * the config file is outdated, this updates it and loads it.
@@ -322,7 +332,7 @@ public class MCDittyConfig {
 			// Load config file. Will create one if necessary.
 			// Returns false if config file is for an old version
 			// Loads values even from an old config
-			boolean upToDate = loadConfigFile();
+			boolean upToDate = loadSettings();
 			if (!upToDate) {
 				// If it is old, clear the config file...
 				deleteConfigFile();
@@ -330,7 +340,7 @@ public class MCDittyConfig {
 				try {
 					flush();
 					BlockSign.writeChatMessage(world,
-							"§aUpdated MCDitty config file to version "
+							"§aMCDitty updated to version "
 									+ CURRENT_VERSION + "!");
 					if (UPDATE_MESSAGE != null) {
 						BlockSign.writeChatMessage(world, UPDATE_MESSAGE);
@@ -368,8 +378,24 @@ public class MCDittyConfig {
 	 * 
 	 * @return true if config file is up to date, false if obsolete
 	 */
-	private static boolean loadConfigFile() {
+	private static boolean loadSettings() {
 		MCDitty.keypressHandler.loadConfig();
+
+		// Load XML Config
+		try {
+			FileInputStream xmlIn = new FileInputStream(xmlSettingsFile);
+			properties.loadFromXML(xmlIn);
+			xmlIn.close();
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			//e1.printStackTrace();
+		} catch (InvalidPropertiesFormatException e1) {
+			// TODO Auto-generated catch block
+			//e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			//e1.printStackTrace();
+		}
 
 		File fileToLoad = configFile;
 
@@ -443,8 +469,8 @@ public class MCDittyConfig {
 					} else if (lineIn.startsWith("NoteblockTooltips=")) {
 						lineIn = lineIn.replace("NoteblockTooltips=", "");
 						try {
-							enableNoteblockTooltips = Boolean
-									.parseBoolean(lineIn);
+							setBoolean("enableNoteblockTooltips",
+									Boolean.parseBoolean(lineIn));
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -568,7 +594,7 @@ public class MCDittyConfig {
 					} else if (lineIn.startsWith("MCDittyOff=")) {
 						lineIn = lineIn.replace("MCDittyOff=", "");
 						try {
-							turnedOff = Boolean.parseBoolean(lineIn);
+							mcdittyOff = Boolean.parseBoolean(lineIn);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -618,9 +644,6 @@ public class MCDittyConfig {
 						lineIn = lineIn.replace(
 								"LastTutorialVersionDownloaded=", "");
 						lastTutorialVersionDownloaded = lineIn;
-					} else if (lineIn.startsWith("EndOfLineTune=")) {
-						lineIn = lineIn.replace("EndOfLineTune=", "");
-						setEndOfLineTune(lineIn);
 					} else if (lineIn.startsWith("noteblockTuner.mute=")) {
 						lineIn = lineIn.replace("noteblockTuner.mute=", "");
 						try {
@@ -690,6 +713,18 @@ public class MCDittyConfig {
 
 			MCDitty.keypressHandler.writeConfig();
 
+			// Save XML settings
+			try {
+				xmlSettingsFile.delete();
+				xmlSettingsFile.createNewFile();
+				FileOutputStream xmlOut = new FileOutputStream(xmlSettingsFile);
+				properties.storeToXML(xmlOut, "MCDitty XML Settings");
+				xmlOut.flush();
+				xmlOut.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
 			configFile.createNewFile();
 			BufferedWriter configOut = new BufferedWriter(new FileWriter(
 					configFile));
@@ -716,7 +751,7 @@ public class MCDittyConfig {
 			configOut
 					.write("Whether MCDitty plays ditties. Possible values: true false");
 			configOut.newLine();
-			configOut.write("MCDittyOff=" + Boolean.toString(turnedOff));
+			configOut.write("MCDittyOff=" + Boolean.toString(mcdittyOff));
 			configOut.newLine();
 			configOut.newLine();
 			configOut
@@ -783,20 +818,11 @@ public class MCDittyConfig {
 					+ Boolean.toString(blinkSignsTexturesEnabled));
 			configOut.newLine();
 			configOut.newLine();
-			configOut.write("NoteblockTooltips="
-					+ Boolean.toString(enableNoteblockTooltips));
-			configOut.newLine();
-			configOut.newLine();
 			configOut
 					.write("Should parts of a ditty, such as keywords and comments, be highlighted (in progress)? (true or false)");
 			configOut.newLine();
 			configOut.write("HighlightingEnabled="
 					+ Boolean.toString(highlightEnabled));
-			configOut.newLine();
-			configOut.newLine();
-			configOut.write("MCDitty's default chime. (Currently unused)");
-			configOut.newLine();
-			configOut.write("EndOfLineTune=" + getEndOfLineTune());
 			configOut.newLine();
 			configOut.newLine();
 			// configOut.write("Tokens that, in a sign, immediately prevent a song from playing. A list of tokens, separated by spaces. Not case sensitive.");
@@ -963,20 +989,52 @@ public class MCDittyConfig {
 	}
 
 	public static boolean getBoolean(String key) {
-		if (key.equalsIgnoreCase("enableNoteblockTooltips")) {
-			return enableNoteblockTooltips;
-		} else if (key.equalsIgnoreCase("noteblockTuner.mute")) {
-			return noteblockTuner_mute;
-		} else {
-			return false;
+		String value = properties.getProperty(key, "false");
+		boolean boolValue = false;
+		try {
+			boolValue = Boolean.parseBoolean(value);
+		} catch (Exception e) {
 		}
+		return boolValue;
 	}
 
 	public static void setBoolean(String key, boolean value) {
-		if (key.equalsIgnoreCase("enableNoteblockTooltips")) {
-			enableNoteblockTooltips = value;
-		} else if (key.equalsIgnoreCase("noteblockTuner.mute")) {
-			noteblockTuner_mute = value;
+		properties.setProperty(key, Boolean.toString(value));
+	}
+
+	public static String getMCDittyTurnedOffText() {
+		if (getBoolean("noteblock.mute")) {
+			return "MCDitty & Noteblocks §cOff";
+		} else if (mcdittyOff) {
+			return "MCDitty §cOff";
+		} else if (getBoolean("noteblock.signsDisabled")) {
+			return "Noteblock Signs §cOff";
+		} else {
+			return "MCDitty §aOn";
+		}
+	}
+
+	public static void incrementMCDittyOffState() {
+		if (mcdittyOff && getBoolean("noteblock.mute") && getBoolean("noteblock.signsDisabled")) {
+			// to MCDitty On
+			setBoolean("noteblock.signsDisabled", false);
+			setBoolean("noteblock.mute", false);
+			mcdittyOff = false;
+		} else if (mcdittyOff && getBoolean("noteblock.signsDisabled")) {
+			// to mcditty off, mute noteblocks
+			setBoolean("noteblock.mute", true);
+		} else if (getBoolean ("noteblock.signsDisabled")) {
+			// to mcditty off
+			mcdittyOff = true;
+		} else {
+			// To noteblock signs off
+			setBoolean("noteblock.signsDisabled", true);
+		}
+		
+		try {
+			flush();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 

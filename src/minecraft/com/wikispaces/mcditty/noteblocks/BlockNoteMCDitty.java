@@ -184,12 +184,13 @@ public class BlockNoteMCDitty extends BlockNote {
 				((TileEntityNoteMCDitty) tile).noteValueKnown = true;
 			}
 
-			if (!MCDittyConfig.turnedOff) {
+			if (!MCDittyConfig.mcdittyOff) {
 				// While we're here and have the tile entity, show a tooltip
 				// over it
 				MCDitty.showNoteblockTooltip((TileEntityNote) tile);
 
-				if (!isTuning) {
+				if (!isTuning
+						&& !MCDittyConfig.getBoolean("noteblock.signsDisabled")) {
 					// And show a lyric too
 					activateAnyAdjacentSigns((TileEntityNote) tile);
 				}
@@ -201,8 +202,11 @@ public class BlockNoteMCDitty extends BlockNote {
 
 		String noteType = intToNoteType(noteTypeNum);
 
-		world.playSoundEffect((double) x + 0.5D, (double) y + 0.5D,
-				(double) z + 0.5D, "note." + noteType, 3.0F, pitchMultiplier);
+		if (!MCDittyConfig.getBoolean("noteblock.mute")) {
+			world.playSoundEffect((double) x + 0.5D, (double) y + 0.5D,
+					(double) z + 0.5D, "note." + noteType, 3.0F,
+					pitchMultiplier);
+		}
 
 		world.spawnParticle("note", (double) x + 0.5D, (double) y + 1.2D,
 				(double) z + 0.5D, (double) noteBlockSetting / 24.0D, 0.0D,
@@ -211,7 +215,7 @@ public class BlockNoteMCDitty extends BlockNote {
 
 	private void activateAnyAdjacentSigns(TileEntityNote tile) {
 		// Don't activate signs if MCDitty is off or a gui is open
-		if (MCDittyConfig.turnedOff
+		if (MCDittyConfig.mcdittyOff
 				|| GetMinecraft.instance().currentScreen != null) {
 			return;
 		}

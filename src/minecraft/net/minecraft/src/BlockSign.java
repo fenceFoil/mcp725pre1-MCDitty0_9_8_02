@@ -407,7 +407,7 @@ public class BlockSign extends BlockContainer {
 				held = heldStack.itemID;
 				// System.out.println (held);
 			}
-			if ((held == 271) || MCDittyConfig.turnedOff) {
+			if ((held == 271) || MCDittyConfig.mcdittyOff) {
 				// Holding wooden axe: do nothing.
 			} else if (MCDitty.isIDShovel(held)) {
 				// Shovel! "Scoop up" sign text.

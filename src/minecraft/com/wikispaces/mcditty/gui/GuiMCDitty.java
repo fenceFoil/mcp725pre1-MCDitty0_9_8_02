@@ -67,28 +67,31 @@ public class GuiMCDitty extends GuiScreen {
 		// "MCDitty Version " + BlockSign.CURRENT_VERSION, 0, 0, 0x444444);
 
 		// Draw label at top of screen
-		//drawRect(width / 2 - 60, 20, width / 2 + 60, 70, 0xaaaaaa88);
-		
+		// drawRect(width / 2 - 60, 20, width / 2 + 60, 70, 0xaaaaaa88);
+
 		int bgTextureNumber = GetMinecraft.instance().renderEngine
 				.getTexture("/com/wikispaces/mcditty/resources/textures/signBG2.png");
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.5f);
-		GetMinecraft.instance().renderEngine
-				.bindTexture(bgTextureNumber);
+		GetMinecraft.instance().renderEngine.bindTexture(bgTextureNumber);
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.5f);
 		drawTexturedModalRect(width / 2 - 60, 20, 0, 0, 120, 50);
-		
+
 		drawCenteredString(fontRenderer, "MCDitty Menu", width / 2, 25,
 				0xccccccff);
 
 		// If outdated, note this
 		if (outdated) {
-			drawCenteredString(fontRenderer, "New Version Available!",
+			drawCenteredString(fontRenderer, "Update Available!",
 					width / 2, 40, 0x00ff00);
 		}
 
 		if (tutorialUpdated) {
-			drawCenteredString(fontRenderer, "MCDittyLand Updated!", width / 2,
-					55, 0x00ff00);
+			drawCenteredString(
+					fontRenderer,
+					"MCDittyLand: "
+							+ TutorialWorldDownloader
+									.downloadExampleWorldVersion(MCDittyConfig.MC_CURRENT_VERSION),
+					width / 2, 55, 0x00ff00);
 		}
 
 		super.drawScreen(par1, par2, par3);
@@ -163,8 +166,8 @@ public class GuiMCDitty extends GuiScreen {
 			mc.displayGuiScreen(new GuiMCDittySoundfont(this));
 		} else if (guibutton.id == 1000) {
 			// Toggle mcditty on
-			MCDittyConfig.turnedOff = !MCDittyConfig.turnedOff;
-			turnedOffButton.displayString = getMCDittyTurnedOffText();
+			MCDittyConfig.incrementMCDittyOffState();
+			turnedOffButton.displayString = MCDittyConfig.getMCDittyTurnedOffText();
 			try {
 				MCDittyConfig.flush();
 			} catch (IOException e) {
@@ -262,8 +265,8 @@ public class GuiMCDitty extends GuiScreen {
 	@Override
 	public void initGui() {
 		// Add buttons
-		controlList.add(new GuiButton(400, width / 3 * 2 - 55, height - 40, 110, 20,
-				"§aEXIT"));
+		controlList.add(new GuiButton(400, width / 3 * 2 - 55, height - 40,
+				110, 20, "§aEXIT"));
 		controlList.add(new GuiButton(100, width / 3 - 55, height - 70, 110,
 				20, "Auto-Update"));
 		controlList.add(new GuiButton(200, width / 3 - 55, height - 100, 110,
@@ -282,8 +285,9 @@ public class GuiMCDitty extends GuiScreen {
 				110, 20, "MIDI Folder"));
 		controlList.add(new GuiButton(900, width / 3 - 55, height - 40, 110,
 				20, "SoundFonts"));
-		
-		turnedOffButton = new GuiButton (1000, 15, 15, 110, 20, getMCDittyTurnedOffText());
+
+		turnedOffButton = new GuiButton(1000, 15, 15, 110, 20,
+				MCDittyConfig.getMCDittyTurnedOffText());
 		controlList.add(turnedOffButton);
 
 		controlList.add(new MCDittyVersionReadoutGuiElement(100));
@@ -308,14 +312,6 @@ public class GuiMCDitty extends GuiScreen {
 
 		// Check config file to see that it's up to date
 		MCDittyConfig.checkConfig(mc.theWorld);
-	}
-
-	private String getMCDittyTurnedOffText() {
-		if (MCDittyConfig.turnedOff) {
-			return "§cMCDitty is Off§r";
-		} else {
-			return "§aMCDitty is On§r";
-		}
 	}
 
 	protected static void setOutdated(boolean checkForUpdates) {
