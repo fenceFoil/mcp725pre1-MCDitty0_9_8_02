@@ -43,10 +43,11 @@ public class MuteDittyThread extends Thread {
 	private LinkedList<Sequencer> playMidiSequencers;
 	private int[] exceptedDittyIDs;
 
-	public MuteDittyThread(ConcurrentLinkedQueue<DittyPlayerThread> players,
-			LinkedList<Sequencer> playMidiSequencers, int[] exceptedDittyIDs) {
-		this.players = players;
-		this.playMidiSequencers = playMidiSequencers;
+	public MuteDittyThread(int[] exceptedDittyIDs) {
+		this.players = new ConcurrentLinkedQueue<DittyPlayerThread>();
+		this.players.addAll(DittyPlayerThread.jFuguePlayerThreads);
+		this.players.addAll(DittyPlayerThread.queuedPlayers);
+		this.playMidiSequencers = MCDitty.getPlayMidiSequencers();
 		this.exceptedDittyIDs = exceptedDittyIDs;
 		setName("Ditty Muter");
 	}
@@ -58,6 +59,7 @@ public class MuteDittyThread extends Thread {
 	 */
 	@Override
 	public void run() {
+		// Clear out queue of ditties to play next
 		for (DittyPlayerThread player : players) {
 			if (!isInArray(player.getDitty().getDittyID(), exceptedDittyIDs)) {
 				player.mute();

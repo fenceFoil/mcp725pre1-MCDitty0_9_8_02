@@ -34,10 +34,12 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.sound.midi.Instrument;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Patch;
+import javax.sound.midi.Sequence;
 import javax.sound.midi.Synthesizer;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -47,6 +49,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import net.minecraft.src.BlockSign;
 
 import org.jfugue.MidiRenderer;
+import org.jfugue.Pattern;
 import org.jfugue.Player;
 import org.jfugue.elements.Lyric;
 import org.jfugue.elements.MCDittyEvent;
@@ -110,6 +113,8 @@ public class DittyPlayerThread extends Thread implements
 	public static Object staticPlayerMutex = new Object();
 	private static Object staticPlayerMutex2 = new Object();
 
+	public static LinkedBlockingQueue<DittyPlayerThread> queuedPlayers = new LinkedBlockingQueue<DittyPlayerThread>();
+
 	public DittyPlayerThread(Ditty ditty) {
 		this.ditty = ditty;
 		setName("Ditty Player");
@@ -165,13 +170,38 @@ public class DittyPlayerThread extends Thread implements
 			player.getRenderer().setInstrumentEventReadListener(this);
 		}
 
+		// Render musicstring
+		Sequence dittySequence = player.getSequence(new Pattern(ditty
+				.getMusicString()));
+
+		if (ditty.isPlayLast()) {
+			// If queueing, wait for turn before playing
+			// If muting, move on
+			queuedPlayers.add(this);
+			System.out.println(jFuguePlayerThreads.size());
+			System.out.println(queuedPlayers.size());
+			while ((jFuguePlayerThreads.size() > queuedPlayers.size() || queuedPlayers
+					.poll() != this) && !muting) {
+				try {
+					Thread.sleep(20);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			queuedPlayers.remove(this);
+		}
+
+		// Give self max priority
+		this.setPriority(MAX_PRIORITY);
+		
+		// Play musicstring
 		BlockSign.simpleLog("Starting ditty!");
 		if (!muting) {
 			try {
 				synchronized (staticPlayerMutex) {
 					this.sleep(20);
 				}
-				player.play(ditty.getMusicString());
+				player.play(dittySequence);
 				if (!muting) {
 					// Flush events at end of song
 					for (int z = 0; z < 2; z++) {
@@ -186,12 +216,13 @@ public class DittyPlayerThread extends Thread implements
 		try {
 			synchronized (staticPlayerMutex) {
 				player.close(false);
-//				if (synth != null && synth.isOpen()) {
-//					synth.close();
-//				}
+				// if (synth != null && synth.isOpen()) {
+				// synth.close();
+				// }
 				// Handles the synth; closes it if it wants
 			}
-			synthPool.returnUsedSynth(synth, cachedSFXInstruments, originalSynthInstruments);
+			synthPool.returnUsedSynth(synth, cachedSFXInstruments,
+					originalSynthInstruments);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -220,7 +251,7 @@ public class DittyPlayerThread extends Thread implements
 	private Player setUpPlayer() {
 		// Ask the synthpool to get or create a synth and open it
 		synth = synthPool.getOpenedSynth();
-		
+
 		// Create a Player
 		Player p = null;
 		try {
@@ -501,7 +532,7 @@ public class DittyPlayerThread extends Thread implements
 			Synthesizer synth2) {
 		Instrument restoreInstrument = null;
 
-		//System.out.println("8");
+		// System.out.println("8");
 
 		// Find the instrument to restore
 		for (Instrument i : originalSynthInstruments) {
@@ -516,7 +547,7 @@ public class DittyPlayerThread extends Thread implements
 
 		if (restoreInstrument != null) {
 			// Load it into the synthesizer again
-			//System.out.println("9");
+			// System.out.println("9");
 			synth2.loadInstrument(restoreInstrument);
 		}
 	}

@@ -51,6 +51,8 @@ public class Ditty {
 	private boolean loud = false;
 	private boolean midiAlreadySaved = false;
 	private File midiSaveFile = null;
+	
+	private boolean playLast = false;
 
 	private CueScheduler lyricsStorage = new CueScheduler();
 
@@ -352,6 +354,14 @@ public class Ditty {
 			}
 		}
 		return errorFree;
+	}
+
+	public boolean isPlayLast() {
+		return playLast;
+	}
+
+	public void setPlayLast(boolean playLast) {
+		this.playLast = playLast;
 	}
 
 }

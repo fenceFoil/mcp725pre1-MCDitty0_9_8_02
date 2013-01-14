@@ -76,7 +76,8 @@ public class SignParser {
 			"proxpad", "volume", "area", "goto", "savemidi", "playmidi",
 			"emitter", "sfxinst2", "sfxinst", "sfxinstoff", "newbot",
 			"staccato", "staccatooff", "tran", "tranoff", "octaves",
-			"octavesoff", "prelyric", "accel", "patt", "[ditty]", "ditty", "maxplays"};
+			"octavesoff", "prelyric", "accel", "patt", "[ditty]", "ditty",
+			"maxplays", "playlast" };
 
 	/**
 	 * Prevent people from instantiating this class of static methods
