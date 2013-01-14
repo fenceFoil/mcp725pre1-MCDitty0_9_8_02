@@ -900,6 +900,7 @@ public class MCDittyConfig {
 	public static void flushPropertiesXML() {
 		// Save XML settings
 		try {
+			xmlSettingsFile.getParentFile().mkdirs();
 			xmlSettingsFile.delete();
 			xmlSettingsFile.createNewFile();
 			FileOutputStream xmlOut = new FileOutputStream(xmlSettingsFile);
