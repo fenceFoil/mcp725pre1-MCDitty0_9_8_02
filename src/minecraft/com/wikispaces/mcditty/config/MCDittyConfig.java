@@ -338,7 +338,7 @@ public class MCDittyConfig {
 				deleteConfigFile();
 				// Write a new one that is up to date
 				try {
-					flush();
+					flushAll();
 					BlockSign.writeChatMessage(world,
 							"§aMCDitty updated to version "
 									+ CURRENT_VERSION + "!");
@@ -404,7 +404,7 @@ public class MCDittyConfig {
 		if (configFile.exists() == false) {
 			// Write a new default version
 			try {
-				flush();
+				flushAll();
 				return false;
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -706,24 +706,14 @@ public class MCDittyConfig {
 	 * 
 	 * @throws IOException
 	 */
-	public static void flush() throws IOException {
+	public static void flushAll() throws IOException {
 		synchronized (configFile) {
 			// Create MCDitty dir if it does not exist already
 			configFile.getParentFile().mkdirs();
 
 			MCDitty.keypressHandler.writeConfig();
 
-			// Save XML settings
-			try {
-				xmlSettingsFile.delete();
-				xmlSettingsFile.createNewFile();
-				FileOutputStream xmlOut = new FileOutputStream(xmlSettingsFile);
-				properties.storeToXML(xmlOut, "MCDitty XML Settings");
-				xmlOut.flush();
-				xmlOut.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			flushPropertiesXML();
 
 			configFile.createNewFile();
 			BufferedWriter configOut = new BufferedWriter(new FileWriter(
@@ -907,6 +897,20 @@ public class MCDittyConfig {
 		}
 	}
 
+	public static void flushPropertiesXML() {
+		// Save XML settings
+		try {
+			xmlSettingsFile.delete();
+			xmlSettingsFile.createNewFile();
+			FileOutputStream xmlOut = new FileOutputStream(xmlSettingsFile);
+			properties.storeToXML(xmlOut, "MCDitty XML Settings");
+			xmlOut.flush();
+			xmlOut.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static boolean isFullRenderingEnabled() {
 		return fullRenderingEnabled;
 	}
@@ -988,20 +992,6 @@ public class MCDittyConfig {
 		}
 	}
 
-	public static boolean getBoolean(String key) {
-		String value = properties.getProperty(key, "false");
-		boolean boolValue = false;
-		try {
-			boolValue = Boolean.parseBoolean(value);
-		} catch (Exception e) {
-		}
-		return boolValue;
-	}
-
-	public static void setBoolean(String key, boolean value) {
-		properties.setProperty(key, Boolean.toString(value));
-	}
-
 	public static String getMCDittyTurnedOffText() {
 		if (getBoolean("noteblock.mute")) {
 			return "MCDitty & Noteblocks §cOff";
@@ -1032,10 +1022,52 @@ public class MCDittyConfig {
 		}
 		
 		try {
-			flush();
+			flushAll();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static boolean getBoolean(String key) {
+		String value = properties.getProperty(key, "false");
+		boolean boolValue = false;
+		try {
+			boolValue = Boolean.parseBoolean(value);
+		} catch (Exception e) {
+		}
+		return boolValue;
+	}
+
+	public static void setBoolean(String key, boolean value) {
+		properties.setProperty(key, Boolean.toString(value));
+	}
+	
+	/**
+	 * 
+	 * @param key value or null if none is defined
+	 * @return
+	 */
+	public static String getString (String key) {
+		return properties.getProperty(key);
+	}
+	
+	/**
+	 * 
+	 * @param key
+	 * @param defaultValue
+	 * @return value or default if none is defined
+	 */
+	public static String getStringWithDefault (String key, String defaultValue) {
+		String value = getString(key);
+		if (value == null) {
+			return defaultValue;
+		} else {
+			return value;
+		}
+	}
+	
+	public static void setString (String key, String value) {
+		properties.setProperty(key, value);
 	}
 
 }

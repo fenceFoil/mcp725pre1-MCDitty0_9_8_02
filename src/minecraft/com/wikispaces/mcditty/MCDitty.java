@@ -507,7 +507,7 @@ public class MCDitty {
 			// Turn off show welcome message flag
 			MCDittyConfig.showWelcomeMessage = false;
 			try {
-				MCDittyConfig.flush();
+				MCDittyConfig.flushAll();
 			} catch (IOException e) {
 				// TODO Tell user
 				e.printStackTrace();
@@ -536,7 +536,7 @@ public class MCDitty {
 
 					MCDittyConfig.lastVersionFound = foundVersion;
 					try {
-						MCDittyConfig.flush();
+						MCDittyConfig.flushAll();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

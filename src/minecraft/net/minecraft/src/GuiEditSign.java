@@ -574,7 +574,7 @@ public class GuiEditSign extends GuiScreen implements
 			}
 			try {
 				// Save mode change
-				MCDittyConfig.flush();
+				MCDittyConfig.flushAll();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -525,7 +525,7 @@ public class GuiMCDittySettings extends GuiScreen {
 
 	private void flushConfigFile() {
 		try {
-			MCDittyConfig.flush();
+			MCDittyConfig.flushAll();
 		} catch (IOException e) {
 			// TODO Tell user
 			e.printStackTrace();

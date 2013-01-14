@@ -77,9 +77,9 @@ public class SoftSynthPool extends Thread {
 		}
 		if (pool.size() < POOL_SIZE
 				//&& DittyPlayerThread.jFuguePlayerThreads.size() <= 0
-				&& !isWalkingForward) {
-			System.out.println("Adding a new synth to the cache. n="
-					+ pool.size());
+				&& !isWalkingForward) { 
+			//System.out.println("Adding a new synth to the cache. n="
+			//		+ pool.size());
 			SoftSynthesizer newSynth = createOpenedSynth();
 			synchronized (cachedSynthMutex) {
 				pool.add(newSynth);
@@ -87,8 +87,8 @@ public class SoftSynthPool extends Thread {
 			// System.out.println("Done.");
 		} else if (pool.size() > 2 * POOL_SIZE) {
 			synchronized (cachedSynthMutex) {
-				System.out.println("Removing a synth from the cache n="
-						+ pool.size());
+				//System.out.println("Removing a synth from the cache n="
+				//		+ pool.size());
 				pool.poll().close();
 			}
 		}
@@ -113,14 +113,14 @@ public class SoftSynthPool extends Thread {
 		synchronized (cachedSynthMutex) {
 			if (pool.size() > 0) {
 				// Try to use the cached synth
-				System.out.println("Using pool synth. Remaining = "
-						+ pool.size());
+				//System.out.println("Using pool synth. Remaining = "
+				//		+ pool.size());
 				return pool.pollLast();
 			}
 		}
 
 		// Still here? A new synth must then be created
-		System.out.println("Synth pool empty: creating new synth.");
+		//System.out.println("Synth pool empty: creating new synth.");
 		return createOpenedSynth();
 	}
 

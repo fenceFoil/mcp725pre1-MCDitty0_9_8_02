@@ -537,7 +537,7 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 			MCDittyConfig.setBoolean("noteblockTuner.mute",
 					!MCDittyConfig.getBoolean("noteblockTuner.mute"));
 			try {
-				MCDittyConfig.flush();
+				MCDittyConfig.flushAll();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

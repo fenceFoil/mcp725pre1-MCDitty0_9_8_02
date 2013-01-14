@@ -128,7 +128,7 @@ public class GuiMCDittyGraphics extends GuiScreen {
 			MCDittyConfig.setFullRenderingEnabled(!MCDittyConfig
 					.isFullRenderingEnabled());
 			try {
-				MCDittyConfig.flush();
+				MCDittyConfig.flushAll();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
