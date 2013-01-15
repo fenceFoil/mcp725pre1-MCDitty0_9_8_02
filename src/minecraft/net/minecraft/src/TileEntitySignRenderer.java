@@ -125,8 +125,8 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 		boolean renderText = true;
 		boolean renderSign = true;
 		boolean doNotHideForSure = false;
-
-		if (!fullRenderingEnabled && !signEntity.alwaysRender) {
+		
+		if (!fullRenderingEnabled && !signEntity.alwaysRender && renderCountLastTick > 100) {
 			// Decide whether to render sign text (expensive)
 			renderText = false;
 			renderSign = false;
