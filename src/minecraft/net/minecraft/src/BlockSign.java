@@ -56,6 +56,7 @@ import com.wikispaces.mcditty.ditty.DittyPlayerThread;
 import com.wikispaces.mcditty.ditty.event.CreateBotEvent;
 import com.wikispaces.mcditty.ditty.event.CreateEmitterEvent;
 import com.wikispaces.mcditty.ditty.event.CueEvent;
+import com.wikispaces.mcditty.ditty.event.FireworkEvent;
 import com.wikispaces.mcditty.ditty.event.NoteStartEvent;
 import com.wikispaces.mcditty.ditty.event.PlayMidiDittyEvent;
 import com.wikispaces.mcditty.ditty.event.SFXInstrumentEvent;
@@ -76,6 +77,7 @@ import com.wikispaces.mcditty.signs.keywords.AccelerateKeyword;
 import com.wikispaces.mcditty.signs.keywords.DiscoKeyword;
 import com.wikispaces.mcditty.signs.keywords.EmitterKeyword;
 import com.wikispaces.mcditty.signs.keywords.ExplicitGotoKeyword;
+import com.wikispaces.mcditty.signs.keywords.FireworkKeyword;
 import com.wikispaces.mcditty.signs.keywords.GotoKeyword;
 import com.wikispaces.mcditty.signs.keywords.LyricKeyword;
 import com.wikispaces.mcditty.signs.keywords.MaxPlaysKeyword;
@@ -104,6 +106,8 @@ public class BlockSign extends BlockContainer {
 	private boolean isFreestanding;
 
 	private static boolean isMCDittyLoaded = false;
+
+	private static Random random = new Random();
 
 	private static LinkedList<MaxPlaysLockPoint> maxPlaysLockPoints = new LinkedList<MaxPlaysLockPoint>();
 
@@ -394,6 +398,7 @@ public class BlockSign extends BlockContainer {
 	public boolean blockActivated(final World par1World, final int parX,
 			final int parY, final int parZ, EntityPlayer entityplayer) {
 		// This is to prevent multiple activations on one click
+
 		if (!clickHeld) {
 			clickHeld = true;
 			MCDittyRightClickCheckThread t = new MCDittyRightClickCheckThread();
@@ -518,28 +523,28 @@ public class BlockSign extends BlockContainer {
 		// System.out.println("PlayDittyFromSigns called on :" + x + ":" + y +
 		// ":"
 		// + z);
-
-		// First, check to see if this sign is blocked from activating by a
-		// OneAtATime keyword
-		// NOTE: CODE COPIED FROM playDittyFromSigns()
-		// Bad Dobby, Bad Dobby!
-		synchronized (oneAtATimeSignsBlocked) {
-			if (oneAtATimeSignsBlocked.contains(new Point3D(x, y, z))) {
-				// Blocked.
-				return null;
-			}
-
-			// If oneAtATimeOn is true, go ahead and instantly add this ditty to
-			// the
-			// block list
-			// Will happen again later, but it should take effect as soon as
-			// possible (this call) so that ditties read in close succession
-			// don't
-			// both start
-			if (oneAtATimeOn) {
-				oneAtATimeSignsBlocked.add(new Point3D(x, y, z));
-			}
-		}
+		//
+		// // First, check to see if this sign is blocked from activating by a
+		// // OneAtATime keyword
+		// // NOTE: CODE COPIED FROM playDittyFromSigns()
+		// // Bad Dobby, Bad Dobby!
+		// synchronized (oneAtATimeSignsBlocked) {
+		// if (oneAtATimeSignsBlocked.contains(new Point3D(x, y, z))) {
+		// // Blocked.
+		// return null;
+		// }
+		//
+		// // If oneAtATimeOn is true, go ahead and instantly add this ditty to
+		// // the
+		// // block list
+		// // Will happen again later, but it should take effect as soon as
+		// // possible (this call) so that ditties read in close succession
+		// // don't
+		// // both start
+		// if (oneAtATimeOn) {
+		// oneAtATimeSignsBlocked.add(new Point3D(x, y, z));
+		// }
+		// }
 
 		long startTime = System.nanoTime();
 
@@ -599,7 +604,7 @@ public class BlockSign extends BlockContainer {
 					}
 				}
 			}
-			
+
 			if (!foundOnList) {
 				maxPlaysLockPoints.add(new MaxPlaysLockPoint(p.point, 1));
 			}
@@ -607,7 +612,9 @@ public class BlockSign extends BlockContainer {
 
 		// If this ditty was started from something like a proximity sign, turn
 		// on the "oneAtATime" keyword's property by default
-		dittyProperties.setOneAtATime(oneAtATimeOn);
+		if (oneAtATimeOn) {
+			dittyProperties.setOneAtATime(true);
+		}
 
 		// Set the start point in the ditty properties
 		dittyProperties.setStartPoint(startPoint);
@@ -1748,6 +1755,51 @@ public class BlockSign extends BlockContainer {
 					} else if (keyword.equals("playlast")) {
 						// Set playlast to true
 						ditty.setPlayLast(true);
+					} else if (keyword.equals("firework")) {
+						FireworkKeyword k = (FireworkKeyword) SignParser
+								.parseKeyword(currLine);
+						// Find nearby fireworks in frames
+						LinkedList<ItemStack> fireworks = new LinkedList<ItemStack>();
+						for (Object entityObj : world.loadedEntityList) {
+							Entity entity = (Entity) entityObj;
+							if (Math.abs(entity.posX - currSignPoint.x) <= 2
+									&& Math.abs(entity.posY - currSignPoint.y) <= 2
+									&& Math.abs(entity.posZ - currSignPoint.z) <= 2) {
+
+								if (entity instanceof EntityItemFrame) {
+									EntityItemFrame frame = (EntityItemFrame) entity;
+									ItemStack framedItem = frame
+											.getDisplayedItem();
+
+									if (framedItem != null
+											&& framedItem.itemID == 401) {
+										fireworks.add(framedItem);
+									}
+								}
+							}
+						}
+
+						if (fireworks.size() > 0) {
+							// Choose a firework
+							ItemStack fireworkItem = fireworks.get(random
+									.nextInt(fireworks.size()));
+
+							// Create the event
+							int yOffset = k.getUp();
+							FireworkEvent event = new FireworkEvent(
+									currSignPoint.x + 0.5f, currSignPoint.y
+											+ yOffset, currSignPoint.z + 0.5f,
+									fireworkItem);
+
+							// Add the event to the ditty
+							int eventID = ditty.addDittyEvent(event);
+							ditty.addMusicStringTokens(readMusicString,
+									TIMED_EVENT_TOKEN + eventID, false);
+						} else {
+							// No fireworks :(
+							ditty.addErrorMessage("A firework sign has no fireworks in Item Frames nearby.");
+							ditty.addErrorHighlight(currSignPoint, line);
+						}
 					} else {
 						// Unrecognized keyword; announce with error
 						ditty.addErrorMessage("§b"
@@ -3443,19 +3495,19 @@ public class BlockSign extends BlockContainer {
 
 	public static void initMCDittyMod() {
 		if (mcDittyMod == null) {
-//			// TODO: Replace skull renderer
-//			try {
-//				Map map = (Map) GetMinecraft.getUniqueTypedFieldFromClass(
-//						TileEntityRenderer.class, Map.class,
-//						TileEntityRenderer.instance);
-//				map.put(TileEntitySkull.class, new TileEntitySkullRenderer2());
-//			} catch (IllegalArgumentException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (IllegalAccessException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+			// // TODO: Replace skull renderer
+			// try {
+			// Map map = (Map) GetMinecraft.getUniqueTypedFieldFromClass(
+			// TileEntityRenderer.class, Map.class,
+			// TileEntityRenderer.instance);
+			// map.put(TileEntitySkull.class, new TileEntitySkullRenderer2());
+			// } catch (IllegalArgumentException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// } catch (IllegalAccessException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
 
 			// Start MCDitty!
 			mcDittyMod = new MCDitty();

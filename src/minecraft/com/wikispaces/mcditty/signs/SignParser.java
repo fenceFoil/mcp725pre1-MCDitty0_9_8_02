@@ -27,6 +27,7 @@ import com.wikispaces.mcditty.signs.keywords.AccelerateKeyword;
 import com.wikispaces.mcditty.signs.keywords.DiscoKeyword;
 import com.wikispaces.mcditty.signs.keywords.EmitterKeyword;
 import com.wikispaces.mcditty.signs.keywords.ExplicitGotoKeyword;
+import com.wikispaces.mcditty.signs.keywords.FireworkKeyword;
 import com.wikispaces.mcditty.signs.keywords.GotoKeyword;
 import com.wikispaces.mcditty.signs.keywords.LyricKeyword;
 import com.wikispaces.mcditty.signs.keywords.MaxPlaysKeyword;
@@ -77,7 +78,7 @@ public class SignParser {
 			"emitter", "sfxinst2", "sfxinst", "sfxinstoff", "newbot",
 			"staccato", "staccatooff", "tran", "tranoff", "octaves",
 			"octavesoff", "prelyric", "accel", "patt", "[ditty]", "ditty",
-			"maxplays", "playlast" };
+			"maxplays", "playlast", "flare", "firework" };
 
 	/**
 	 * Prevent people from instantiating this class of static methods
@@ -247,6 +248,10 @@ public class SignParser {
 			return new NoteblockTriggerKeyword(rawLine);
 		} else if (keyword.equals("maxplays")) {
 			return MaxPlaysKeyword.parse(rawLine);
+//		} else if (keyword.equals("flare")) {
+//			return FlareKeyword.parse(rawLine);
+		} else if (keyword.equals("firework")) {
+			return FireworkKeyword.parse(rawLine);
 		} else {
 			// Unknown or simple (no arguments) keyword
 			ParsedKeyword k = new ParsedKeyword(rawLine);

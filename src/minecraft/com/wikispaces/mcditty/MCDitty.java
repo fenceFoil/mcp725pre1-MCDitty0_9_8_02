@@ -52,12 +52,14 @@ import net.minecraft.src.BlockSign;
 import net.minecraft.src.DestroyBlockProgress;
 import net.minecraft.src.EntityClientPlayerMP;
 import net.minecraft.src.EntityFX;
+import net.minecraft.src.EntityFireworkRocket;
 import net.minecraft.src.EntityHeartFX;
 import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiScreenBook;
 import net.minecraft.src.GuiVideoSettings;
 import net.minecraft.src.ItemStack;
+import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.Packet;
 import net.minecraft.src.RenderGlobal;
 import net.minecraft.src.RenderManager;
@@ -85,6 +87,7 @@ import com.wikispaces.mcditty.ditty.event.CreateBotEvent;
 import com.wikispaces.mcditty.ditty.event.CreateEmitterEvent;
 import com.wikispaces.mcditty.ditty.event.CueEvent;
 import com.wikispaces.mcditty.ditty.event.DittyEndedEvent;
+import com.wikispaces.mcditty.ditty.event.FireworkEvent;
 import com.wikispaces.mcditty.ditty.event.HighlightSignPlayingEvent;
 import com.wikispaces.mcditty.ditty.event.NoteStartEvent;
 import com.wikispaces.mcditty.ditty.event.PlayMidiDittyEvent;
@@ -276,6 +279,8 @@ public class MCDitty {
 
 	private static final GuiMCDittyVideoMenuButton GUI_MCDITTY_VIDEO_BUTTON = new GuiMCDittyVideoMenuButton(
 			null);
+	
+	private static FireworkExploder fireworkExploder = new FireworkExploder();
 
 	// Achivements
 	// Yes, the 24601 IS a reference to Les Miserables!
@@ -344,10 +349,10 @@ public class MCDitty {
 			Object[] maps = GetMinecraft.getAllUniqueTypedFieldsFromClass(
 					TileEntity.class, Map.class, null);
 			if (maps != null) {
-				for (Object o:maps) {
+				for (Object o : maps) {
 					if (o instanceof Map) {
 						Map m = (Map) o;
-						
+
 						if (m.get("Music") != null) {
 							m.put("Music", TileEntityNoteMCDitty.class);
 						} else {
@@ -387,7 +392,7 @@ public class MCDitty {
 		// // TODO Auto-generated catch block
 		// e.printStackTrace();
 		// }
-		
+
 		// Cache a few synths
 		DittyPlayerThread.setUpSynthPool();
 		long jfugueLoadTime = System.currentTimeMillis() - startTime;
@@ -477,9 +482,9 @@ public class MCDitty {
 
 		// Load the config file
 		MCDittyConfig.checkConfig(null);
-		
+
 		// Start downloading resources, if required
-		//MCDittyResourceDownloaderThread t = new MCDittyResou
+		// MCDittyResourceDownloaderThread t = new MCDittyResou
 
 		// System.out.println("MCDitty Load: JFugue: "
 		// + jfugueLoadTime + ", SFX: "
@@ -659,6 +664,9 @@ public class MCDitty {
 				handleMouseInput(minecraft);
 			}
 		}
+		
+		// Update particle stuff
+		fireworkExploder.update(minecraft.theWorld);
 
 		// Check queues for any events to process from songs
 		processLyricsRequests();
@@ -670,7 +678,8 @@ public class MCDitty {
 	}
 
 	private void handleMouseInput(Minecraft minecraft) {
-		if (minecraft != null && minecraft.objectMouseOver != null && !MCDittyConfig.mcdittyOff) {
+		if (minecraft != null && minecraft.objectMouseOver != null
+				&& !MCDittyConfig.mcdittyOff) {
 			// Handle the player looking at a noteblock
 			// Get the block the mouse is pointing at
 			Point3D hoverPoint = new Point3D(minecraft.objectMouseOver.blockX,
@@ -1591,6 +1600,19 @@ public class MCDitty {
 					}
 				}
 			}
+		} else if (nextEventToFire instanceof FireworkEvent) {
+			EntityFireworkRocket fireworkEntity = new EntityFireworkRocket(
+					world, ((FireworkEvent) nextEventToFire).getX(),
+					((FireworkEvent) nextEventToFire).getY(),
+					((FireworkEvent) nextEventToFire).getZ(),
+					((FireworkEvent) nextEventToFire).getFireworkItem());
+			world.spawnEntityInWorld(fireworkEntity);
+
+			NBTTagCompound tag = ((FireworkEvent) nextEventToFire)
+					.getFireworkItem().stackTagCompound
+					.getCompoundTag("Fireworks");
+			fireworkExploder.add(fireworkEntity,
+					((FireworkEvent) nextEventToFire).getY(), tag.getByte("Flight"));
 		} else if (nextEventToFire instanceof DittyEndedEvent) {
 			// System.out.println ("Time to wrap up.");
 			// Note that this ditty has ended

@@ -68,6 +68,7 @@ import com.sun.media.sound.SF2Sample;
 import com.sun.media.sound.SF2Soundbank;
 import com.sun.media.sound.SoftSynthesizer;
 import com.wikispaces.mcditty.MCDitty;
+import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.config.MCDittyConfig;
 import com.wikispaces.mcditty.ditty.event.CreateEmitterEvent;
 import com.wikispaces.mcditty.ditty.event.DittyEndedEvent;
@@ -143,6 +144,12 @@ public class DittyPlayerThread extends Thread implements
 			// Add this tune to the list of oneatatime ditties
 			if (((SignDitty) ditty).isOneAtATime()) {
 				synchronized (BlockSign.oneAtATimeSignsBlocked) {
+					if (BlockSign.oneAtATimeSignsBlocked.contains(((SignDitty) ditty).getStartPoint())) {
+						// Already blocked. Time to go...
+						jFuguePlayerThreads.remove(this);
+						return;
+					}
+					
 					BlockSign.oneAtATimeSignsBlocked.add(((SignDitty) ditty)
 							.getStartPoint());
 				}
@@ -238,9 +245,13 @@ public class DittyPlayerThread extends Thread implements
 			// Remove this tune from the list of blocked tunes
 			// (Loop until all copies are removed)
 			synchronized (BlockSign.oneAtATimeSignsBlocked) {
-				while (BlockSign.oneAtATimeSignsBlocked
-						.remove(((SignDitty) ditty).getStartPoint()))
-					;
+				for (int i=0;i<BlockSign.oneAtATimeSignsBlocked.size();i++) {
+					Point3D blockedPoint = BlockSign.oneAtATimeSignsBlocked.get(i);
+					if (blockedPoint.equals(((SignDitty) ditty).getStartPoint())) {
+						BlockSign.oneAtATimeSignsBlocked.remove(i);
+						i--;
+					}
+				}
 			}
 		}
 

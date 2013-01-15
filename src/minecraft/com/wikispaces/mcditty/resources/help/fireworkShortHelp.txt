@@ -1,0 +1,5 @@
+Firework [up]
+
+Shoots a firework [up] blocks above this sign.
+
+Put the firework(s) you want to launch in a frame(s) next to this sign. Fireworks only fly about 1/3 as high as normal, so if you want height go all out on flight duration!
