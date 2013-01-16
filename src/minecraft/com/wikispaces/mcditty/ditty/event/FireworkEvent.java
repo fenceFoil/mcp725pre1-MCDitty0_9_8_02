@@ -33,11 +33,14 @@ public class FireworkEvent extends TimedDittyEvent {
 	private double y;
 	private double z;
 	
-	public FireworkEvent(double x, double y, double z, ItemStack fireworkItem) {
+	public FireworkEvent(double x, double y, double z, ItemStack fireworkItem, int dittyID) {
+		super(dittyID);
 		setX(x);
 		setY(y);
 		setZ(z);
 		setFireworkItem(fireworkItem);
+		
+		System.out.println ("FireworkEvent Created! x="+x+" y="+y+" z="+z);
 	}
 
 	public double getX() {

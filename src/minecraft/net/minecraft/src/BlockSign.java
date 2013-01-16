@@ -1005,24 +1005,7 @@ public class BlockSign extends BlockContainer {
 							// Fix: If this is the main song, read the keyword!
 							if (!currSignPoint.equals(startPoint)
 									|| subpatternLevel == 0) {
-								// Remove the current sign from the sign log to
-								// prevent duplicates: readPattern will re-add
-								// it
-								signLog.removeLast();
-								// Read pattern
-								LinkedList<Point3D> subPatternSignLog = (LinkedList<Point3D>) signLog
-										.clone();
-								StringBuilder subPatternMusicString = readPattern(
-										currSignPoint, world, signLog, ditty,
-										subpatternLevel + 1, signWhitelist);
-
-								// If a subpattern fails due to an infinte loop,
-								// pass the failure on
-								if (subPatternMusicString == null) {
-									// simpleLog("PATTERN: null failure on pattern");
-									return null;
-								}
-
+								// Parse keyword
 								PatternKeyword patternKeyword = PatternKeyword
 										.parse(currLine);
 
@@ -1038,11 +1021,34 @@ public class BlockSign extends BlockContainer {
 								// TODO: Better trimming?
 								for (int i = 0; i < patternKeyword
 										.getRepeatCount(); i++) {
+
+									// Remove the current sign from the sign log
+									// to
+									// prevent duplicates: readPattern will
+									// re-add
+									// it
+									signLog.removeLast();
+									// Read pattern
+									LinkedList<Point3D> subPatternSignLog = (LinkedList<Point3D>) signLog
+											.clone();
+									StringBuilder subPatternMusicString = readPattern(
+											currSignPoint, world, signLog,
+											ditty, subpatternLevel + 1,
+											signWhitelist);
+
+									// If a subpattern fails due to an infinte
+									// loop,
+									// pass the failure on
+									if (subPatternMusicString == null) {
+										// simpleLog("PATTERN: null failure on pattern");
+										return null;
+									}
+
 									// Do not check for errors
-									// TODO: Use addMusicStringTokens here
-									readMusicString.append(" ");
-									readMusicString
-											.append(subPatternMusicString);
+									// readMusicString.append(" ").append(subPatternMusicString);
+									ditty.addMusicStringTokens(readMusicString,
+											subPatternMusicString.toString(),
+											false);
 								}
 
 								// Ignore the contents of this sign; it has been
@@ -1084,60 +1090,40 @@ public class BlockSign extends BlockContainer {
 							pattLocation = match.getLocation().clone();
 						}
 
-						// // If this is the pattern sign that started the
-						// // current pattern, ignore the keyword
-						// // Fix: If this is the main song, read the keyword!
-						// if (!currSignPoint.equals(startPoint)
-						// || subpatternLevel == 0) {
-
-						// // Remove the current sign from the sign log to
-						// // prevent duplicates: readPattern will re-add
-						// // it
-						// signLog.removeLast();
-
-						// Read pattern
-						LinkedList<Point3D> subPatternSignLog = (LinkedList<Point3D>) signLog
-								.clone();
-						StringBuilder subPatternMusicString = readPattern(
-								pattLocation, world, signLog, ditty,
-								subpatternLevel + 1, signWhitelist);
-
-						// If a subpattern fails due to an infinte loop,
-						// pass the failure on
-						if (subPatternMusicString == null) {
-							// simpleLog("PATTERN: null failure on pattern");
-							return null;
-						}
-
-						PattKeyword patternKeyword = PattKeyword
-								.parse(currLine);
-
-						if (!patternKeyword.isGoodKeyword()) {
-							showKeywordError(ditty, currSignPoint, currLine,
-									line, patternKeyword);
-							break;
-						}
-
 						// Add the subpattern to this pattern the
 						// specified
 						// number of times
 						// TODO: Better trimming?
-						for (int i = 0; i < patternKeyword.getRepeatCount(); i++) {
+						for (int i = 0; i < pattKeyword.getRepeatCount(); i++) {
+							// Read pattern
+							LinkedList<SignLogPoint> subPatternSignLog = (LinkedList<SignLogPoint>) signLog
+									.clone();
+							StringBuilder subPatternMusicString = readPattern(
+									pattLocation, world, subPatternSignLog,
+									ditty, subpatternLevel + 1, signWhitelist);
+
+							// If a subpattern fails due to an infinte loop,
+							// pass the failure on
+							if (subPatternMusicString == null) {
+								// simpleLog("PATTERN: null failure on pattern");
+								return null;
+							}
+
+							if (!pattKeyword.isGoodKeyword()) {
+								showKeywordError(ditty, currSignPoint,
+										currLine, line, pattKeyword);
+								break;
+							}
+
 							// Do not check for errors
-							// TODO: Use addMusicStringTokens here
-							readMusicString.append(" ");
-							readMusicString.append(subPatternMusicString);
+							ditty.addMusicStringTokens(readMusicString,
+									subPatternMusicString.toString(), false);
+
+							// Note that we are back on the original sign in the
+							// musicstring
+							ditty.addMusicStringTokens(readMusicString,
+									SIGN_START_TOKEN + currSignIDNum, false);
 						}
-
-						// Note that we are back on the original sign in the
-						// musicstring
-						ditty.addMusicStringTokens(readMusicString,
-								SIGN_START_TOKEN + currSignIDNum, false);
-
-						// // Ignore the contents of this sign; it has been
-						// // read by readPattern already.
-						// break;
-						// }
 
 					} else if (keyword.equals("goto")) {
 						// Goto keyword; disable normal focus flow
@@ -1789,7 +1775,7 @@ public class BlockSign extends BlockContainer {
 							FireworkEvent event = new FireworkEvent(
 									currSignPoint.x + 0.5f, currSignPoint.y
 											+ yOffset, currSignPoint.z + 0.5f,
-									fireworkItem);
+									fireworkItem, ditty.getDittyID());
 
 							// Add the event to the ditty
 							int eventID = ditty.addDittyEvent(event);
@@ -1906,6 +1892,7 @@ public class BlockSign extends BlockContainer {
 
 		MCDitty.stopMCSlowdown();
 
+		System.out.println(readMusicString);
 		return readMusicString;
 	}
 
