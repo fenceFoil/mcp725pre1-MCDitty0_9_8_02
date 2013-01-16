@@ -1891,8 +1891,6 @@ public class BlockSign extends BlockContainer {
 		}
 
 		MCDitty.stopMCSlowdown();
-
-		System.out.println(readMusicString);
 		return readMusicString;
 	}
 

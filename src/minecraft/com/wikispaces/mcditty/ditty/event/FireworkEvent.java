@@ -28,19 +28,18 @@ import net.minecraft.src.NBTTagCompound;
 
 public class FireworkEvent extends TimedDittyEvent {
 	private ItemStack fireworkItem;
-	
+
 	private double x;
 	private double y;
 	private double z;
-	
-	public FireworkEvent(double x, double y, double z, ItemStack fireworkItem, int dittyID) {
+
+	public FireworkEvent(double x, double y, double z, ItemStack fireworkItem,
+			int dittyID) {
 		super(dittyID);
 		setX(x);
 		setY(y);
 		setZ(z);
 		setFireworkItem(fireworkItem);
-		
-		System.out.println ("FireworkEvent Created! x="+x+" y="+y+" z="+z);
 	}
 
 	public double getX() {
