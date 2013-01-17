@@ -61,7 +61,7 @@ public class MCDittyConfig {
 	/**
 	 * Current MCDitty version.
 	 */
-	public static final String CURRENT_VERSION = "0.9.9.02";
+	public static final String CURRENT_VERSION = "0.9.9.03";
 	/**
 	 * Minecraft version that the mod is designed for.
 	 */
@@ -73,7 +73,7 @@ public class MCDittyConfig {
 	public static final int IGNORE_MC_VOLUME = 100;
 	public static final int USE_MUSIC_VOLUME = 200;
 	public static final int USE_SOUND_VOLUME = 0;
-	private static final String UPDATE_MESSAGE = "<MCDitty> New! Signs on noteblocks create lyrics.";
+	private static final String UPDATE_MESSAGE = "<MCDitty> New! MCDittyLand is now brimming with fireworks!";
 
 	/**
 	 * The custom soundfont selected by the player
