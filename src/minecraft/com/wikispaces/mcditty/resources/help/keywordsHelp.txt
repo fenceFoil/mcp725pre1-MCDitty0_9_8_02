@@ -8,13 +8,13 @@ Reset, SyncVoices, SyncWith
 §aTriggers:
 Area, Proximity, [Ditty]
 §aDitty:
-OneAtATime, IsDitty, SaveMIDI
+OneAtATime, IsDitty, SaveMIDI, Mute, PlayLast, MaxPlays
 §aEffects:
-Lyric, PreLyric, Emitter, SFX, SFXInst, SFXInst2, SFXInstOff, PlayMIDI, Mute
+Lyric, PreLyric, Emitter, SFX, SFXInst, SFXInst2, SFXInstOff, PlayMIDI, Firework
 §aMisc:
 OneLine
 §aExperimental:
 Disco, NewBot
 
 §bNew:
-SFXInst2, Patt, [Ditty]
+SFXInst2, Patt, [Ditty], PlayLast, MaxPlays, Firework
