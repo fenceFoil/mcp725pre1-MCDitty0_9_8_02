@@ -487,7 +487,7 @@ public class BlockSign extends BlockContainer {
 
 		Thread t = new PlayDittyFromSignWorkThread(world, x, y, z,
 				oneAtATimeOn, false, null);
-		t.setPriority(Thread.MIN_PRIORITY);
+		//t.setPriority(Thread.MIN_PRIORITY);
 		t.start();
 	}
 

@@ -279,7 +279,7 @@ public class MCDitty {
 
 	private static final GuiMCDittyVideoMenuButton GUI_MCDITTY_VIDEO_BUTTON = new GuiMCDittyVideoMenuButton(
 			null);
-	
+
 	private static FireworkExploder fireworkExploder = new FireworkExploder();
 
 	// Achivements
@@ -664,7 +664,7 @@ public class MCDitty {
 				handleMouseInput(minecraft);
 			}
 		}
-		
+
 		// Update particle stuff
 		fireworkExploder.update(minecraft.theWorld);
 
@@ -1095,35 +1095,39 @@ public class MCDitty {
 					TileEntity signEntity = GetMinecraft.instance().theWorld
 							.getBlockTileEntity(bb.getPadX(), bb.getPadY(),
 									bb.getPadZ());
-					TileEntitySign signTileEntity = (TileEntitySign) signEntity;
-					if (signTileEntity != null) {
-						for (String s : signTileEntity.signText) {
-							// Check this line for the keyword proxpad
-							ParsedKeyword candidateKeyword = SignParser
-									.parseKeyword(s);
-							if (!(candidateKeyword instanceof ProxPadKeyword)) {
-								// If there really appears to be no proxpad,
-								// continue
-								continue;
-							}
-
-							ProxPadKeyword k = (ProxPadKeyword) candidateKeyword;
-							// Is proxpad keyword: is the keyword for this
-							// particular proxpad?
-							if (k.getHeight() == bb.getHeight()
-									&& k.getWidth() == bb.getWidth()
-									&& k.getLength() == bb.getDepth()) {
-								// Start tune from this proximity sign
-								if (MCDittyConfig.proxPadsEnabled) {
-									BlockSign.playDittyFromSigns(
-											GetMinecraft.instance().theWorld,
-											bb.getPadX(), bb.getPadY(),
-											bb.getPadZ(), true);
+					if (signEntity instanceof TileEntitySign) {
+						TileEntitySign signTileEntity = (TileEntitySign) signEntity;
+						if (signTileEntity != null) {
+							for (String s : signTileEntity.signText) {
+								// Check this line for the keyword proxpad
+								ParsedKeyword candidateKeyword = SignParser
+										.parseKeyword(s);
+								if (!(candidateKeyword instanceof ProxPadKeyword)) {
+									// If there really appears to be no proxpad,
+									// continue
+									continue;
 								}
-								proxPadValid = true;
-								break;
-							} else {
 
+								ProxPadKeyword k = (ProxPadKeyword) candidateKeyword;
+								// Is proxpad keyword: is the keyword for this
+								// particular proxpad?
+								if (k.getHeight() == bb.getHeight()
+										&& k.getWidth() == bb.getWidth()
+										&& k.getLength() == bb.getDepth()) {
+									// Start tune from this proximity sign
+									if (MCDittyConfig.proxPadsEnabled) {
+										BlockSign
+												.playDittyFromSigns(
+														GetMinecraft.instance().theWorld,
+														bb.getPadX(),
+														bb.getPadY(),
+														bb.getPadZ(), true);
+									}
+									proxPadValid = true;
+									break;
+								} else {
+
+								}
 							}
 						}
 					}
@@ -1612,7 +1616,8 @@ public class MCDitty {
 					.getFireworkItem().stackTagCompound
 					.getCompoundTag("Fireworks");
 			fireworkExploder.add(fireworkEntity,
-					((FireworkEvent) nextEventToFire).getY(), tag.getByte("Flight"));
+					((FireworkEvent) nextEventToFire).getY(),
+					tag.getByte("Flight"));
 		} else if (nextEventToFire instanceof DittyEndedEvent) {
 			// System.out.println ("Time to wrap up.");
 			// Note that this ditty has ended
