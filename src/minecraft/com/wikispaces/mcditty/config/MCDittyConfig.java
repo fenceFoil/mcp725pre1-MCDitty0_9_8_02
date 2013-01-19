@@ -61,7 +61,7 @@ public class MCDittyConfig {
 	/**
 	 * Current MCDitty version.
 	 */
-	public static final String CURRENT_VERSION = "0.9.9.03";
+	public static final String CURRENT_VERSION = "0.9.9.04";
 	/**
 	 * Minecraft version that the mod is designed for.
 	 */
@@ -378,7 +378,8 @@ public class MCDittyConfig {
 	 * 
 	 * @return true if config file is up to date, false if obsolete
 	 */
-	private static boolean loadSettings() {
+	private static boolean loadSettings() {		
+		// Load keyboard settings
 		MCDitty.keypressHandler.loadConfig();
 
 		// Load XML Config
