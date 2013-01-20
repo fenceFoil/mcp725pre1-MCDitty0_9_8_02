@@ -46,7 +46,7 @@ public class UpdateResourcesThread extends Thread {
 
 	@Override
 	public synchronized void run() {
-		// System.out.println("Updating resources");
+		System.out.println("Updating MCDitty Resources");
 
 		// Download the properties for resources
 		Properties prop = MCDittyResourceManager
@@ -80,6 +80,8 @@ public class UpdateResourcesThread extends Thread {
 				}
 			} else {
 				// No more versions; latest found for sure
+				// Since this one did not exist, backtrack 1
+				resourcesVersion--;
 				break;
 			}
 		}
@@ -102,7 +104,7 @@ public class UpdateResourcesThread extends Thread {
 
 		// Check to make sure this is not a duplicate download
 		if (MCDittyConfig.getInt("resources.lastZipDownloaded") == resourcesVersion) {
-			// System.out.println ("MCDitty: Resources already up-to-date.");
+			//System.out.println ("MCDitty: Resources already up-to-date.");
 			return;
 		}
 
