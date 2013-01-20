@@ -23,11 +23,7 @@
  */
 package com.wikispaces.mcditty.gui;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
@@ -35,10 +31,9 @@ import net.minecraft.src.GuiScreen;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-import com.wikispaces.mcditty.GetMinecraft;
-import com.wikispaces.mcditty.TutorialWorldDownloader;
 import com.wikispaces.mcditty.config.MCDittyConfig;
 import com.wikispaces.mcditty.resources.MCDittyResourceManager;
+import com.wikispaces.mcditty.resources.TutorialWorldDownloader;
 
 /**
  * @author William

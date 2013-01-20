@@ -26,8 +26,6 @@ package com.wikispaces.mcditty;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -108,6 +106,7 @@ import com.wikispaces.mcditty.particle.BubbleParticleRequest;
 import com.wikispaces.mcditty.particle.HeartParticleRequest;
 import com.wikispaces.mcditty.particle.NoteParticleRequest;
 import com.wikispaces.mcditty.particle.ParticleRequest;
+import com.wikispaces.mcditty.resources.UpdateResourcesThread;
 import com.wikispaces.mcditty.sfx.SFXManager;
 import com.wikispaces.mcditty.signs.Comment;
 import com.wikispaces.mcditty.signs.SignLine;
@@ -482,10 +481,7 @@ public class MCDitty {
 
 		// Load the config file
 		MCDittyConfig.checkConfig(null);
-
-		// Start downloading resources, if required
-		// MCDittyResourceDownloaderThread t = new MCDittyResou
-
+		
 		// System.out.println("MCDitty Load: JFugue: "
 		// + jfugueLoadTime + ", SFX: "
 		// + sfxLoadTime+", SignRendererTrig: "+trigLoadTime);
@@ -582,6 +578,10 @@ public class MCDitty {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+		// Register any sound resources
+		registerSoundResources();
+
 	}
 
 	/**
@@ -2144,5 +2144,24 @@ public class MCDitty {
 			noteTile.getWorldObj().spawnEntityInWorld(
 					new EntityNoteBlockTooltip(noteTile));
 		}
+	}
+
+	public static void updateResources() {
+		UpdateResourcesThread t = new UpdateResourcesThread();
+		t.start();
+	}
+
+	public static void registerSoundResources() {
+		// Iterate through resources directory files, and register any .ogg sounds
+		File resourcesDir = MCDittyConfig.resourcesDir;
+		for (File f:resourcesDir.listFiles()) {
+			if (f.getName().endsWith(".ogg")) {
+				// Register as a sound
+				GetMinecraft.instance().sndManager.addSound(f.getName(), f);
+			}
+		}
+		
+		// Test
+		GetMinecraft.instance().sndManager.playSoundFX("harmonica", 1f, 1f);
 	}
 }

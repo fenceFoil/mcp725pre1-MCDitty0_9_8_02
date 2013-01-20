@@ -28,21 +28,17 @@ import java.io.IOException;
 import java.net.URI;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.BlockSign;
 import net.minecraft.src.EnumOS;
 import net.minecraft.src.GuiButton;
-import net.minecraft.src.GuiMainMenu;
 import net.minecraft.src.GuiScreen;
-import net.minecraft.src.StatList;
-import net.minecraft.src.WorldClient;
 
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import com.wikispaces.mcditty.GetMinecraft;
-import com.wikispaces.mcditty.TutorialWorldDownloader;
 import com.wikispaces.mcditty.config.MCDittyConfig;
+import com.wikispaces.mcditty.resources.TutorialWorldDownloader;
 
 public class GuiMCDitty extends GuiScreen {
 

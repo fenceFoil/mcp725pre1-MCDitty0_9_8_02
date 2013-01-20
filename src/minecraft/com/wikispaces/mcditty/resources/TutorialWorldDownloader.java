@@ -22,11 +22,10 @@
  * 
  */
 
-package com.wikispaces.mcditty;
+package com.wikispaces.mcditty.resources;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,11 +36,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import com.wikispaces.mcditty.config.MCDittyConfig;
-import com.wikispaces.mcditty.signs.Comment;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.BlockSign;
@@ -49,9 +43,17 @@ import net.minecraft.src.GuiMainMenu;
 import net.minecraft.src.StatList;
 import net.minecraft.src.WorldClient;
 
+import com.wikispaces.mcditty.CompareVersion;
+import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.MCDitty;
+import com.wikispaces.mcditty.Point3D;
+import com.wikispaces.mcditty.config.MCDittyConfig;
+import com.wikispaces.mcditty.signs.Comment;
+
 /**
- * Manages checking the version of and downloading MCDittyLand from the internet.
- *
+ * Manages checking the version of and downloading MCDittyLand from the
+ * internet.
+ * 
  */
 public class TutorialWorldDownloader {
 
@@ -64,8 +66,7 @@ public class TutorialWorldDownloader {
 	 * Attempts to retrieve the current version of the MCDittyLand from a file
 	 * on the internet.
 	 * 
-	 * Note: If it successfully downloads the current version number, it will
-	 * remember it and not actually check the internet on future calls.
+	 * Note: Version number is cached.
 	 * 
 	 * @return If successful, the version from the file. If not, it will return
 	 *         a string that starts with "§c"
@@ -332,16 +333,15 @@ public class TutorialWorldDownloader {
 		if (!quiet) {
 			BlockSign.showTextAsLyricNow("§aDownload successful!");
 
-
 			BlockSign.showTextAsLyricNow("§aExtracting...");
 		}
 		// TOOD: Extract, etc.
 		File saveWorldDir = new File(GetMinecraft.instance().getMinecraftDir()
-				+ File.separator + "saves" + File.separator);
+				+ File.separator + "saves");
 
-		extractZipFiles(newVersionFile.getPath(), saveWorldDir.getPath()
-				+ File.separator);
-		
+		MCDittyResourceManager.extractZipFiles(newVersionFile.getPath(),
+				saveWorldDir.getPath());
+
 		if (!quiet) {
 			BlockSign.showTextAsLyricNow("§aMCDittyLand saved.");
 		}
@@ -351,7 +351,7 @@ public class TutorialWorldDownloader {
 
 		// Note the version downloaded
 		MCDittyConfig.lastTutorialVersionDownloaded = downloadExampleWorldVersion(MCDittyConfig.MC_CURRENT_VERSION);
-		
+
 		try {
 			MCDittyConfig.flushAll();
 		} catch (IOException e) {
@@ -363,67 +363,22 @@ public class TutorialWorldDownloader {
 	}
 
 	/**
-	 * Copies the files in a zip file to the given directory in the filesystem.
-	 * 
-	 * @param zipFileName
-	 * @param destName
-	 */
-	public static void extractZipFiles(String zipFileName, String destName) {
-		try {
-			byte[] buf = new byte[1024];
-			ZipInputStream zipInputStream = null;
-			ZipEntry currZipEntry;
-			zipInputStream = new ZipInputStream(
-					new FileInputStream(zipFileName));
-			currZipEntry = zipInputStream.getNextEntry();
-
-			while (currZipEntry != null) {
-				// for each entry to be extracted
-				String entryName = currZipEntry.getName();
-				System.out.println("Extracting MCDittyLand ZIP Entry: "
-						+ entryName);
-
-				File newFile = new File(destName + entryName);
-				if (currZipEntry.isDirectory()) {
-					newFile.mkdirs();
-				} else {
-					newFile.getParentFile().mkdirs();
-					FileOutputStream fileOutputStream = new FileOutputStream(
-							newFile);
-					int n;
-					while ((n = zipInputStream.read(buf, 0, 1024)) > -1)
-						fileOutputStream.write(buf, 0, n);
-
-					fileOutputStream.close();
-				}
-
-				zipInputStream.closeEntry();
-				currZipEntry = zipInputStream.getNextEntry();
-			}
-
-			zipInputStream.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * 
 	 * @return true if an updated version has been found since the last time the
 	 *         tutorial world was downloaded
 	 */
 	public static boolean checkForUpdates() {
 		String newVersion = downloadExampleWorldVersion(MCDittyConfig.MC_CURRENT_VERSION);
-		
+
 		if (newVersion == null) {
 			return false;
 		}
-		
+
 		// If there was an error, return early
 		if (newVersion.startsWith("§c")) {
 			return false;
 		}
-		
+
 		BlockSign
 				.simpleLog("TutorialWorldDownloader.checkForUpdates: downloaded version number "
 						+ newVersion);
@@ -470,7 +425,7 @@ public class TutorialWorldDownloader {
 
 		final boolean beQuiet = exitToMainMenu;
 		Thread t = new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				// Be quiet if exiting to main menu

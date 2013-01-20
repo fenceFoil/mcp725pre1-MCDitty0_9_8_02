@@ -73,7 +73,7 @@ public class MCDittyConfig {
 	public static final int IGNORE_MC_VOLUME = 100;
 	public static final int USE_MUSIC_VOLUME = 200;
 	public static final int USE_SOUND_VOLUME = 0;
-	private static final String UPDATE_MESSAGE = "<MCDitty> New! MCDittyLand is now brimming with fireworks!";
+	private static final String UPDATE_MESSAGE = "<MCDitty> New! Putting netherrack near a noteblock = Lower notes!";
 
 	/**
 	 * The custom soundfont selected by the player
@@ -209,13 +209,19 @@ public class MCDittyConfig {
 			+ "[gBuy] [gSell] [iBuy] [iSell] [iTrade] [Class] [iBuyXP] [iSellXP] [iSlot] "
 			+ "[Day] [Night] [Rain] [ClearSkies] [Repair] [Heal] [Enchant] [Disenchant] "
 			+ "[TpToOwner] [Command]";
-	public static float signPlayingHighlightSlider = 0.5f;
+	public static float signPlayingHighlightSlider = 0.45f;
 	public static boolean showErrorsOnSigns = true;
 
 	/**
 	 * Whether to act as though MCDitty isn't there
 	 */
 	public static boolean mcdittyOff = false;
+	public static File resourcesDir = new File(Minecraft.getMinecraftDir()
+			.getPath()
+			+ File.separator
+			+ "MCDitty"
+			+ File.separator
+			+ "resources");
 
 	/**
 	 * Note: Strips newlines, leaving spaces
@@ -340,16 +346,24 @@ public class MCDittyConfig {
 				try {
 					flushAll();
 					BlockSign.writeChatMessage(world,
-							"§aMCDitty updated to version "
-									+ CURRENT_VERSION + "!");
+							"§aMCDitty updated to version " + CURRENT_VERSION
+									+ "!");
 					if (UPDATE_MESSAGE != null) {
 						BlockSign.writeChatMessage(world, UPDATE_MESSAGE);
 					}
+					// Update resources
+					MCDitty.updateResources();
 				} catch (IOException e) {
 					// TODO Tell user
 					e.printStackTrace();
 				}
 
+			} else {
+				// If up to date, and resources have failed to load during the
+				// last update, download resources now
+				if (getBoolean("resources.missing")) {
+					MCDitty.updateResources();
+				}
 			}
 
 			// Load no play tokens
@@ -378,7 +392,7 @@ public class MCDittyConfig {
 	 * 
 	 * @return true if config file is up to date, false if obsolete
 	 */
-	private static boolean loadSettings() {		
+	private static boolean loadSettings() {
 		// Load keyboard settings
 		MCDitty.keypressHandler.loadConfig();
 
@@ -389,13 +403,13 @@ public class MCDittyConfig {
 			xmlIn.close();
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
-			//e1.printStackTrace();
+			// e1.printStackTrace();
 		} catch (InvalidPropertiesFormatException e1) {
 			// TODO Auto-generated catch block
-			//e1.printStackTrace();
+			// e1.printStackTrace();
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			//e1.printStackTrace();
+			// e1.printStackTrace();
 		}
 
 		File fileToLoad = configFile;
@@ -1007,7 +1021,8 @@ public class MCDittyConfig {
 	}
 
 	public static void incrementMCDittyOffState() {
-		if (mcdittyOff && getBoolean("noteblock.mute") && getBoolean("noteblock.signsDisabled")) {
+		if (mcdittyOff && getBoolean("noteblock.mute")
+				&& getBoolean("noteblock.signsDisabled")) {
 			// to MCDitty On
 			setBoolean("noteblock.signsDisabled", false);
 			setBoolean("noteblock.mute", false);
@@ -1015,14 +1030,14 @@ public class MCDittyConfig {
 		} else if (mcdittyOff && getBoolean("noteblock.signsDisabled")) {
 			// to mcditty off, mute noteblocks
 			setBoolean("noteblock.mute", true);
-		} else if (getBoolean ("noteblock.signsDisabled")) {
+		} else if (getBoolean("noteblock.signsDisabled")) {
 			// to mcditty off
 			mcdittyOff = true;
 		} else {
 			// To noteblock signs off
 			setBoolean("noteblock.signsDisabled", true);
 		}
-		
+
 		try {
 			flushAll();
 		} catch (IOException e) {
@@ -1043,23 +1058,24 @@ public class MCDittyConfig {
 	public static void setBoolean(String key, boolean value) {
 		properties.setProperty(key, Boolean.toString(value));
 	}
-	
+
 	/**
 	 * 
-	 * @param key value or null if none is defined
+	 * @param key
+	 *            value or null if none is defined
 	 * @return
 	 */
-	public static String getString (String key) {
+	public static String getString(String key) {
 		return properties.getProperty(key);
 	}
-	
+
 	/**
 	 * 
 	 * @param key
 	 * @param defaultValue
 	 * @return value or default if none is defined
 	 */
-	public static String getStringWithDefault (String key, String defaultValue) {
+	public static String getStringWithDefault(String key, String defaultValue) {
 		String value = getString(key);
 		if (value == null) {
 			return defaultValue;
@@ -1067,9 +1083,29 @@ public class MCDittyConfig {
 			return value;
 		}
 	}
-	
-	public static void setString (String key, String value) {
+
+	public static void setString(String key, String value) {
 		properties.setProperty(key, value);
+	}
+
+	public static void setInt(String key, int value) {
+		properties.setProperty(key, Integer.toString(value));
+	}
+
+	/**
+	 * 
+	 * @param key
+	 * @return null if there was a formatting error, 0 if no key was defined
+	 */
+	public static Integer getInt(String key) {
+		String value = properties.getProperty(key, "0");
+		int keyValue = 0;
+		try {
+			keyValue = Integer.parseInt(value);
+		} catch (Exception e) {
+			return null;
+		}
+		return keyValue;
 	}
 
 }
