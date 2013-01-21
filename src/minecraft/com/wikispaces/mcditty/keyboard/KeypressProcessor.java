@@ -182,8 +182,8 @@ public class KeypressProcessor {
 				e.printStackTrace();
 			}
 			BlockSign.writeChatMessage(GetMinecraft.instance().theWorld,
-					(MCDittyConfig.showErrors) ? "MCDitty Silent Mode: Off"
-							: "MCDitty Silent Mode: On");
+					(MCDittyConfig.showErrors) ? "MCDitty Errors: Off"
+							: "MCDitty Errors: On");
 		} else if (action.equalsIgnoreCase("playBook")) {
 			// Play currently held book
 			BookPlayer.playHeldBook(GetMinecraft.instance().thePlayer);
