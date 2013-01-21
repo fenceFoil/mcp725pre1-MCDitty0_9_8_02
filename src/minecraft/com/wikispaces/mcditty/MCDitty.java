@@ -481,7 +481,7 @@ public class MCDitty {
 
 		// Load the config file
 		MCDittyConfig.checkConfig(null);
-		
+
 		// System.out.println("MCDitty Load: JFugue: "
 		// + jfugueLoadTime + ", SFX: "
 		// + sfxLoadTime+", SignRendererTrig: "+trigLoadTime);
@@ -2150,18 +2150,29 @@ public class MCDitty {
 		UpdateResourcesThread t = new UpdateResourcesThread();
 		t.start();
 	}
-
+	
 	public static void registerSoundResources() {
-		// Iterate through resources directory files, and register any .ogg sounds
-		File resourcesDir = MCDittyConfig.resourcesDir;
-		for (File f:resourcesDir.listFiles()) {
-			if (f.getName().endsWith(".ogg")) {
-				// Register as a sound
-				GetMinecraft.instance().sndManager.addSound(f.getName(), f);
+		registerSoundResources(MCDittyConfig.resourcesDir, "");
+	}
+
+	private static void registerSoundResources(File resourcesDir, String prefix) {
+		// Iterate through resources directory files, and register any .ogg
+		// sounds
+		if (resourcesDir != null && resourcesDir.exists()
+				&& resourcesDir.listFiles() != null) {
+			for (File f : resourcesDir.listFiles()) {
+				if (f.getName().endsWith(".ogg")) {
+					// Register as a sound
+					String soundName = prefix+f.getName();
+					//System.out.println ("Registering sound effect: "+soundName);
+					GetMinecraft.instance().sndManager.addSound(soundName, f);
+				} else if (f.isDirectory()) {
+					registerSoundResources(f, f.getName()+"/");
+				}
 			}
 		}
-		
-		// Test
-		GetMinecraft.instance().sndManager.playSoundFX("harmonica", 1f, 1f);
+//
+//		// Test
+//		GetMinecraft.instance().sndManager.playSoundFX("note.harmonica", 1f, 1f);
 	}
 }

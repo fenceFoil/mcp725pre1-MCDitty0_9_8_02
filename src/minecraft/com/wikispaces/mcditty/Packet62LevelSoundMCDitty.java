@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 
 import com.wikispaces.mcditty.config.MCDittyConfig;
+import com.wikispaces.mcditty.noteblocks.BlockNoteMCDitty;
 
 import net.minecraft.src.Packet62LevelSound;
 
@@ -80,21 +81,34 @@ public class Packet62LevelSoundMCDitty extends Packet62LevelSound {
 	public void readPacketData(DataInputStream par1DataInputStream)
 			throws IOException {
 		super.readPacketData(par1DataInputStream);
-		// System.out.println("Packet62LevelSoundMCDitty packet read: "
-		// + getSoundName());
+
+		// Handle noteblock muting
 		if (MCDittyConfig.getBoolean("noteblock.mute")) {
 			if (getSoundName().startsWith("note.")) {
-				try {
-					GetMinecraft.setUniqueTypedFieldFromClass(
-							Packet62LevelSound.class, String.class, this, "");
-				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				setNoteNameWithReflection("");
 			}
+		} else if (getSoundName().startsWith("note.")) {
+			// Handle noteblock octave adjustment
+			int adjust = BlockNoteMCDitty.getOctaveAdjust(
+					(int) (getEffectX() - 0.5), (int) (getEffectY() - 0.5),
+					(int) (getEffectZ() - 0.5));
+			if (adjust != 0) {
+				String newSoundName = getSoundName() + "_" + adjust + "o";
+				setNoteNameWithReflection(newSoundName);
+			}
+		}
+	}
+
+	private void setNoteNameWithReflection(String value) {
+		try {
+			GetMinecraft.setUniqueTypedFieldFromClass(Packet62LevelSound.class,
+					String.class, this, value);
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	//
