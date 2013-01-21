@@ -73,7 +73,7 @@ public class MCDittyConfig {
 	public static final int IGNORE_MC_VOLUME = 100;
 	public static final int USE_MUSIC_VOLUME = 200;
 	public static final int USE_SOUND_VOLUME = 0;
-	private static final String UPDATE_MESSAGE = "<MCDitty> New! Putting netherrack near a noteblock = Lower notes!";
+	private static final String UPDATE_MESSAGE = "<MCDitty> New! Put netherrack or End stone 2 blocks under a noteblock to change octave!";
 
 	/**
 	 * The custom soundfont selected by the player

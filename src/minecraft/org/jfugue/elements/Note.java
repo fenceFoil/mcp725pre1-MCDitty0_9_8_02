@@ -540,6 +540,9 @@ public class Note extends AbstractNote {
         int note = noteValue % 12;
         int octave = noteValue / 12;
         StringBuilder buddy = new StringBuilder();
+        // MCDitty: Range check
+        if (note < 0) note = 0;
+        if (note > 127) note = 127;
         buddy.append(NOTES[note]);
         buddy.append(octave);
         return buddy.toString();

@@ -164,7 +164,8 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 			}
 			screen.drawRect(startX - 5, y - 5, screen.width / 2
 					+ getTotalWidth() / 2 + 5, y
-					+ (rowHeight * (pianoKeys[0].length-1))+PianoKey.TALLEST_KEY_HEIGHT + 5, bgColor);
+					+ (rowHeight * (pianoKeys[0].length - 1))
+					+ PianoKey.TALLEST_KEY_HEIGHT + 5, bgColor);
 
 			int currY = y;
 			for (int j = 0; j < keyboardHeight; j++) {
@@ -423,7 +424,9 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 				EntityNoteBlockTooltip.instrumentZeroNotes.get(BlockNoteMCDitty
 						.getNoteTypeForBlock(mc.theWorld, tile.xCoord,
 								tile.yCoord, tile.zCoord))
-						+ noteModifier, 70);
+						+ noteModifier
+						+ (BlockNoteMCDitty.getOctaveAdjust(tile.xCoord,
+								tile.yCoord, tile.zCoord) * 12), 70);
 		k.setSelectedKey(selectedX, selectedY);
 		keyboard = k;
 	}
@@ -438,8 +441,8 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 		// drawDefaultBackground();
 
 		// Draw label at top of screen
-//		drawCenteredString(fontRenderer, "Tuning Noteblock", width / 2, 15,
-//				0xffffff);
+		// drawCenteredString(fontRenderer, "Tuning Noteblock", width / 2, 15,
+		// 0xffffff);
 
 		// Draw instrument type
 		drawCenteredString(

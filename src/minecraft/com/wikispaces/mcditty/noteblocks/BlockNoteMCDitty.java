@@ -326,9 +326,17 @@ public class BlockNoteMCDitty extends BlockNote {
 				(double) (noteblockValueToSimulate - 12) / 12.0D);
 		String noteType = getNoteTypeForBlock(tile.getWorldObj(), tile.xCoord,
 				tile.yCoord, tile.zCoord);
-		tile.getWorldObj().playSound((double) tile.xCoord + 0.5D,
-				(double) tile.yCoord + 0.5D, (double) tile.zCoord + 0.5D,
-				"note." + noteType, 3.0F, pitchMultiplier, true);
+		int octaveAdjust = getOctaveAdjust(tile.xCoord, tile.yCoord,
+				tile.zCoord);
+
+		String soundName = "note." + noteType;
+		if (octaveAdjust != 0) {
+			soundName += "_" + octaveAdjust + "o";
+		}
+		// System.out.println (soundName);
+
+		GetMinecraft.instance().sndManager.playSoundFX(soundName, 5.0F,
+				pitchMultiplier);
 	}
 
 	/**
@@ -382,4 +390,47 @@ public class BlockNoteMCDitty extends BlockNote {
 	public static String getScreenName(String instrumentName) {
 		return screenNames.get(instrumentName);
 	}
+
+	public static int getOctaveAdjust(int x, int y, int z) {
+		int adjust = 0;
+
+		// Check blocks adjacent to instrument block
+		adjust += getBlockOctaveAdjust(x + 1, y - 1, z);
+		adjust += getBlockOctaveAdjust(x - 1, y - 1, z);
+		adjust += getBlockOctaveAdjust(x, y - 1, z + 1);
+		adjust += getBlockOctaveAdjust(x, y - 1, z - 1);
+
+		// Check block under instrument block
+		adjust += getBlockOctaveAdjust(x, y - 2, z);
+
+		// Range check
+		if (adjust < -2) {
+			adjust = -2;
+		} else if (adjust > 2) {
+			adjust = 2;
+		}
+
+		return adjust;
+	}
+
+	private static int getBlockOctaveAdjust(int x, int y, int z) {
+		int blockID = GetMinecraft.instance().theWorld.getBlockId(x, y, z);
+		// System.out.println (blockID);
+		if (blockID == Block.netherrack.blockID) {
+			return -1;
+		} else if (blockID == Block.whiteStone.blockID) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+
+	@Override
+	public void onBlockDestroyedByExplosion(World par1World, int par2,
+			int par3, int par4) {
+		for (int i = 0; i < 10; i++) {
+			dropBlockAsItem(par1World, par2, par3, par4, blockID, 0);
+		}
+	}
+
 }
