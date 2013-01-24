@@ -39,7 +39,7 @@ import net.minecraft.src.EnumOS;
 
 import org.lwjgl.input.Keyboard;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.books.BookPlayer;
 import com.wikispaces.mcditty.config.MCDittyConfig;
@@ -51,7 +51,7 @@ public class KeypressProcessor {
 	private LinkedList<KeyBinding> bindings = (LinkedList<KeyBinding>) DEFAULT_BINDINGS
 			.clone();
 
-	private File configFile = new File(GetMinecraft.instance()
+	private File configFile = new File(Minecraft.getMinecraft()
 			.getMinecraftDir().getPath()
 			+ File.separator + "MCDitty" + File.separator + "keys.txt");
 
@@ -96,7 +96,7 @@ public class KeypressProcessor {
 			// block is called, they are used here instead in setting up the
 			// tune noteblock key
 			if (b.getMainKey() == TUNE_NOTEBLOCK_KEY_UNSET) {
-				b.setMainKey(GetMinecraft.instance().gameSettings.keyBindForward.keyCode);
+				b.setMainKey(Minecraft.getMinecraft().gameSettings.keyBindForward.keyCode);
 				writeConfig();
 			}
 
@@ -170,7 +170,7 @@ public class KeypressProcessor {
 		} else if (action.equalsIgnoreCase("menu")) {
 			// Show menu
 			GuiMCDitty guiToOpen = new GuiMCDitty();
-			GetMinecraft.instance().displayGuiScreen(guiToOpen);
+			Minecraft.getMinecraft().displayGuiScreen(guiToOpen);
 		} else if (action.equalsIgnoreCase("showErrors")) {
 			// Toggle showing errors and blinking signs
 			MCDittyConfig.showErrors = !MCDittyConfig.showErrors;
@@ -181,12 +181,12 @@ public class KeypressProcessor {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			BlockSign.writeChatMessage(GetMinecraft.instance().theWorld,
+			BlockSign.writeChatMessage(Minecraft.getMinecraft().theWorld,
 					(MCDittyConfig.showErrors) ? "MCDitty Errors: Off"
 							: "MCDitty Errors: On");
 		} else if (action.equalsIgnoreCase("playBook")) {
 			// Play currently held book
-			BookPlayer.playHeldBook(GetMinecraft.instance().thePlayer);
+			BookPlayer.playHeldBook(Minecraft.getMinecraft().thePlayer);
 		} else if (action.equalsIgnoreCase("mcdittyOff")) {
 			// Toggle MCDitty on and off
 			MCDittyConfig.incrementMCDittyOffState();
@@ -196,13 +196,13 @@ public class KeypressProcessor {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			BlockSign.writeChatMessage(GetMinecraft.instance().theWorld,
+			BlockSign.writeChatMessage(Minecraft.getMinecraft().theWorld,
 					MCDittyConfig.getMCDittyTurnedOffText());
 		} else if (action.equalsIgnoreCase("tuneNoteblock")) {
 			// Show tune noteblock dialog
 
 			// First, check to see if player is looking at a noteblock
-			Minecraft minecraft = GetMinecraft.instance();
+			Minecraft minecraft = Minecraft.getMinecraft();
 			if (minecraft.objectMouseOver != null) {
 				Point3D hoverPoint = new Point3D(
 						minecraft.objectMouseOver.blockX,

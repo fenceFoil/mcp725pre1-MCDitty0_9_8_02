@@ -23,6 +23,7 @@
  */
 package com.wikispaces.mcditty;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.BlockSign;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityClientPlayerMP;
@@ -51,11 +52,11 @@ public class MCDittyUpdateTickHookEntity extends Entity {
 		super.onUpdate();
 		
 		// Call the hook method in MCDitty
-		BlockSign.mcDittyMod.onTick(GetMinecraft.timer().elapsedPartialTicks,
-				GetMinecraft.instance());
+		BlockSign.mcDittyMod.onTick(Finder.getMCTimer().elapsedPartialTicks,
+				Minecraft.getMinecraft());
 		
 		// Follow player
-		EntityClientPlayerMP player = GetMinecraft.instance().thePlayer;
+		EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
 		posX = player.posX;
 		posY = player.posY;
 		posZ = player.posZ;

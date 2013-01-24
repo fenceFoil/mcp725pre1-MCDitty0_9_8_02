@@ -33,7 +33,7 @@ import java.io.IOException;
 
 import net.minecraft.client.Minecraft;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.config.MCDittyConfig;

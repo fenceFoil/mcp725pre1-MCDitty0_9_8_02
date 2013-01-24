@@ -24,15 +24,16 @@
  */
 package com.wikispaces.mcditty.bot;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.EntityVillager;
 import net.minecraft.src.World;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 
 public class EntityVillagerBot extends EntityVillager {
 
 	private AnimatedValue headPitch = new AnimatedValue(0,
-			GetMinecraft.instance().theWorld.getTotalWorldTime());
+			Minecraft.getMinecraft().theWorld.getTotalWorldTime());
 
 	public EntityVillagerBot(World par1World) {
 		super(par1World);

@@ -27,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.ChatAllowedCharacters;
 import net.minecraft.src.Item;
 import net.minecraft.src.ItemStack;
@@ -36,7 +37,7 @@ import net.minecraft.src.NBTTagString;
 import net.minecraft.src.Packet;
 import net.minecraft.src.Packet250CustomPayload;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.config.MCDittyConfig;
 
 /**
@@ -442,7 +443,7 @@ public class WrappedBook {
 	 */
 	private boolean isPageValidLengthFor1_3_2(String pageText) {
 		// 118 is width of area of text here
-		int textHeightOnPage = GetMinecraft.instance().fontRenderer
+		int textHeightOnPage = Minecraft.getMinecraft().fontRenderer
 				.splitStringWidth(pageText + "\u00a70_", 118);
 
 		// 118 is height of text area here
@@ -508,8 +509,7 @@ public class WrappedBook {
 
 				try {
 					Packet.writeItemStack(this.bookItem, dataOut);
-					GetMinecraft
-							.instance()
+					Minecraft.getMinecraft()
 							.getSendQueue()
 							.addToSendQueue(
 									new Packet250CustomPayload(

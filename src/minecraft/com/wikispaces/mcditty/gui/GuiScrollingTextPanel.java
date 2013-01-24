@@ -26,13 +26,14 @@ package com.wikispaces.mcditty.gui;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.Gui;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 
 /**
  * A widget that renders a scrollable text pane (uneditable) in a Minecraft gui.
@@ -82,13 +83,13 @@ public class GuiScrollingTextPanel extends Gui {
 			// Draw background
 
 			if (textureBackground) {
-				int bgTextureNumber = GetMinecraft.instance().renderEngine
+				int bgTextureNumber = Minecraft.getMinecraft().renderEngine
 						.getTexture("/com/wikispaces/mcditty/resources/textures/signBG2.png");
 				int currBGTextureY = y;
 				// Tile background texture vertically
 				while (currBGTextureY - y < height) {
 					GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.5f);
-					GetMinecraft.instance().renderEngine
+					Minecraft.getMinecraft().renderEngine
 							.bindTexture(bgTextureNumber);
 					GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.5f);
 

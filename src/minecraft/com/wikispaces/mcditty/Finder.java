@@ -32,49 +32,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.src.Timer;
 
 /**
- * Methods to get the current Minecraft instance and other private Minecraft
- * fields and methods using reflection and good old-fashioned deduction.
- * Necessary because fields and methods cannot be easily accessed by reflection;
- * when reobfuscated, their names are reduced to junk, so you need to use logic
- * like "get the only boolean field in this class" instead of "get isLit", which
- * this class provides.
+ * Methods to get private Minecraft fields and methods using reflection and good
+ * old-fashioned deduction. Necessary because fields and methods cannot be
+ * easily accessed by reflection; when reobfuscated, their names are reduced to
+ * junk, so you need to use logic like
+ * "get the only boolean field in this class" instead of "get isLit".
  */
-public class GetMinecraft {
-	private static Minecraft lastReturn = null;
-
-	/**
-	 * Gets the current Minecraft instance.
-	 * 
-	 * @return
-	 */
-	public static Minecraft instance() {
-		if (lastReturn == null) {
-			Minecraft mc = null;
-			try {
-				Field[] minecraftFields = Minecraft.class.getDeclaredFields();
-				Field minecraftField = null;
-				for (Field f : minecraftFields) {
-					if (f.getType() == Minecraft.class) {
-						minecraftField = f;
-						break;
-					}
-				}
-				minecraftField.setAccessible(true);
-				mc = (Minecraft) minecraftField.get(null);
-			} catch (SecurityException e) {
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-
-			lastReturn = mc;
-			return mc;
-		} else {
-			return lastReturn;
-		}
-	}
+public class Finder {
 
 	private static Timer lastTimer = null;
 
@@ -83,12 +47,12 @@ public class GetMinecraft {
 	 * 
 	 * @return null if it cannot be gotten for some reason.
 	 */
-	public static Timer timer() {
+	public static Timer getMCTimer() {
 		if (lastTimer == null) {
 			Object timerObject = null;
 			try {
 				timerObject = getUniqueTypedFieldFromClass(Minecraft.class,
-						Timer.class, instance());
+						Timer.class, Minecraft.getMinecraft());
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

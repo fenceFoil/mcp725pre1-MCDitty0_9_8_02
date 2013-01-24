@@ -26,7 +26,7 @@ package com.wikispaces.mcditty.gui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.GuiButton;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 
 /**
  * A button that appears in the upper left corner of a gui. Opens the MCDitty
@@ -46,7 +46,7 @@ public class GuiMCDittyMenuButton extends GuiButton {
 		boolean result = super.mousePressed(par1Minecraft, par2, par3);
 		if (result) {
 			// Open MCDitty menu
-			GetMinecraft.instance().displayGuiScreen(new GuiMCDitty());
+			Minecraft.getMinecraft().displayGuiScreen(new GuiMCDitty());
 		}
 		return result;
 	}

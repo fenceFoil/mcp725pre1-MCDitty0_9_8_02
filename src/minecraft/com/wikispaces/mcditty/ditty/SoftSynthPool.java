@@ -29,12 +29,14 @@ import java.util.LinkedList;
 import javax.sound.midi.Instrument;
 import javax.sound.midi.MidiUnavailableException;
 
+import net.minecraft.client.Minecraft;
+
 import org.jfugue.Player;
 import org.lwjgl.input.Keyboard;
 
 import com.sun.media.sound.SF2Soundbank;
 import com.sun.media.sound.SoftSynthesizer;
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 
 /**
  * Responsible for caching a number of synthesizers ready to play ditties at a
@@ -69,11 +71,11 @@ public class SoftSynthPool extends Thread {
 
 	private void updatePool() {
 		boolean isWalkingForward = false;
-		if (GetMinecraft.instance() != null
-				&& GetMinecraft.instance().gameSettings != null
-				&& GetMinecraft.instance().gameSettings.keyBindForward != null) {
+		if (Minecraft.getMinecraft() != null
+				&& Minecraft.getMinecraft().gameSettings != null
+				&& Minecraft.getMinecraft().gameSettings.keyBindForward != null) {
 			isWalkingForward = Keyboard
-					.isKeyDown(GetMinecraft.instance().gameSettings.keyBindForward.keyCode);
+					.isKeyDown(Minecraft.getMinecraft().gameSettings.keyBindForward.keyCode);
 		}
 		if (pool.size() < POOL_SIZE
 				//&& DittyPlayerThread.jFuguePlayerThreads.size() <= 0

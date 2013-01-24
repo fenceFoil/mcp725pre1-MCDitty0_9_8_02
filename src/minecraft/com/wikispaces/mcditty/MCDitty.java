@@ -322,7 +322,7 @@ public class MCDitty {
 		// Packet.packetClassToIdMap.put(Packet62LevelSoundMCDitty.class,
 		// Integer.valueOf(62));
 		try {
-			Object packetClassToIdMapObj = GetMinecraft
+			Object packetClassToIdMapObj = Finder
 					.getUniqueTypedFieldFromClass(Packet.class, Map.class, null);
 			if (packetClassToIdMapObj != null) {
 				Map packetClassToIdMap = (Map) packetClassToIdMapObj;
@@ -345,7 +345,7 @@ public class MCDitty {
 
 		// Add a TileEntity mapping for TileEntityNoteMCDitty
 		try {
-			Object[] maps = GetMinecraft.getAllUniqueTypedFieldsFromClass(
+			Object[] maps = Finder.getAllUniqueTypedFieldsFromClass(
 					TileEntity.class, Map.class, null);
 			if (maps != null) {
 				for (Object o : maps) {
@@ -422,7 +422,7 @@ public class MCDitty {
 			@Override
 			public void run() {
 				while (true) {
-					Minecraft m = GetMinecraft.instance();
+					Minecraft m = Minecraft.getMinecraft();
 					if (m == null) {
 						// System.out.println("mc is null");
 					} else {
@@ -438,7 +438,7 @@ public class MCDitty {
 					// Also register all entity renderers
 					if (m != null && m.theWorld != null) {
 						try {
-							Map registeredRenderers = (Map) GetMinecraft
+							Map registeredRenderers = (Map) Finder
 									.getUniqueTypedFieldFromClass(
 											RenderManager.class, Map.class,
 											RenderManager.instance);
@@ -496,11 +496,11 @@ public class MCDitty {
 		// ModLoader.getMinecraftInstance().thePlayer.addStat(
 		// installedAchievement, 1);
 		// Check to see that the config file is up to date
-		MCDittyConfig.checkConfig(GetMinecraft.instance().theWorld);
+		MCDittyConfig.checkConfig(Minecraft.getMinecraft().theWorld);
 		// Show welcome message, if any
 		if (MCDittyConfig.showWelcomeMessage) {
 			// Show a welcome message
-			GetMinecraft.instance().thePlayer
+			Minecraft.getMinecraft().thePlayer
 					.addChatMessage("§bMCDitty Installed! §ePress Ctrl+"
 							+ Keyboard.getKeyName(keypressHandler
 									.getBindingByAction("menu").getMainKey())
@@ -528,7 +528,7 @@ public class MCDitty {
 						MCDittyConfig.CURRENT_VERSION) == CompareVersion.GREATER
 						&& !MCDittyConfig.lastVersionFound.equals(foundVersion)) {
 					// Show a message
-					GetMinecraft.instance().thePlayer.addChatMessage("§aA new version of MCDitty (§b"
+					Minecraft.getMinecraft().thePlayer.addChatMessage("§aA new version of MCDitty (§b"
 							+ foundVersion
 							+ "§a) is available on Auto-Update! §ePress Ctrl+"
 							+ Keyboard.getKeyName(keypressHandler
@@ -551,7 +551,7 @@ public class MCDitty {
 		// Get the HashMap with a list of the blocks currently being punched
 		try {
 			// Get Map storing which blocks are damaged
-			RenderGlobal globalRenderer = GetMinecraft.instance().renderGlobal;
+			RenderGlobal globalRenderer = Minecraft.getMinecraft().renderGlobal;
 			Field[] globalRendererFields = globalRenderer.getClass()
 					.getDeclaredFields();
 			HashMap damageValues = null;
@@ -809,12 +809,12 @@ public class MCDitty {
 	}
 
 	private void addButtonsToGuis() {
-		GuiScreen currentScreen = GetMinecraft.instance().currentScreen;
+		GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
 		if (currentScreen != null) {
 			List mControlList = null;
 			try {
 				// long startNano = System.nanoTime();
-				mControlList = (List) GetMinecraft
+				mControlList = (List) Finder
 						.getUniqueTypedFieldFromClass(GuiScreen.class,
 								List.class, currentScreen);
 
@@ -860,7 +860,7 @@ public class MCDitty {
 				if (MCDittyConfig.lyricsEnabled && l.getLyricText() != null
 						&& l.getLyricText().trim().length() > 0) {
 					BlockSign.writeChatMessage(
-							GetMinecraft.instance().theWorld, l.getLyricText());
+							Minecraft.getMinecraft().theWorld, l.getLyricText());
 				}
 			}
 		}
@@ -899,7 +899,7 @@ public class MCDitty {
 								* 0.4d + 0.2d;
 						double partZ = (double) pos.z + rand.nextDouble()
 								* 0.4d + 0.2d;
-						GetMinecraft.instance().theWorld.spawnParticle("note",
+						Minecraft.getMinecraft().theWorld.spawnParticle("note",
 								partX, partY, partZ, xVel, 0D, 0D);
 						// // Manually spawn note particle to take advantage of
 						// the
@@ -1092,7 +1092,7 @@ public class MCDitty {
 					// Read sign text, and if it is a proxpad sign, start
 					// the
 					// song
-					TileEntity signEntity = GetMinecraft.instance().theWorld
+					TileEntity signEntity = Minecraft.getMinecraft().theWorld
 							.getBlockTileEntity(bb.getPadX(), bb.getPadY(),
 									bb.getPadZ());
 					if (signEntity instanceof TileEntitySign) {
@@ -1118,7 +1118,7 @@ public class MCDitty {
 									if (MCDittyConfig.proxPadsEnabled) {
 										BlockSign
 												.playDittyFromSigns(
-														GetMinecraft.instance().theWorld,
+														Minecraft.getMinecraft().theWorld,
 														bb.getPadX(),
 														bb.getPadY(),
 														bb.getPadZ(), true);
@@ -1161,7 +1161,7 @@ public class MCDitty {
 	 * @return
 	 */
 	private Vec3[] getPlayerCollisionPoints() {
-		Minecraft minecraft = GetMinecraft.instance();
+		Minecraft minecraft = Minecraft.getMinecraft();
 		Vec3[] playerPoints = new Vec3[2];
 		playerPoints[0] = Vec3.createVectorHelper(minecraft.thePlayer.posX,
 				minecraft.thePlayer.posY - 0.5d, minecraft.thePlayer.posZ);
@@ -1209,7 +1209,7 @@ public class MCDitty {
 				// Get type of sign
 				Block signType = BlockSign.getSignBlockType(
 						new Point3D(bb.getPadX(), bb.getPadY(), bb.getPadZ()),
-						GetMinecraft.instance().theWorld);
+						Minecraft.getMinecraft().theWorld);
 				if (signType == null) {
 					continue;
 				}
@@ -1217,13 +1217,13 @@ public class MCDitty {
 
 				// Get sign facing
 				int facing = BlockSign.getSignFacing(
-						GetMinecraft.instance().theWorld.getBlockMetadata(
+						Minecraft.getMinecraft().theWorld.getBlockMetadata(
 								bb.getPadX(), bb.getPadY(), bb.getPadZ()),
 						signType);
 				// System.out.println("= " + facing);
 
 				boolean firstProxPadKeyword = true;
-				for (String s : ((TileEntitySign) GetMinecraft.instance().theWorld
+				for (String s : ((TileEntitySign) Minecraft.getMinecraft().theWorld
 						.getBlockTileEntity(bb.getPadX(), bb.getPadY(),
 								bb.getPadZ())).signText) {
 					// Get proxpad size
@@ -1379,7 +1379,7 @@ public class MCDitty {
 				int damBlockZ = damage.getPartialBlockZ();
 				if (BlockSign.getSignBlockType(new Point3D(damBlockX,
 						damBlockY, damBlockZ), minecraft.theWorld) != null) {
-					TileEntity entity = GetMinecraft.instance().theWorld
+					TileEntity entity = Minecraft.getMinecraft().theWorld
 							.getBlockTileEntity(damBlockX, damBlockY, damBlockZ);
 					if (entity != null && entity instanceof TileEntitySign) {
 						((TileEntitySign) entity).damage = damage
@@ -1416,7 +1416,7 @@ public class MCDitty {
 					// If still being damaged, let it be
 				} else {
 					// If no longer being damaged, try to reset damage value
-					TileEntity entity = GetMinecraft.instance().theWorld
+					TileEntity entity = Minecraft.getMinecraft().theWorld
 							.getBlockTileEntity(lastDamage.getPartialBlockX(),
 									lastDamage.getPartialBlockY(),
 									lastDamage.getPartialBlockZ());
@@ -1440,13 +1440,13 @@ public class MCDitty {
 		try {
 			if (hookEntity != null) {
 				// Check that it's still in the world
-				if (GetMinecraft.instance().theWorld != null) {
-					if (!GetMinecraft.instance().theWorld.loadedEntityList
+				if (Minecraft.getMinecraft().theWorld != null) {
+					if (!Minecraft.getMinecraft().theWorld.loadedEntityList
 							.contains(hookEntity)) {
 						// Add to world
 						hookEntity = new MCDittyUpdateTickHookEntity(
-								GetMinecraft.instance().theWorld);
-						GetMinecraft.instance().theWorld.addEntityToWorld(
+								Minecraft.getMinecraft().theWorld);
+						Minecraft.getMinecraft().theWorld.addEntityToWorld(
 								12345678, hookEntity);
 						// System.out.println("Adding MCDitty tick hook entity");
 					} else {
@@ -1457,8 +1457,8 @@ public class MCDitty {
 				return;
 			} else {
 				hookEntity = new MCDittyUpdateTickHookEntity(
-						GetMinecraft.instance().theWorld);
-				Minecraft mc1 = GetMinecraft.instance();
+						Minecraft.getMinecraft().theWorld);
+				Minecraft mc1 = Minecraft.getMinecraft();
 				if (mc1 != null && mc1.theWorld != null) {
 					mc1.theWorld.addEntityToWorld(12345678, hookEntity);
 				} else {
@@ -1493,7 +1493,7 @@ public class MCDitty {
 	 */
 	public static void executeTimedDittyEvent(TimedDittyEvent nextEventToFire) {
 
-		Minecraft minecraft = GetMinecraft.instance();
+		Minecraft minecraft = Minecraft.getMinecraft();
 		WorldClient world = minecraft.theWorld;
 		EntityClientPlayerMP player = minecraft.thePlayer;
 
@@ -2042,7 +2042,7 @@ public class MCDitty {
 	public static void addDiscoFloor(final DiscoFloor d) {
 		// It is here that a disco floor is measured and readied to be used.
 		MeasureDiscoFloorThread t = new MeasureDiscoFloorThread(d,
-				GetMinecraft.instance().theWorld);
+				Minecraft.getMinecraft().theWorld);
 		t.addDiscoFloorDoneListener(new DiscoFloorDoneListener() {
 			public void discoFloorDoneMeasuring() {
 				synchronized (endedDitties) {
@@ -2165,7 +2165,7 @@ public class MCDitty {
 					// Register as a sound
 					String soundName = prefix+f.getName();
 					//System.out.println ("Registering sound effect: "+soundName);
-					GetMinecraft.instance().sndManager.addSound(soundName, f);
+					Minecraft.getMinecraft().sndManager.addSound(soundName, f);
 				} else if (f.isDirectory()) {
 					registerSoundResources(f, f.getName()+"/");
 				}

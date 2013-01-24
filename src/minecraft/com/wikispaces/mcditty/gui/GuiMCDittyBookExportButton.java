@@ -38,7 +38,7 @@ import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreenBook;
 import net.minecraft.src.ItemStack;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.books.WrappedBook;
 
 /**
@@ -82,7 +82,7 @@ public class GuiMCDittyBookExportButton extends GuiButton {
 						// First, get book to export
 						ItemStack editorBook = null;
 						try {
-							editorBook = (ItemStack) GetMinecraft
+							editorBook = (ItemStack) Finder
 									.getUniqueTypedFieldFromClass(
 											GuiScreenBook.class,
 											ItemStack.class, bookGui);
@@ -159,7 +159,7 @@ public class GuiMCDittyBookExportButton extends GuiButton {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 							BlockSign.writeChatMessage(
-									GetMinecraft.instance().theWorld,
+									Minecraft.getMinecraft().theWorld,
 									"Could not export book.");
 						}
 					}

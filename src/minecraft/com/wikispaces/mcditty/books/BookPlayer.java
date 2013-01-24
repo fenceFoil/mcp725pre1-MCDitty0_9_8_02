@@ -25,6 +25,7 @@ package com.wikispaces.mcditty.books;
 
 import java.util.LinkedList;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.BlockSign;
 import net.minecraft.src.EntityClientPlayerMP;
 import net.minecraft.src.ItemStack;
@@ -32,7 +33,7 @@ import net.minecraft.src.ItemStack;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.config.MCDittyConfig;
@@ -93,7 +94,7 @@ public class BookPlayer {
 			// Error parsing XML.
 			e1.printStackTrace();
 			BlockSign.writeChatMessage(
-					GetMinecraft.instance().theWorld,
+					Minecraft.getMinecraft().theWorld,
 					"Book contains XML problems. This might help: "
 							+ e1.getMessage());
 			return;
@@ -102,12 +103,12 @@ public class BookPlayer {
 		// Handle any issues
 		if (heldBookDittyXMLContainers == null) {
 			// Error parsing XML
-			BlockSign.writeChatMessage(GetMinecraft.instance().theWorld,
+			BlockSign.writeChatMessage(Minecraft.getMinecraft().theWorld,
 					"Book contains XML problems.");
 			return;
 		} else if (heldBookDittyXMLContainers.size() <= 0) {
 			// No DittyXML containers in book
-			BlockSign.writeChatMessage(GetMinecraft.instance().theWorld,
+			BlockSign.writeChatMessage(Minecraft.getMinecraft().theWorld,
 					"Book does not contain a Ditty.");
 			return;
 		}
@@ -139,7 +140,7 @@ public class BookPlayer {
 					// Throw an error.
 					BlockSign
 							.writeChatMessage(
-									GetMinecraft.instance().theWorld,
+									Minecraft.getMinecraft().theWorld,
 									"Book claims to be part "
 											+ firstBookPart.getPart()
 											+ " of "
@@ -207,7 +208,7 @@ public class BookPlayer {
 								// Error
 								BlockSign
 										.writeChatMessage(
-												GetMinecraft.instance().theWorld,
+												Minecraft.getMinecraft().theWorld,
 												"A book in your inventory, a part of this ditty, claims that there are "
 														+ invBookPartElement
 																.getOf()
@@ -223,7 +224,7 @@ public class BookPlayer {
 									// Out of range. Tsk tsk.
 									BlockSign
 											.writeChatMessage(
-													GetMinecraft.instance().theWorld,
+													Minecraft.getMinecraft().theWorld,
 													"A book in your inventory, a part of this ditty, claims to be part "
 															+ firstBookPart
 																	.getPart()
@@ -239,7 +240,7 @@ public class BookPlayer {
 									// Part would overwrite an existing part!
 									BlockSign
 											.writeChatMessage(
-													GetMinecraft.instance().theWorld,
+													Minecraft.getMinecraft().theWorld,
 													"Two books in your inventory both claim to be part "
 															+ firstBookPart
 																	.getPart()
@@ -289,13 +290,13 @@ public class BookPlayer {
 					// Show an error according to the number missing
 					if (missingParts.size() == 1) {
 						BlockSign.writeChatMessage(
-								GetMinecraft.instance().theWorld,
+								Minecraft.getMinecraft().theWorld,
 								"You are missing one book in your ditty: Part "
 										+ missingParts.get(0) + ".");
 						return;
 					} else if (missingParts.size() == 2) {
 						BlockSign.writeChatMessage(
-								GetMinecraft.instance().theWorld,
+								Minecraft.getMinecraft().theWorld,
 								"You are missing two books in your ditty: Parts "
 										+ missingParts.get(0) + " and "
 										+ missingParts.get(1) + ".");
@@ -315,7 +316,7 @@ public class BookPlayer {
 										missingParts.size() - 1).toString())
 								.append(".");
 						BlockSign.writeChatMessage(
-								GetMinecraft.instance().theWorld,
+								Minecraft.getMinecraft().theWorld,
 								message.toString());
 						return;
 					}
@@ -378,7 +379,7 @@ public class BookPlayer {
 				// chat.
 				for (String s : chatMessageBuffer) {
 					BlockSign.writeChatMessage(
-							GetMinecraft.instance().theWorld, s);
+							Minecraft.getMinecraft().theWorld, s);
 				}
 
 				if (chatMessageBuffer.size() > 0) {
@@ -386,8 +387,7 @@ public class BookPlayer {
 					if (MCDittyConfig.particlesEnabled) {
 						for (int m = 0; m < 9; m++) {
 							for (int i = 0; i < 5; i++) {
-								EntityClientPlayerMP p = GetMinecraft
-										.instance().thePlayer;
+								EntityClientPlayerMP p = Minecraft.getMinecraft().thePlayer;
 								MCDitty.requestParticle(new ParticleRequest(
 										new Point3D((int) p.posX + (m % 3 - 1),
 												(int) p.posY, (int) p.posZ

@@ -27,6 +27,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.EnumOptions;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
@@ -36,7 +37,7 @@ import net.minecraft.src.TileEntity;
 import org.jfugue.elements.Note;
 import org.lwjgl.input.Keyboard;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.config.MCDittyConfig;
 import com.wikispaces.mcditty.noteblocks.BlockNoteMCDitty;
@@ -370,7 +371,7 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 		noteblockPoint = hoverPoint;
 
 		// Get the noteblock's tile entity
-		TileEntity unknownEntity = GetMinecraft.instance().theWorld
+		TileEntity unknownEntity = Minecraft.getMinecraft().theWorld
 				.getBlockTileEntity(noteblockPoint.x, noteblockPoint.y,
 						noteblockPoint.z);
 		if (unknownEntity instanceof TileEntityNoteMCDitty) {
@@ -534,7 +535,7 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 	protected void actionPerformed(GuiButton guibutton) {
 		if (guibutton.id == 0) {
 			// Version
-			GetMinecraft.instance().displayGuiScreen(new GuiMCDitty());
+			Minecraft.getMinecraft().displayGuiScreen(new GuiMCDitty());
 		} else if (guibutton.id == 2000) {
 			// Mute
 			MCDittyConfig.setBoolean("noteblockTuner.mute",
@@ -557,18 +558,18 @@ public class GuiScreenTuneNoteblock extends GuiScreen {
 		if (!MCDittyConfig.getBoolean("noteblockTuner.mute")) {
 			volumeToSet = normalGameVolume;
 		}
-		GetMinecraft.instance().gameSettings.setOptionFloatValue(
+		Minecraft.getMinecraft().gameSettings.setOptionFloatValue(
 				EnumOptions.SOUND, volumeToSet);
 	}
 
-	private float normalGameVolume = GetMinecraft.instance().gameSettings.soundVolume;
+	private float normalGameVolume = Minecraft.getMinecraft().gameSettings.soundVolume;
 	private boolean muting = MCDittyConfig.getBoolean("noteblockTuner.mute");
 
 	private void closeGui() {
-		GetMinecraft.instance().gameSettings.setOptionFloatValue(
+		Minecraft.getMinecraft().gameSettings.setOptionFloatValue(
 				EnumOptions.SOUND, normalGameVolume);
 
-		GetMinecraft.instance().displayGuiScreen(null);
+		Minecraft.getMinecraft().displayGuiScreen(null);
 	}
 
 	private float lastPersistantTranspose = persistantTranspose;

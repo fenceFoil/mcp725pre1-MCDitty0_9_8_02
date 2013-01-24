@@ -3,7 +3,9 @@ package net.minecraft.src;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import net.minecraft.client.Minecraft;
+
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.Point3D;
 
@@ -220,7 +222,7 @@ public class TileEntitySign extends TileEntity {
 		if (!opaqueAnchorCalculated) {
 			try {
 				Point3D blockBehindSign = BlockSign.getBlockAttachedTo(this);
-				if (Block.blocksList[GetMinecraft.instance().theWorld
+				if (Block.blocksList[Minecraft.getMinecraft().theWorld
 						.getBlockId(blockBehindSign.x, blockBehindSign.y,
 								blockBehindSign.z)].isOpaqueCube()) {
 					isAnchorOpaque = true;

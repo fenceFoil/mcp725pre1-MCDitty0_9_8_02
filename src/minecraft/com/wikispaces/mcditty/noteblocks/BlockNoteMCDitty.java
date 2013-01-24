@@ -27,6 +27,7 @@ package com.wikispaces.mcditty.noteblocks;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
 import net.minecraft.src.BlockNote;
 import net.minecraft.src.BlockSign;
@@ -36,7 +37,7 @@ import net.minecraft.src.TileEntityNote;
 import net.minecraft.src.TileEntitySign;
 import net.minecraft.src.World;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.config.MCDittyConfig;
@@ -66,7 +67,7 @@ public class BlockNoteMCDitty extends BlockNote {
 
 	public static void removeNormalNoteBlockFromList()
 			throws IllegalArgumentException, IllegalAccessException {
-		Object blockListObj = GetMinecraft.getUniqueTypedFieldFromClass(
+		Object blockListObj = Finder.getUniqueTypedFieldFromClass(
 				Block.class, Block[].class, null);
 		if (blockListObj != null && blockListObj instanceof Block[]) {
 			Block[] blockList = (Block[]) blockListObj;
@@ -216,7 +217,7 @@ public class BlockNoteMCDitty extends BlockNote {
 	private void activateAnyAdjacentSigns(TileEntityNote tile) {
 		// Don't activate signs if MCDitty is off or a gui is open
 		if (MCDittyConfig.mcdittyOff
-				|| GetMinecraft.instance().currentScreen != null) {
+				|| Minecraft.getMinecraft().currentScreen != null) {
 			return;
 		}
 
@@ -335,7 +336,7 @@ public class BlockNoteMCDitty extends BlockNote {
 		}
 		// System.out.println (soundName);
 
-		GetMinecraft.instance().sndManager.playSoundFX(soundName, 5.0F,
+		Minecraft.getMinecraft().sndManager.playSoundFX(soundName, 5.0F,
 				pitchMultiplier);
 	}
 
@@ -414,7 +415,7 @@ public class BlockNoteMCDitty extends BlockNote {
 	}
 
 	private static int getBlockOctaveAdjust(int x, int y, int z) {
-		int blockID = GetMinecraft.instance().theWorld.getBlockId(x, y, z);
+		int blockID = Minecraft.getMinecraft().theWorld.getBlockId(x, y, z);
 		// System.out.println (blockID);
 		if (blockID == Block.netherrack.blockID) {
 			return -1;

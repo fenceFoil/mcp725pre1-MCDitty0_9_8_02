@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 
 import org.lwjgl.opengl.GL11;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.config.MCDittyConfig;
@@ -73,7 +73,7 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 
 	private static Point3D tempPoint = new Point3D();
 
-	public static Minecraft mc = GetMinecraft.instance();
+	public static Minecraft mc = Minecraft.getMinecraft();
 
 	// TODO: Replace "tick" with the term "frame" everywhere?
 	public void renderTileEntitySignAt(TileEntitySign signEntity, double par2,
@@ -83,7 +83,7 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 		// tables), its TileEntitySignRender.mc field may be null. Rectify that
 		// here.
 		if (mc == null) {
-			mc = GetMinecraft.instance();
+			mc = Minecraft.getMinecraft();
 		}
 
 		if (par8 == lastTickFraction) {

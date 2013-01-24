@@ -38,6 +38,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.minecraft.client.Minecraft;
+
 import org.jfugue.elements.Note;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -45,7 +47,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.wikispaces.mcditty.DOMUtil;
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.resources.MCDittyResourceManager;
 
 /**
@@ -113,8 +115,8 @@ public class SFXManager {
 	}
 
 	public static void playEffectByShorthand(String name, int source) {
-		GetMinecraft.instance().theWorld.playSoundAtEntity(
-				GetMinecraft.instance().thePlayer,
+		Minecraft.getMinecraft().theWorld.playSoundAtEntity(
+				Minecraft.getMinecraft().thePlayer,
 				getEffectForShorthandName(name, source), 1.0f, 1.0f);
 	}
 
@@ -123,8 +125,8 @@ public class SFXManager {
 	}
 
 	public static void playEffect(String mcName, float volume, float pitch) {
-		GetMinecraft.instance().theWorld.playSoundAtEntity(
-				GetMinecraft.instance().thePlayer, mcName, volume, pitch);
+		Minecraft.getMinecraft().theWorld.playSoundAtEntity(
+				Minecraft.getMinecraft().thePlayer, mcName, volume, pitch);
 	}
 
 	public static HashMap<String, String> getAllEffects(int source) {
@@ -173,7 +175,7 @@ public class SFXManager {
 
 		// Base filename, complete up to the newsound dir.
 		StringBuilder filename = new StringBuilder()
-				.append(GetMinecraft.instance().getMinecraftDir())
+				.append(Minecraft.getMinecraft().getMinecraftDir())
 				.append(File.separator).append("resources")
 				.append(File.separator)
 				.append(sources.get(source).resourceFolder)

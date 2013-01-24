@@ -28,7 +28,7 @@ import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiVideoSettings;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 
 public class GuiMCDittyVideoMenuButton extends GuiButton {
 
@@ -44,7 +44,7 @@ public class GuiMCDittyVideoMenuButton extends GuiButton {
 		boolean result = super.mousePressed(par1Minecraft, par2, par3);
 		if (result) {
 			// Open MCDitty video menu
-			GetMinecraft.instance().displayGuiScreen(
+			Minecraft.getMinecraft().displayGuiScreen(
 					new GuiMCDittyGraphics(backscreen));
 		}
 		return result;

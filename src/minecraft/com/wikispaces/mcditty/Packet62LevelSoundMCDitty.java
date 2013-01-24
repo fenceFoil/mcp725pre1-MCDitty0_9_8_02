@@ -101,7 +101,7 @@ public class Packet62LevelSoundMCDitty extends Packet62LevelSound {
 
 	private void setNoteNameWithReflection(String value) {
 		try {
-			GetMinecraft.setUniqueTypedFieldFromClass(Packet62LevelSound.class,
+			Finder.setUniqueTypedFieldFromClass(Packet62LevelSound.class,
 					String.class, this, value);
 		} catch (IllegalArgumentException e) {
 			// TODO Auto-generated catch block

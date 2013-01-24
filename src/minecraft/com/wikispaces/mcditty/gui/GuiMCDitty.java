@@ -36,7 +36,7 @@ import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.config.MCDittyConfig;
 import com.wikispaces.mcditty.resources.TutorialWorldDownloader;
 
@@ -65,10 +65,10 @@ public class GuiMCDitty extends GuiScreen {
 		// Draw label at top of screen
 		// drawRect(width / 2 - 60, 20, width / 2 + 60, 70, 0xaaaaaa88);
 
-		int bgTextureNumber = GetMinecraft.instance().renderEngine
+		int bgTextureNumber = Minecraft.getMinecraft().renderEngine
 				.getTexture("/com/wikispaces/mcditty/resources/textures/signBG2.png");
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.5f);
-		GetMinecraft.instance().renderEngine.bindTexture(bgTextureNumber);
+		Minecraft.getMinecraft().renderEngine.bindTexture(bgTextureNumber);
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 0.5f);
 		drawTexturedModalRect(width / 2 - 60, 20, 0, 0, 120, 50);
 

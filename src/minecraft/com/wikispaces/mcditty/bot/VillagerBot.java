@@ -24,11 +24,12 @@
  */
 package com.wikispaces.mcditty.bot;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityLiving;
 
 import com.wikispaces.mcditty.DestroyAction;
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.bot.action.BotAction;
 import com.wikispaces.mcditty.bot.action.RiseAction;
 
@@ -51,7 +52,7 @@ public class VillagerBot extends Bot {
 		addSupportedAction(RiseAction.class);
 
 		// Create a creepily still-looking testificate dude
-		villagerEntity = new EntityVillagerBot(GetMinecraft.instance().theWorld);
+		villagerEntity = new EntityVillagerBot(Minecraft.getMinecraft().theWorld);
 
 		double var2 = x;
 		double var4 = y;
@@ -83,7 +84,7 @@ public class VillagerBot extends Bot {
 		var10.motionX = (double) ((float) 0 / 8000.0F);
 		var10.motionY = (double) ((float) 0 / 8000.0F);
 		var10.motionZ = (double) ((float) 0 / 8000.0F);
-		GetMinecraft.instance().theWorld
+		Minecraft.getMinecraft().theWorld
 				.addEntityToWorld(var10.entityId, var10);
 	}
 

@@ -40,7 +40,7 @@ import org.jfugue.parsers.MusicStringParser;
 
 import com.wikispaces.mcditty.CompareVersion;
 import com.wikispaces.mcditty.CueScheduler;
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.MCDittyRightClickCheckThread;
 import com.wikispaces.mcditty.MCDittyUpdateTickHookEntity;
@@ -1942,15 +1942,15 @@ public class BlockSign extends BlockContainer {
 
 		// Factor in the Minecraft volume, if possible (can be null if this code
 		// is called as Minecraft loads)
-		if (GetMinecraft.instance() != null) {
-			if (GetMinecraft.instance().gameSettings != null) {
+		if (Minecraft.getMinecraft() != null) {
+			if (Minecraft.getMinecraft().gameSettings != null) {
 				float mcVolume;
 
 				// Get the appropriate MC volume.
 				if (MCDittyConfig.getVolumeMode() == MCDittyConfig.USE_MUSIC_VOLUME) {
-					mcVolume = GetMinecraft.instance().gameSettings.musicVolume;
+					mcVolume = Minecraft.getMinecraft().gameSettings.musicVolume;
 				} else if (MCDittyConfig.getVolumeMode() == MCDittyConfig.USE_SOUND_VOLUME) {
-					mcVolume = GetMinecraft.instance().gameSettings.soundVolume;
+					mcVolume = Minecraft.getMinecraft().gameSettings.soundVolume;
 				} else {
 					// Ignore MC volume
 					mcVolume = 1.0f;
@@ -2872,7 +2872,7 @@ public class BlockSign extends BlockContainer {
 
 		GuiMCDittyChangelog changelogGui = new GuiMCDittyChangelog(backScreen,
 				changeLogTempFile, "MCDitty Changelog");
-		GetMinecraft.instance().displayGuiScreen(changelogGui);
+		Minecraft.getMinecraft().displayGuiScreen(changelogGui);
 		return null;
 	}
 
@@ -3078,7 +3078,7 @@ public class BlockSign extends BlockContainer {
 		}
 
 		// Create new file to download to
-		File downloadDir = new File(GetMinecraft.instance().getMinecraftDir()
+		File downloadDir = new File(Minecraft.getMinecraft().getMinecraftDir()
 				+ File.separator + "MCDitty/Versions/");
 		if (!downloadDir.exists()) {
 			downloadDir.mkdirs();
@@ -3111,7 +3111,7 @@ public class BlockSign extends BlockContainer {
 
 		showTextAsLyricNow("§aReading minecraft.jar...");
 
-		File minecraftFile = new File(GetMinecraft.instance().getMinecraftDir()
+		File minecraftFile = new File(Minecraft.getMinecraft().getMinecraftDir()
 				+ File.separator + "bin/minecraft.jar");
 		JarFile minecraftJarFile;
 		LinkedList<JarEntry> minecraftJarEntries = new LinkedList<JarEntry>();
@@ -3235,7 +3235,7 @@ public class BlockSign extends BlockContainer {
 		showTextAsLyricNow("§aWriting updated minecraft.jar... 0 Percent");
 
 		try {
-			File newMinecraftFile = new File(GetMinecraft.instance()
+			File newMinecraftFile = new File(Minecraft.getMinecraft()
 					.getMinecraftDir()
 					+ File.separator
 					+ "bin"
@@ -3297,7 +3297,7 @@ public class BlockSign extends BlockContainer {
 
 		// Extract renaming script to file
 		showTextAsLyricNow("§aExtracting Swapper...");
-		File jarSwapperFile = new File(GetMinecraft.instance()
+		File jarSwapperFile = new File(Minecraft.getMinecraft()
 				.getMinecraftDir()
 				+ File.separator
 				+ "bin/MCDittyJarSwapper.jar");

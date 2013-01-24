@@ -43,7 +43,7 @@ import net.minecraft.src.GuiScreenBook;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.StatCollector;
 
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.books.WrappedBook;
 
@@ -72,7 +72,7 @@ public class GuiMCDittyBookImportButton extends GuiButton {
 		boolean result = super.mousePressed(par1Minecraft, par2, par3);
 		if (result) {
 			// Show a file selector
-			GetMinecraft.instance().displayGuiScreen(null);
+			Minecraft.getMinecraft().displayGuiScreen(null);
 			Thread t = new Thread(new Runnable() {
 
 				@Override
@@ -105,7 +105,7 @@ public class GuiMCDittyBookImportButton extends GuiButton {
 						// First, get book to fill
 						ItemStack editorBook = null;
 						try {
-							editorBook = (ItemStack) GetMinecraft
+							editorBook = (ItemStack) Finder
 									.getUniqueTypedFieldFromClass(
 											GuiScreenBook.class,
 											ItemStack.class, bookGui);

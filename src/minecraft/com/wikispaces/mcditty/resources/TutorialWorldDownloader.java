@@ -44,7 +44,7 @@ import net.minecraft.src.StatList;
 import net.minecraft.src.WorldClient;
 
 import com.wikispaces.mcditty.CompareVersion;
-import com.wikispaces.mcditty.GetMinecraft;
+import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.config.MCDittyConfig;
@@ -299,7 +299,7 @@ public class TutorialWorldDownloader {
 		}
 
 		// Create new file to download to
-		File downloadDir = new File(GetMinecraft.instance().getMinecraftDir()
+		File downloadDir = new File(Minecraft.getMinecraft().getMinecraftDir()
 				+ File.separator + "MCDitty/ExampleWorld/");
 		if (!downloadDir.exists()) {
 			downloadDir.mkdirs();
@@ -336,7 +336,7 @@ public class TutorialWorldDownloader {
 			BlockSign.showTextAsLyricNow("§aExtracting...");
 		}
 		// TOOD: Extract, etc.
-		File saveWorldDir = new File(GetMinecraft.instance().getMinecraftDir()
+		File saveWorldDir = new File(Minecraft.getMinecraft().getMinecraftDir()
 				+ File.separator + "saves");
 
 		MCDittyResourceManager.extractZipFiles(newVersionFile.getPath(),
@@ -398,13 +398,13 @@ public class TutorialWorldDownloader {
 	}
 
 	public static void downloadExampleWorldButton() {
-		final Minecraft mc = GetMinecraft.instance();
+		final Minecraft mc = Minecraft.getMinecraft();
 		mc.displayGuiScreen(null);
 
 		// Decide whether to exit to main menu
 		// Look for a sign that only exists in MCDittyLand
 		boolean exitToMainMenu = false;
-		MCDitty.optimizeCommentList(GetMinecraft.instance().theWorld);
+		MCDitty.optimizeCommentList(Minecraft.getMinecraft().theWorld);
 		LinkedList<Comment> allComments = MCDitty
 				.getCommentsSortedByDistFrom(new Point3D(0, 0, 0));
 		for (Comment c : allComments) {
