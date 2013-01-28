@@ -45,7 +45,7 @@ public class MuteDittyThread extends Thread {
 
 	public MuteDittyThread(int[] exceptedDittyIDs) {
 		this.players = new ConcurrentLinkedQueue<DittyPlayerThread>();
-		this.players.addAll(DittyPlayerThread.jFuguePlayerThreads);
+		this.players.addAll(DittyPlayerThread.dittyPlayers);
 		this.players.addAll(DittyPlayerThread.queuedPlayers);
 		this.playMidiSequencers = MCDitty.getPlayMidiSequencers();
 		this.exceptedDittyIDs = exceptedDittyIDs;

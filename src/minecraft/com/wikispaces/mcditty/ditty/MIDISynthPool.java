@@ -43,7 +43,7 @@ import com.wikispaces.mcditty.Finder;
  * moment's notice.
  * 
  */
-public class SoftSynthPool extends Thread {
+public class MIDISynthPool extends Thread {
 	private static long SYNTH_CACHE_CHECK_TIME = 4000;
 	private static int POOL_SIZE = 5;
 	private Object cachedSynthMutex = new Object();

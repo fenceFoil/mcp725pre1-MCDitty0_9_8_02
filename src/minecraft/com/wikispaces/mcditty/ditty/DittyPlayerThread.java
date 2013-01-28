@@ -96,9 +96,9 @@ public class DittyPlayerThread extends Thread implements
 
 	private boolean muting = false;
 
-	private static SoftSynthPool synthPool;
+	private static MIDISynthPool synthPool;
 
-	public static ConcurrentLinkedQueue<DittyPlayerThread> jFuguePlayerThreads = new ConcurrentLinkedQueue<DittyPlayerThread>();
+	public static ConcurrentLinkedQueue<DittyPlayerThread> dittyPlayers = new ConcurrentLinkedQueue<DittyPlayerThread>();
 
 	private Player player;
 
@@ -126,7 +126,7 @@ public class DittyPlayerThread extends Thread implements
 
 	public static void setUpSynthPool() {
 		if (synthPool == null) {
-			synthPool = new SoftSynthPool();
+			synthPool = new MIDISynthPool();
 			synthPool.start();
 		}
 	}
@@ -138,18 +138,19 @@ public class DittyPlayerThread extends Thread implements
 	@Override
 	public void run() {
 
-		jFuguePlayerThreads.add(this);
+		dittyPlayers.add(this);
 
 		if (ditty instanceof SignDitty) {
 			// Add this tune to the list of oneatatime ditties
 			if (((SignDitty) ditty).isOneAtATime()) {
 				synchronized (BlockSign.oneAtATimeSignsBlocked) {
-					if (BlockSign.oneAtATimeSignsBlocked.contains(((SignDitty) ditty).getStartPoint())) {
+					if (BlockSign.oneAtATimeSignsBlocked
+							.contains(((SignDitty) ditty).getStartPoint())) {
 						// Already blocked. Time to go...
-						jFuguePlayerThreads.remove(this);
+						dittyPlayers.remove(this);
 						return;
 					}
-					
+
 					BlockSign.oneAtATimeSignsBlocked.add(((SignDitty) ditty)
 							.getStartPoint());
 				}
@@ -185,9 +186,9 @@ public class DittyPlayerThread extends Thread implements
 			// If queueing, wait for turn before playing
 			// If muting, move on
 			queuedPlayers.add(this);
-			System.out.println(jFuguePlayerThreads.size());
+			System.out.println(dittyPlayers.size());
 			System.out.println(queuedPlayers.size());
-			while ((jFuguePlayerThreads.size() > queuedPlayers.size() || queuedPlayers
+			while ((dittyPlayers.size() > queuedPlayers.size() || queuedPlayers
 					.poll() != this) && !muting) {
 				try {
 					Thread.sleep(20);
@@ -200,7 +201,7 @@ public class DittyPlayerThread extends Thread implements
 
 		// Give self max priority
 		this.setPriority(MAX_PRIORITY);
-		
+
 		// Play musicstring
 		BlockSign.simpleLog("Starting ditty!");
 		if (!muting) {
@@ -239,15 +240,17 @@ public class DittyPlayerThread extends Thread implements
 				.getDittyID()));
 
 		// Remove this thread from the list of player threads currently running
-		jFuguePlayerThreads.remove(this);
+		dittyPlayers.remove(this);
 
 		if (ditty instanceof SignDitty) {
 			// Remove this tune from the list of blocked tunes
 			// (Loop until all copies are removed)
 			synchronized (BlockSign.oneAtATimeSignsBlocked) {
-				for (int i=0;i<BlockSign.oneAtATimeSignsBlocked.size();i++) {
-					Point3D blockedPoint = BlockSign.oneAtATimeSignsBlocked.get(i);
-					if (blockedPoint.equals(((SignDitty) ditty).getStartPoint())) {
+				for (int i = 0; i < BlockSign.oneAtATimeSignsBlocked.size(); i++) {
+					Point3D blockedPoint = BlockSign.oneAtATimeSignsBlocked
+							.get(i);
+					if (blockedPoint
+							.equals(((SignDitty) ditty).getStartPoint())) {
 						BlockSign.oneAtATimeSignsBlocked.remove(i);
 						i--;
 					}
