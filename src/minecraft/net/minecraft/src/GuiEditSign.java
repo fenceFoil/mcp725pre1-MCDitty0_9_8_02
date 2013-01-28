@@ -1072,6 +1072,12 @@ public class GuiEditSign extends GuiScreen implements
 				}
 			}
 		}
+		
+		// Handle autocorrect for SFXInst
+		if (par2 == Keyboard.KEY_T && entitySign.signText[editLine].equalsIgnoreCase("sfxinst")) {
+			entitySign.signText[editLine] = "SFXInst2";
+			editChar = entitySign.signText[editLine].length();
+		}
 
 		// MCDitty: Alert someone if they type too far on the current line
 		// TODO: Handle color codes
