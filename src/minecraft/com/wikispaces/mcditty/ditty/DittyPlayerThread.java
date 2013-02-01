@@ -186,8 +186,8 @@ public class DittyPlayerThread extends Thread implements
 			// If queueing, wait for turn before playing
 			// If muting, move on
 			queuedPlayers.add(this);
-			System.out.println(dittyPlayers.size());
-			System.out.println(queuedPlayers.size());
+			//System.out.println(dittyPlayers.size());
+			//System.out.println(queuedPlayers.size());
 			while ((dittyPlayers.size() > queuedPlayers.size() || queuedPlayers
 					.poll() != this) && !muting) {
 				try {
