@@ -32,8 +32,8 @@ import com.wikispaces.mcditty.Finder;
 
 public class EntityVillagerBot extends EntityVillager {
 
-	private AnimatedValue headPitch = new AnimatedValue(0,
-			Minecraft.getMinecraft().theWorld.getTotalWorldTime());
+//	private AnimatedValue headPitch = new AnimatedValue(0,
+//			Minecraft.getMinecraft().theWorld.getTotalWorldTime());
 
 	public EntityVillagerBot(World par1World) {
 		super(par1World);
@@ -67,7 +67,7 @@ public class EntityVillagerBot extends EntityVillager {
 		super.onEntityUpdate();
 		posY = lastTickPosY;
 		motionY = 0;
-		rotationPitch = (float) headPitch.getValue();
+		//rotationPitch = (float) headPitch.getValue();
 		// rotationYawHead += 15;
 		// newPosRotationIncrements = 1;
 		// newPosX = posX;
