@@ -26,6 +26,7 @@ package com.wikispaces.mcditty;
 import java.util.LinkedList;
 import java.util.Random;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.EntityFireworkRocket;
 import net.minecraft.src.WorldClient;
 
@@ -33,7 +34,7 @@ import net.minecraft.src.WorldClient;
  * Handles exploding firework rockets after they reach a certain height.
  * 
  */
-public class FireworkExploder {
+public class FireworkExploder implements TickListener {
 
 	protected static final Random rand = new Random();
 
@@ -63,7 +64,7 @@ public class FireworkExploder {
 		fireworks.add(new Firework(fireworkEntity, y, flightDuration));
 	}
 
-	public void update(WorldClient world) {
+	private void update(WorldClient world) {
 		for (int i = 0; i < fireworks.size(); i++) {
 			Firework f = fireworks.get(i);
 			if (f.endTime < System
@@ -74,6 +75,15 @@ public class FireworkExploder {
 				i--;
 			}
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see com.wikispaces.mcditty.TickListener#onTick(float, net.minecraft.client.Minecraft)
+	 */
+	@Override
+	public boolean onTick(float partialTick, Minecraft minecraft) {
+		update (minecraft.theWorld);
+		return true;
 	}
 
 }

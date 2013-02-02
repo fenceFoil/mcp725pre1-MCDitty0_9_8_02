@@ -48,7 +48,7 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 		modelSign = new ModelSign();
 
 		// MCDitty: try to create update tick hook entity
-		MCDitty.createHookEntity();
+		MCDitty.createHookEntity(BlockSign.mcDittyMod);
 	}
 
 	public static long lastMCDittyTickHookEntityCheckTime = System
@@ -303,7 +303,7 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 		// Check once a second
 		// Also, add a button to any options menu
 		if (currentSystemTime - lastMCDittyTickHookEntityCheckTime > 1000) {
-			MCDitty.createHookEntity();
+			MCDitty.createHookEntity(BlockSign.mcDittyMod);
 			lastMCDittyTickHookEntityCheckTime = currentSystemTime;
 		}
 

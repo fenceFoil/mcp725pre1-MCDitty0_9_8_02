@@ -73,6 +73,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.xml.sax.SAXException;
 
+import com.wikispaces.mcditty.blockTune.BlockTuneManager;
 import com.wikispaces.mcditty.bot.Bot;
 import com.wikispaces.mcditty.bot.VillagerBot;
 import com.wikispaces.mcditty.bot.action.BotAction;
@@ -121,7 +122,7 @@ import com.wikispaces.mcditty.signs.keywords.ProxPadKeyword;
  * 
  * TODO: Move many ditty-playing related methods from BlockSign to MCDitty
  */
-public class MCDitty {
+public class MCDitty implements TickListener {
 
 	/**
 	 * All unique signs in the world that have ever been created during this
@@ -196,7 +197,7 @@ public class MCDitty {
 	private boolean guiKeyPreviousPressedState = false;
 
 	/**
-	 * Whether the first tick of the game has happened yet, or will happen.
+	 * Whether the first tick of the game has yet to happen.
 	 */
 	private boolean firstTick = true;
 
@@ -206,18 +207,6 @@ public class MCDitty {
 	 * 
 	 */
 	public static KeypressProcessor keypressHandler = new KeypressProcessor();
-
-	// Achivements
-	// Yes, the 24601 IS a reference to Les Miserables!
-	// The next achievement I add must be #9430
-	// public static final Achievement installedAchievement = new Achievement(
-	// 24601, "Installed MCDitty", -2, -4, Block.music, null)
-	// .registerAchievement();
-	// // Yes, the 23623 IS a reference to Los Miserables (the Spanish
-	// production)
-	// public static final Achievement menuAchievement = new Achievement(23623,
-	// "Press Ctrl+D", -3, -2, Item.recordMall, installedAchievement)
-	// .registerAchievement();
 
 	/**
 	 * General-purpose random generator, cached.
@@ -232,7 +221,7 @@ public class MCDitty {
 	/**
 	 * The current entity used to get a hook into the main game loop's ticks.
 	 */
-	private static MCDittyUpdateTickHookEntity hookEntity;
+	private static MCDittyTickHookEntity hookEntity;
 
 	/**
 	 * The guiscreen open last tick.
@@ -281,26 +270,9 @@ public class MCDitty {
 
 	private static FireworkExploder fireworkExploder = new FireworkExploder();
 
-	// Achivements
-	// Yes, the 24601 IS a reference to Les Miserables!
-	// The next achievement I add must be #9430
-	// public static final Achievement installedAchievement = new Achievement(
-	// 24601, "Installed MCDitty", -2, -4, Block.music, null)
-	// .registerAchievement();
-	// // Yes, the 23623 IS a reference to Los Miserables (the Spanish
-	// production)
-	// public static final Achievement menuAchievement = new Achievement(23623,
-	// "Press Ctrl+D", -3, -2, Item.recordMall, installedAchievement)
-	// .registerAchievement();
+	private static BlockTuneManager blockTuneManager = new BlockTuneManager();
 
 	public MCDitty() {
-		// // Set up achievements
-		// REMOVED FOR 1.3.1 UPDATE
-		// ModLoader.addAchievementDesc(installedAchievement,
-		// "Installed MCDitty",
-		// "Let's Make Some Music!");
-		// ModLoader.addAchievementDesc(menuAchievement, "Press Ctrl+D",
-		// "Open the MCDitty Menu");
 
 		// Set up modified note block
 		// First, the original Minecraft noteblock must be discarded
@@ -426,7 +398,7 @@ public class MCDitty {
 					if (m == null) {
 						// System.out.println("mc is null");
 					} else {
-						mcditty.createHookEntity();
+						mcditty.createHookEntity(mcditty);
 					}
 					try {
 						Thread.sleep(1000);
@@ -446,11 +418,11 @@ public class MCDitty {
 							if (registeredRenderers != null) {
 								// Add mcditty update tick hook entity renderer
 								if (!(registeredRenderers
-										.get(MCDittyUpdateTickHookEntity.class) instanceof RenderMCDittyUpdateHook)) {
+										.get(MCDittyTickHookEntity.class) instanceof RenderMCDittyUpdateHook)) {
 									RenderMCDittyUpdateHook r = new RenderMCDittyUpdateHook();
 									r.setRenderManager(RenderManager.instance);
 									registeredRenderers.put(
-											MCDittyUpdateTickHookEntity.class,
+											MCDittyTickHookEntity.class,
 											r);
 								}
 
@@ -664,9 +636,6 @@ public class MCDitty {
 				handleMouseInput(minecraft);
 			}
 		}
-
-		// Update particle stuff
-		fireworkExploder.update(minecraft.theWorld);
 
 		// Check queues for any events to process from songs
 		processLyricsRequests();
@@ -1436,7 +1405,7 @@ public class MCDitty {
 	 * Unfortunately, that last bit is a tad optimistic given a) Minecraft's
 	 * wonky entity lists and b) my wonky understanding of them.
 	 */
-	public static void createHookEntity() {
+	public static void createHookEntity(MCDitty mcditty) {
 		try {
 			if (hookEntity != null) {
 				// Check that it's still in the world
@@ -1444,7 +1413,7 @@ public class MCDitty {
 					if (!Minecraft.getMinecraft().theWorld.loadedEntityList
 							.contains(hookEntity)) {
 						// Add to world
-						hookEntity = new MCDittyUpdateTickHookEntity(
+						hookEntity = new MCDittyTickHookEntity(
 								Minecraft.getMinecraft().theWorld);
 						Minecraft.getMinecraft().theWorld.addEntityToWorld(
 								12345678, hookEntity);
@@ -1456,7 +1425,7 @@ public class MCDitty {
 				}
 				return;
 			} else {
-				hookEntity = new MCDittyUpdateTickHookEntity(
+				hookEntity = new MCDittyTickHookEntity(
 						Minecraft.getMinecraft().theWorld);
 				Minecraft mc1 = Minecraft.getMinecraft();
 				if (mc1 != null && mc1.theWorld != null) {
@@ -1466,10 +1435,26 @@ public class MCDitty {
 					hookEntity = null;
 				}
 			}
+			
+			// If possible, add the MCDitty as a tickListener
+			if (hookEntity != null) {
+				addTickListenersToHookEntity(hookEntity);
+			}
 		} catch (Exception e) {
 			// Failed
 			hookEntity = null;
 		}
+	}
+
+	/**
+	 * @param hookEntity2
+	 */
+	private static void addTickListenersToHookEntity(
+			MCDittyTickHookEntity hookEntity2) {
+		// Add MCDitty and the fireworks exploder
+		hookEntity2.addTickListener(BlockSign.mcDittyMod);
+		hookEntity2.addTickListener(fireworkExploder);
+		hookEntity2.addTickListener(blockTuneManager);
 	}
 
 	/**

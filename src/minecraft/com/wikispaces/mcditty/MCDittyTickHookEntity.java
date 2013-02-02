@@ -23,6 +23,8 @@
  */
 package com.wikispaces.mcditty;
 
+import java.util.HashSet;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.BlockSign;
 import net.minecraft.src.Entity;
@@ -32,17 +34,18 @@ import net.minecraft.src.Vec3;
 import net.minecraft.src.World;
 
 /**
- * The onUpdate method calls the onTick method in MCDitty.class
+ * Fires a tick event to all registered TickListeners every tick
  * 
  */
-public class MCDittyUpdateTickHookEntity extends Entity {
-	
-	//public static long lastUpdateTime = 0;
+public class MCDittyTickHookEntity extends Entity {
+
+	// public static long lastUpdateTime = 0;
+	private HashSet<TickListener> tickListeners = new HashSet<TickListener>();
 
 	/**
 	 * @param par1World
 	 */
-	public MCDittyUpdateTickHookEntity(World par1World) {
+	public MCDittyTickHookEntity(World par1World) {
 		super(par1World);
 		ignoreFrustumCheck = true;
 	}
@@ -50,15 +53,14 @@ public class MCDittyUpdateTickHookEntity extends Entity {
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
-		
+
 		// Call the hook method in MCDitty
-		BlockSign.mcDittyMod.onTick(Finder.getMCTimer().elapsedPartialTicks,
-				Minecraft.getMinecraft());
-		
+		fireTickEvent();
+
 		// Follow player
 		EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
 		posX = player.posX;
-		posY = player.posY;
+		posY = player.posY+25;
 		posZ = player.posZ;
 	}
 
@@ -97,6 +99,22 @@ public class MCDittyUpdateTickHookEntity extends Entity {
 	@Override
 	public boolean isInRangeToRenderDist(double par1) {
 		return true;
+	}
+
+	/**
+	 */
+	public void addTickListener(TickListener t) {
+		tickListeners.add(t);
+	}
+
+	private void fireTickEvent() {
+		for (TickListener l : tickListeners) {
+			boolean result = l.onTick(Finder.getMCTimer().elapsedPartialTicks,
+					Minecraft.getMinecraft());
+			if (!result) {
+				tickListeners.remove(l);
+			}
+		}
 	}
 
 }

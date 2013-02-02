@@ -43,7 +43,7 @@ import com.wikispaces.mcditty.CueScheduler;
 import com.wikispaces.mcditty.Finder;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.MCDittyRightClickCheckThread;
-import com.wikispaces.mcditty.MCDittyUpdateTickHookEntity;
+import com.wikispaces.mcditty.MCDittyTickHookEntity;
 import com.wikispaces.mcditty.MuteDittyThread;
 import com.wikispaces.mcditty.PlayDittyFromSignWorkThread;
 import com.wikispaces.mcditty.Point3D;
