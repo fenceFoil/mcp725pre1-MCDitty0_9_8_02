@@ -29,6 +29,7 @@ import java.util.Map;
 import net.minecraft.src.Entity;
 import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.TileEntityNote;
+import net.minecraft.src.Block;
 
 import org.jfugue.elements.Note;
 
@@ -66,15 +67,15 @@ public class EntityNoteBlockTooltip extends Entity {
 			baseValue = instrumentZeroNotes.get("harp");
 		}
 
-		int noteValue = noteBlockValue + baseValue +(12*BlockNoteMCDitty.getOctaveAdjust(x, y, z));
+		int noteValue = noteBlockValue + baseValue
+				+ (12 * BlockNoteMCDitty.getOctaveAdjust(x, y, z));
 		if (noteValue < 0) {
 			noteValue = 0;
 		} else if (noteValue > 127) {
 			noteValue = 127;
 		}
-		
-		return Note
-				.getStringForNote((byte) (noteValue));
+
+		return Note.getStringForNote((byte) (noteValue));
 	}
 
 	public EntityNoteBlockTooltip(TileEntityNote noteTile) {
@@ -150,7 +151,9 @@ public class EntityNoteBlockTooltip extends Entity {
 		super.onUpdate();
 		life -= 0.05f;
 
-		if (life <= 0) {
+		if (life <= 0
+				|| worldObj.getBlockId(noteBlockPoint.x, noteBlockPoint.y,
+						noteBlockPoint.z) != Block.music.blockID) {
 			setDead();
 		}
 
