@@ -82,6 +82,7 @@ import com.wikispaces.mcditty.disco.DiscoFloor;
 import com.wikispaces.mcditty.disco.DiscoFloorDoneListener;
 import com.wikispaces.mcditty.disco.MeasureDiscoFloorThread;
 import com.wikispaces.mcditty.ditty.DittyPlayerThread;
+import com.wikispaces.mcditty.ditty.MIDISynthPool;
 import com.wikispaces.mcditty.ditty.event.CreateBotEvent;
 import com.wikispaces.mcditty.ditty.event.CreateEmitterEvent;
 import com.wikispaces.mcditty.ditty.event.CueEvent;
@@ -201,7 +202,7 @@ public class MCDitty implements TickListener {
 	 */
 	private boolean firstTick = true;
 
-	// public static DecoySignManager decoySignManager;
+	public static MIDISynthPool synthPool;
 
 	/**
 	 * 
@@ -365,7 +366,7 @@ public class MCDitty implements TickListener {
 		// }
 
 		// Cache a few synths
-		DittyPlayerThread.setUpSynthPool();
+		setUpSynthPool();
 		long jfugueLoadTime = System.currentTimeMillis() - startTime;
 
 		// Init the SFX table
@@ -2159,5 +2160,16 @@ public class MCDitty implements TickListener {
 //
 //		// Test
 //		GetMinecraft.instance().sndManager.playSoundFX("note.harmonica", 1f, 1f);
+	}
+	
+	public static void setUpSynthPool() {
+		if (synthPool == null) {
+			synthPool = new MIDISynthPool();
+			synthPool.start();
+		}
+	}
+	
+	public static MIDISynthPool getSynthPool (){
+		return synthPool;
 	}
 }

@@ -25,6 +25,8 @@
 
 package com.wikispaces.mcditty;
 
+import net.minecraft.src.TileEntity;
+
 public class Point3D {
 
 	public int x = 0;
@@ -104,6 +106,16 @@ public class Point3D {
 
 	public String toString() {
 		return "Point3D:" + x + ":" + y + ":" + z;
+	}
+
+	/**
+	 * Returns a point3d representing the tile entity's position.
+	 * Convenience method for Point3D (tile.xCoord, tile.yCoord, tile.zCoord);
+	 * @param tile
+	 * @return
+	 */
+	public static Point3D getTileEntityPos(TileEntity tile) {
+		return new Point3D (tile.xCoord, tile.yCoord, tile.zCoord);
 	}
 
 }

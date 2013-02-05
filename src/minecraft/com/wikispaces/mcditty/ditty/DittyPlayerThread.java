@@ -96,13 +96,13 @@ public class DittyPlayerThread extends Thread implements
 
 	private boolean muting = false;
 
-	private static MIDISynthPool synthPool;
-
 	public static ConcurrentLinkedQueue<DittyPlayerThread> dittyPlayers = new ConcurrentLinkedQueue<DittyPlayerThread>();
 
 	private Player player;
 
 	private Ditty ditty;
+
+	private SoftSynthesizer synth;
 
 	/**
 	 * The Instruments loaded into the synthesizer after it is set up with
@@ -121,14 +121,7 @@ public class DittyPlayerThread extends Thread implements
 		setName("Ditty Player");
 
 		// Set up synthpool if not done already
-		setUpSynthPool();
-	}
-
-	public static void setUpSynthPool() {
-		if (synthPool == null) {
-			synthPool = new MIDISynthPool();
-			synthPool.start();
-		}
+		MCDitty.setUpSynthPool();
 	}
 
 	// public void setDitty(Ditty prop) {
@@ -229,7 +222,7 @@ public class DittyPlayerThread extends Thread implements
 				// }
 				// Handles the synth; closes it if it wants
 			}
-			synthPool.returnUsedSynth(synth, cachedSFXInstruments,
+			MCDitty.getSynthPool().returnUsedSynth(synth, cachedSFXInstruments,
 					originalSynthInstruments);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -264,7 +257,7 @@ public class DittyPlayerThread extends Thread implements
 
 	private Player setUpPlayer() {
 		// Ask the synthpool to get or create a synth and open it
-		synth = synthPool.getOpenedSynth();
+		synth = MCDitty.getSynthPool().getOpenedSynth();
 
 		// Create a Player
 		Player p = null;
@@ -322,13 +315,12 @@ public class DittyPlayerThread extends Thread implements
 	private long lastTimeChecked = 0;
 	private float lastTempo = 0.0f;
 
-	private SoftSynthesizer synth;
-
 	@Override
 	public void playerHook(long time, float tempo) {
 		if (MCDittyConfig.debug) {
 			BlockSign.simpleLog("playerHook() called: time=" + time);
 		}
+		System.out.println ("Latency: "+synth.getLatency());
 
 		MCDitty.onDittyTick(ditty.getDittyID(), time);
 

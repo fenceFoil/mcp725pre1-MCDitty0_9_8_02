@@ -23,18 +23,80 @@
  */
 package com.wikispaces.mcditty.blockTune;
 
-import net.minecraft.client.Minecraft;
+import java.util.LinkedList;
+import java.util.List;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.src.TileEntityRecordPlayer;
+import net.minecraft.src.WorldClient;
+
+import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.TickListener;
 
 /**
+ * TODO: Add auto-time-limiter that stops scanning for stuff if it takes too
+ * long
+ * 
  * @author William
- *
+ * 
  */
 public class BlockTuneManager implements TickListener {
 
+	private LinkedList<BlockTune> trackedNodes = new LinkedList<BlockTune>();
+
+	int tickCounter = 0;
+
 	@Override
 	public boolean onTick(float partialTick, Minecraft minecraft) {
+		if (tickCounter % 5 == 0) {
+			scanForNodes(minecraft.theWorld);
+		}
+		
+		LinkedList<BlockTune> removedNodes = new LinkedList<BlockTune>();
+		for (BlockTune n : trackedNodes) {
+			if (n.isRemoved()) {
+				removedNodes.add(n);
+			} else {
+				n.update(minecraft.theWorld);
+			}
+		}
+		trackedNodes.removeAll(removedNodes);
+
+		tickCounter++;
 		return true;
+	}
+
+	/**
+	 * 
+	 */
+	private void scanForNodes(WorldClient world) {
+		List l = world.loadedTileEntityList;
+		for (Object o : l) {
+			if (o instanceof TileEntityRecordPlayer) {
+				TileEntityRecordPlayer tile = (TileEntityRecordPlayer) o;
+				if (!tileEntityAlreadyNode(tile)) {
+					if (BlockTune.isTileEntityNode(tile, world)) {
+						BlockTune node = new BlockTune(tile);
+						//if (!trackedNodes.contains(node)) {
+							trackedNodes.add(node);
+						//}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param tile
+	 * @return
+	 */
+	private boolean tileEntityAlreadyNode(TileEntityRecordPlayer tile) {
+		Point3D tilePoint = Point3D.getTileEntityPos(tile);
+		for (BlockTune n:trackedNodes) {
+			if (n.getNodePoint().equals(tilePoint)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
