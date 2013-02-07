@@ -1130,7 +1130,7 @@ public class MCDitty implements TickListener {
 	 * 
 	 * @return
 	 */
-	private Vec3[] getPlayerCollisionPoints() {
+	private static Vec3[] getPlayerCollisionPoints() {
 		Minecraft minecraft = Minecraft.getMinecraft();
 		Vec3[] playerPoints = new Vec3[2];
 		playerPoints[0] = Vec3.createVectorHelper(minecraft.thePlayer.posX,
@@ -1146,7 +1146,7 @@ public class MCDitty implements TickListener {
 	 * @param bb
 	 * @return
 	 */
-	private boolean isPlayerCollidingWith(AxisAlignedBB bb) {
+	public static boolean isPlayerCollidingWith(AxisAlignedBB bb) {
 		boolean playerInsideBB = false;
 		Vec3[] playerPoints = getPlayerCollisionPoints();
 		for (int currPoint = 0; currPoint < playerPoints.length; currPoint++) {

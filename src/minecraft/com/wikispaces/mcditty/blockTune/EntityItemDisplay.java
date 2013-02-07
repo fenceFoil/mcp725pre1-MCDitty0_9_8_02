@@ -28,6 +28,7 @@ import net.minecraft.src.EntityItem;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.Material;
 import net.minecraft.src.MathHelper;
+import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.World;
 
 /**
@@ -54,6 +55,7 @@ public class EntityItemDisplay extends EntityItem {
 
 	private int updateCount;
 	private ItemStack itemStack;
+	private int ageMultiplier = 1;
 
 	/**
 	 * Called to update the entity's position/logic.
@@ -67,7 +69,7 @@ public class EntityItemDisplay extends EntityItem {
 
 		// This is the only part of EntityItem.onUpdate() that we need to
 		// preserve
-		age++;
+		age+=ageMultiplier;
 	}
 
 	@Override
@@ -78,6 +80,24 @@ public class EntityItemDisplay extends EntityItem {
 	@Override
 	public ItemStack func_92059_d() {
 		return itemStack;
+	}
+
+	public int getAgeMultiplier() {
+		return ageMultiplier;
+	}
+
+	public void setAgeMultiplier(int ageMultiplier) {
+		this.ageMultiplier = ageMultiplier;
+	}
+
+	@Override
+	public void writeEntityToNBT(NBTTagCompound par1nbtTagCompound) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void readEntityFromNBT(NBTTagCompound par1nbtTagCompound) {
+		// TODO Auto-generated method stub
 	}
 
 }
