@@ -320,7 +320,7 @@ public class DittyPlayerThread extends Thread implements
 		if (MCDittyConfig.debug) {
 			BlockSign.simpleLog("playerHook() called: time=" + time);
 		}
-		System.out.println ("Latency: "+synth.getLatency());
+		//System.out.println ("Latency: "+synth.getLatency());
 
 		MCDitty.onDittyTick(ditty.getDittyID(), time);
 

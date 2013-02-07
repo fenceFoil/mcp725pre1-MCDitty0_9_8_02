@@ -49,15 +49,19 @@ public class BlockTuneManager implements TickListener {
 	@Override
 	public boolean onTick(float partialTick, Minecraft minecraft) {
 		if (tickCounter % 5 == 0) {
+			Minecraft.getMinecraft().mcProfiler.startSection("scan");
 			scanForNodes(minecraft.theWorld);
+			Minecraft.getMinecraft().mcProfiler.endSection();
 		}
-		
+
 		LinkedList<BlockTune> removedNodes = new LinkedList<BlockTune>();
 		for (BlockTune n : trackedNodes) {
 			if (n.isRemoved()) {
 				removedNodes.add(n);
 			} else {
+				Minecraft.getMinecraft().mcProfiler.startSection("update");
 				n.update(minecraft.theWorld);
+				Minecraft.getMinecraft().mcProfiler.endSection();
 			}
 		}
 		trackedNodes.removeAll(removedNodes);
@@ -77,9 +81,9 @@ public class BlockTuneManager implements TickListener {
 				if (!tileEntityAlreadyNode(tile)) {
 					if (BlockTune.isTileEntityNode(tile, world)) {
 						BlockTune node = new BlockTune(tile);
-						//if (!trackedNodes.contains(node)) {
-							trackedNodes.add(node);
-						//}
+						// if (!trackedNodes.contains(node)) {
+						trackedNodes.add(node);
+						// }
 					}
 				}
 			}
@@ -92,7 +96,7 @@ public class BlockTuneManager implements TickListener {
 	 */
 	private boolean tileEntityAlreadyNode(TileEntityRecordPlayer tile) {
 		Point3D tilePoint = Point3D.getTileEntityPos(tile);
-		for (BlockTune n:trackedNodes) {
+		for (BlockTune n : trackedNodes) {
 			if (n.getNodePoint().equals(tilePoint)) {
 				return true;
 			}
