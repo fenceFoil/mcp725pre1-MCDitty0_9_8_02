@@ -39,7 +39,6 @@ import net.minecraft.src.World;
  */
 public class MCDittyTickHookEntity extends Entity {
 
-	// public static long lastUpdateTime = 0;
 	private HashSet<TickListener> tickListeners = new HashSet<TickListener>();
 
 	/**
@@ -60,7 +59,7 @@ public class MCDittyTickHookEntity extends Entity {
 		// Follow player
 		EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
 		posX = player.posX;
-		posY = player.posY+25;
+		posY = player.posY + 25;
 		posZ = player.posZ;
 	}
 
@@ -69,7 +68,6 @@ public class MCDittyTickHookEntity extends Entity {
 	 */
 	@Override
 	protected void entityInit() {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -78,7 +76,6 @@ public class MCDittyTickHookEntity extends Entity {
 	 */
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound nbttagcompound) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -87,8 +84,6 @@ public class MCDittyTickHookEntity extends Entity {
 	 */
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound nbttagcompound) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -108,13 +103,34 @@ public class MCDittyTickHookEntity extends Entity {
 	}
 
 	private void fireTickEvent() {
+		// Profile each listener's tick as their onTick methods are called
+		// Remove them if they signal to by returning "false" from their ontick
+		// methods
+		// Profiling appears under root.tick.level.entity.regular.*
+		// Or something like that.
 		for (TickListener l : tickListeners) {
-			boolean result = l.onTick(Finder.getMCTimer().elapsedPartialTicks,
-					Minecraft.getMinecraft());
+			try {
+				Minecraft.getMinecraft().mcProfiler
+						.startSection("mcditty"
+								+ l.getClass()
+										.getName()
+										.substring(
+												l.getClass().getName()
+														.lastIndexOf(".") + 1));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			boolean result = true;
+			try {
+				result = l.onTick(Finder.getMCTimer().elapsedPartialTicks,
+						Minecraft.getMinecraft());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			if (!result) {
 				tickListeners.remove(l);
 			}
+			Minecraft.getMinecraft().mcProfiler.endSection();
 		}
 	}
-
 }
