@@ -434,4 +434,9 @@ public class BlockNoteMCDitty extends BlockNote {
 		}
 	}
 
+	@Override
+	public int getBlockTextureFromSide(int par1) {
+		return super.getBlockTextureFromSide(par1);
+	}	
+
 }
