@@ -29,6 +29,7 @@ import net.minecraft.src.ItemStack;
 import net.minecraft.src.Material;
 import net.minecraft.src.MathHelper;
 import net.minecraft.src.NBTTagCompound;
+import net.minecraft.src.Vec3;
 import net.minecraft.src.World;
 
 /**
@@ -98,6 +99,26 @@ public class EntityItemDisplay extends EntityItem {
 	@Override
 	public void readEntityFromNBT(NBTTagCompound par1nbtTagCompound) {
 		// TODO Auto-generated method stub
+	}
+
+	/**
+	 * Render distance: 64 (up from 16)
+	 */
+	@Override
+	public boolean isInRangeToRenderVec3D(Vec3 par1Vec3) {
+		return par1Vec3.squareDistanceTo(posX, posY, posZ) < 64 * 64;
+	}
+
+	/**
+	 * Render distance: 64 (up from 16)
+	 */
+	@Override
+	public boolean isInRangeToRenderDist(double par1) {
+		if (par1 < 64) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }
