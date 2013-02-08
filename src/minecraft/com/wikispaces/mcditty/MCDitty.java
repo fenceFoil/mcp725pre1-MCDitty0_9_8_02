@@ -295,8 +295,8 @@ public class MCDitty implements TickListener {
 		// Packet.packetClassToIdMap.put(Packet62LevelSoundMCDitty.class,
 		// Integer.valueOf(62));
 		try {
-			Object packetClassToIdMapObj = Finder
-					.getUniqueTypedFieldFromClass(Packet.class, Map.class, null);
+			Object packetClassToIdMapObj = Finder.getUniqueTypedFieldFromClass(
+					Packet.class, Map.class, null);
 			if (packetClassToIdMapObj != null) {
 				Map packetClassToIdMap = (Map) packetClassToIdMapObj;
 				packetClassToIdMap.put(Packet62LevelSoundMCDitty.class,
@@ -423,8 +423,7 @@ public class MCDitty implements TickListener {
 									RenderMCDittyUpdateHook r = new RenderMCDittyUpdateHook();
 									r.setRenderManager(RenderManager.instance);
 									registeredRenderers.put(
-											MCDittyTickHookEntity.class,
-											r);
+											MCDittyTickHookEntity.class, r);
 								}
 
 								// Add note block tooltip renderer
@@ -458,6 +457,7 @@ public class MCDitty implements TickListener {
 		// System.out.println("MCDitty Load: JFugue: "
 		// + jfugueLoadTime + ", SFX: "
 		// + sfxLoadTime+", SignRendererTrig: "+trigLoadTime);
+		
 	}
 
 	/**
@@ -784,9 +784,8 @@ public class MCDitty implements TickListener {
 			List mControlList = null;
 			try {
 				// long startNano = System.nanoTime();
-				mControlList = (List) Finder
-						.getUniqueTypedFieldFromClass(GuiScreen.class,
-								List.class, currentScreen);
+				mControlList = (List) Finder.getUniqueTypedFieldFromClass(
+						GuiScreen.class, List.class, currentScreen);
 
 				// System.out.println ("profile gui check: "+(System.nanoTime()
 				// - startNano));
@@ -829,8 +828,10 @@ public class MCDitty implements TickListener {
 				// Show lyric
 				if (MCDittyConfig.lyricsEnabled && l.getLyricText() != null
 						&& l.getLyricText().trim().length() > 0) {
-					BlockSign.writeChatMessage(
-							Minecraft.getMinecraft().theWorld, l.getLyricText());
+					BlockSign
+							.writeChatMessage(
+									Minecraft.getMinecraft().theWorld,
+									l.getLyricText());
 				}
 			}
 		}
@@ -1088,10 +1089,12 @@ public class MCDitty implements TickListener {
 									if (MCDittyConfig.proxPadsEnabled) {
 										BlockSign
 												.playDittyFromSigns(
-														Minecraft.getMinecraft().theWorld,
-														bb.getPadX(),
-														bb.getPadY(),
-														bb.getPadZ(), true);
+														Minecraft
+																.getMinecraft().theWorld,
+														bb.getPadX(), bb
+																.getPadY(), bb
+																.getPadZ(),
+														true);
 									}
 									proxPadValid = true;
 									break;
@@ -1436,7 +1439,7 @@ public class MCDitty implements TickListener {
 					hookEntity = null;
 				}
 			}
-			
+
 			// If possible, add the MCDitty as a tickListener
 			if (hookEntity != null) {
 				addTickListenersToHookEntity(hookEntity);
@@ -1456,6 +1459,11 @@ public class MCDitty implements TickListener {
 		hookEntity2.addTickListener(BlockSign.mcDittyMod);
 		hookEntity2.addTickListener(fireworkExploder);
 		hookEntity2.addTickListener(blockTuneManager);
+		
+		// TEMP TODO: Added bugfix
+		// Apply bugfix for empty jukeboxes ejecting null itemstack if loaded
+		// from save file and broken
+		hookEntity2.addTickListener(new NullItemEntityRemover());
 	}
 
 	/**
@@ -2136,7 +2144,7 @@ public class MCDitty implements TickListener {
 		UpdateResourcesThread t = new UpdateResourcesThread();
 		t.start();
 	}
-	
+
 	public static void registerSoundResources() {
 		registerSoundResources(MCDittyConfig.resourcesDir, "");
 	}
@@ -2149,27 +2157,29 @@ public class MCDitty implements TickListener {
 			for (File f : resourcesDir.listFiles()) {
 				if (f.getName().endsWith(".ogg")) {
 					// Register as a sound
-					String soundName = prefix+f.getName();
-					//System.out.println ("Registering sound effect: "+soundName);
+					String soundName = prefix + f.getName();
+					// System.out.println
+					// ("Registering sound effect: "+soundName);
 					Minecraft.getMinecraft().sndManager.addSound(soundName, f);
 				} else if (f.isDirectory()) {
-					registerSoundResources(f, f.getName()+"/");
+					registerSoundResources(f, f.getName() + "/");
 				}
 			}
 		}
-//
-//		// Test
-//		GetMinecraft.instance().sndManager.playSoundFX("note.harmonica", 1f, 1f);
+		//
+		// // Test
+		// GetMinecraft.instance().sndManager.playSoundFX("note.harmonica", 1f,
+		// 1f);
 	}
-	
+
 	public static void setUpSynthPool() {
 		if (synthPool == null) {
 			synthPool = new MIDISynthPool();
 			synthPool.start();
 		}
 	}
-	
-	public static MIDISynthPool getSynthPool (){
+
+	public static MIDISynthPool getSynthPool() {
 		return synthPool;
 	}
 }
