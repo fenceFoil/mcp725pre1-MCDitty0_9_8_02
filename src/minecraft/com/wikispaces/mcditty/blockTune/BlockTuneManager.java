@@ -75,7 +75,8 @@ public class BlockTuneManager implements TickListener {
 	 */
 	private void scanForNodes(WorldClient world) {
 		List l = world.loadedTileEntityList;
-		for (Object o : l) {
+		for (int i=0;i<l.size();i++) {
+			Object o = l.get(i);
 			if (o instanceof TileEntityRecordPlayer) {
 				TileEntityRecordPlayer tile = (TileEntityRecordPlayer) o;
 				if (!tileEntityAlreadyNode(tile)) {
