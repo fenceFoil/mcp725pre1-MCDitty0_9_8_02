@@ -27,6 +27,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.src.EntityItem;
 import net.minecraft.src.WorldServer;
 
+import com.wikispaces.mcditty.blockTune.EntityItemDisplay;
+
 /**
  * @author William
  * 
@@ -42,7 +44,7 @@ public class NullItemEntityRemover implements TickListener {
 	@Override
 	public boolean onTick(float partialTick, Minecraft minecraft) {
 		for (Object o : minecraft.theWorld.loadedEntityList) {
-			if (o instanceof EntityItem) {
+			if (o instanceof EntityItem && !(o instanceof EntityItemDisplay)) {
 				EntityItem e = (EntityItem) o;
 				if (e.func_92059_d().itemID == 0) {
 					// Buggy item stack found
