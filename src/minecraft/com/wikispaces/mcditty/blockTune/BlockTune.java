@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
 
-import net.java.games.input.Component.Identifier.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.AxisAlignedBB;
 import net.minecraft.src.Block;
@@ -35,12 +34,12 @@ import net.minecraft.src.ItemStack;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntityNote;
 import net.minecraft.src.TileEntityRecordPlayer;
+import net.minecraft.src.Vec3;
 import net.minecraft.src.World;
 import net.minecraft.src.WorldClient;
 
 import org.jfugue.elements.Note;
 
-import com.sun.media.sound.SoftSynthesizer;
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.Point3D;
 
@@ -48,7 +47,7 @@ import com.wikispaces.mcditty.Point3D;
  * @author William
  * 
  */
-public class BlockTune {
+public class BlockTune implements BlockTuneAccess {
 	private Point3D nodePoint = null;
 
 	private NodeState state = NodeState.ACTIVE;
@@ -58,42 +57,277 @@ public class BlockTune {
 
 	private HashMap<Point3D, EntityItemDisplay> blockDisplays = new HashMap<Point3D, EntityItemDisplay>();
 
-	// TODO: Inefficient
-	private SoftSynthesizer mySynth = MCDitty.getSynthPool().getOpenedSynth();
-
 	private Scale scale = Scale.PENTATONIC_MAJOR;
 
 	private static Random rand = new Random();
+
+	private BlockTunePlayer player = new BlockTunePlayer(this,
+			MCDitty.getSynthPool());
+
+	private int updateCount = 0;
+
+	private World world = null;
+
+	private LinkedList<PreciseParticleRequest> particleRequests = new LinkedList<BlockTune.PreciseParticleRequest>();
+
+	// private int currNoteColumn = 0;
 
 	/**
 	 * @param tile
 	 */
 	public BlockTune(TileEntity tile) {
+		// Set up world
+		world = tile.getWorldObj();
+
+		//
 		nodePoint = Point3D.getTileEntityPos(tile);
 		corners = findCorners(nodePoint, tile.getWorldObj());
 		if (corners == null) {
 			state = NodeState.REMOVED;
 		} else {
-			playSound("tile.piston.in", nodePoint, 1.0f, 1.0f);
+			playSoundFromCorners("tile.piston.in", 1.0f, 1.0f);
 		}
 
 		// Set up scale
 		scale.setBaseNote(Note.createNote("C5").getValue()
 				+ ((nodePoint.y - 64) / 2));
 
-		// Set up synth
-		mySynth.getChannels()[0].programChange(1);
-		mySynth.getChannels()[1].programChange(13);
-		mySynth.getChannels()[2].programChange(10);
-		mySynth.getChannels()[3].programChange(27);
-
-		// Set up bb
-		Point3D bbCorner1 = corners.getInteriorPoint(-5, -5);
-		Point3D bbCorner2 = corners
-				.getInteriorPoint(corners.getInteriorWidth() + 4,
-						corners.getInteriorHeight() + 4);
+		// Set up bouding box
+//		Point3D bbCorner1 = corners.getInteriorPoint(-5, -5);
+//		Point3D bbCorner2 = corners
+//				.getInteriorPoint(corners.getInteriorWidth() + 4,
+//						corners.getInteriorHeight() + 4);
+		Point3D bbCorner1 = corners.startCorner;
+		Point3D bbCorner2 = corners.farCorner;
 		bounds = AxisAlignedBB.getBoundingBox(bbCorner1.x, bbCorner1.y,
 				bbCorner1.z, bbCorner2.x, bbCorner2.y + 3, bbCorner2.z);
+		
+		// Set up block displays
+		updateBlockDisplays(world);
+
+		// Start player
+		player.start();
+	}
+
+	public void update(WorldClient world) {
+		// Save time by not checking anything on removed nodes
+		if (state == NodeState.REMOVED) {
+			return;
+		}
+
+		// Ensure that the node's block exists
+		if (getNodeTileEntity(world) == null) {
+			prepareForRemoval();
+
+			// Play sound
+			playSoundFromCorners("mob.irongolem.death", 1.0f, 1.0f);
+
+			return;
+		}
+
+		// Once in a while, check to ensure that the smallest possible structure
+		// is being used
+		if (updateCount % 5 == 0) {
+			CornerSet newestFoundCorners = findCorners(nodePoint, world);
+			if (newestFoundCorners == null
+					|| !newestFoundCorners.equals(corners)) {
+				prepareForRemoval();
+				playSoundFromCorners("tile.piston.out", 1.0f, 1.0f);
+				return;
+			}
+		}
+
+		// Make sure that the tune's structure exists
+		if (!checkExistingStructure(world)) {
+			prepareForRemoval();
+
+			// Play sound
+			playSoundFromCorners("mob.irongolem.death", 1.0f, 1.0f);
+			return;
+		}
+
+		// Update the floating blocks above each corner
+		updateBlockDisplays(world);
+
+		// // Process any particle requests
+		// processParticleRequests();
+
+		if (updateCount % 2 == 0) {
+			// Pulse border particles
+			if (Minecraft.getMinecraft().gameSettings.fancyGraphics) {
+				LinkedList<Point3D> particlePoints = corners
+						.getRandomBorderBlocks(0.1f);
+				for (Point3D p : particlePoints) {
+					world.spawnParticle("reddust", p.x + 0.5, p.y + 1,
+							p.z + 0.5, 0, 0.02, 0);
+				}
+			}
+		}
+
+		// // TODO: Release synth if turned off for a time
+		// // TODO: Never get synth if never turned on
+		// // Play notes if necessary
+		// if (updateCount % 3 == 0 && isAdjacentSwitchOn(world, 0)) {
+		// // Slience any previous notes
+		// mySynth.getChannels()[0].allNotesOff();
+		// mySynth.getChannels()[1].allNotesOff();
+		// mySynth.getChannels()[2].allNotesOff();
+		// mySynth.getChannels()[3].allNotesOff();
+		// // Read and play new notes
+		// for (int i = 0; i < corners.getInteriorHeight(); i++) {
+		// // System.out.println ("Reading i="+i);
+		// Point3D readPoint = corners.getInteriorPoint(currNoteColumn, i);
+		// int pointID = world.getBlockId(readPoint.x, readPoint.y,
+		// readPoint.z);
+		// if (pointID != 0) {
+		// int pointMeta = world.getBlockMetadata(readPoint.x,
+		// readPoint.y, readPoint.z);
+		// int cornerNote = -1;
+		// LinkedList<Point3D> cornersList = corners.getCorners();
+		// for (int j = 0; j < cornersList.size(); j++) {
+		// Point3D corner = cornersList.get(j);
+		// ItemStack cornerItem = blockDisplays.get(corner)
+		// .func_92059_d();
+		// if (cornerItem.itemID == pointID
+		// && cornerItem.getItemDamage() == pointMeta) {
+		// // Switches on corners are redundant: can break
+		// // block below!
+		// // if ((getNumAdjacent(world, Block.lever.blockID,
+		// // corner) <= 0)
+		// // || isAdjacentSwitchOn(world, j)) {
+		// cornerNote = j;
+		// // }
+		// break;
+		// }
+		// }
+		//
+		// if (cornerNote >= 0) {
+		// int noteValue = scale.getNoteForStep(i);
+		// // System.out.println(Note.getStringForNote((byte)
+		// // noteValue));
+		// mySynth.getChannels()[cornerNote]
+		// .noteOn(noteValue, 127);
+		//
+		// spawnNoteParticleAbove(readPoint,
+		// (float) cornerNote * 0.2f, 0.2f, world);
+		//
+		// spawnNoteParticleAbove(cornersList.get(cornerNote),
+		// (float) cornerNote * 0.2f, 1f, world);
+		//
+		// }
+		// }
+		// }
+		//
+		// // Increment current column
+		// currNoteColumn = (currNoteColumn + 1) % corners.getInteriorWidth();
+		//
+		// }
+
+		// Increment update count
+		updateCount++;
+	}
+
+	/**
+	 * 
+	 */
+	private void flushParticleRequests() {
+		for (PreciseParticleRequest p : particleRequests) {
+			world.spawnParticle(p.type, p.location.xCoord, p.location.yCoord,
+					p.location.zCoord, p.velocity.xCoord, p.velocity.yCoord,
+					p.velocity.zCoord);
+		}
+		particleRequests.clear();
+	}
+
+	public static boolean isTileEntityNode(TileEntity block, WorldClient world) {
+		if (block instanceof TileEntityRecordPlayer) {
+			if (searchForStructure(world, block)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean isRemoved() {
+		return state == NodeState.REMOVED;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof BlockTune) {
+			BlockTune node = (BlockTune) obj;
+			if (nodePoint.equals(node.nodePoint)) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the 6 points directly adjacent to a block in 3D-space. If a block
+	 * is at y=0 or y=255, the returned list of points will only be 5 elements
+	 * long.
+	 * 
+	 * @param point
+	 *            if null, method returns null
+	 * @return a 5 or 6 element array of Point3D
+	 */
+	public static Point3D[] getAdjacentBlocks(Point3D point) {
+		if (point == null) {
+			return null;
+		}
+
+		LinkedList<Point3D> returns = new LinkedList<Point3D>();
+
+		// Find the x/z adjacent blocks
+		returns.add(new Point3D(point.x, point.y, point.z - 1));
+		returns.add(new Point3D(point.x, point.y, point.z + 1));
+		returns.add(new Point3D(point.x - 1, point.y, point.z));
+		returns.add(new Point3D(point.x + 1, point.y, point.z));
+
+		// Find the y adjacent blocks
+		if (point.y > 0) {
+			returns.add(new Point3D(point.x, point.y - 1, point.z));
+		}
+
+		if (point.y < 255) {
+			returns.add(new Point3D(point.x, point.y + 1, point.z));
+		}
+
+		return returns.toArray(new Point3D[returns.size()]);
+	}
+
+	/**
+	 * Returns the 4 points directly adjacent to a block in 2D space, on the x
+	 * and z coordinates.
+	 * 
+	 * @param point
+	 *            if null, method returns null
+	 * @return a 4 element array of Point3D
+	 */
+	public static Point3D[] getAdjacentBlocksXZ(Point3D point) {
+		if (point == null) {
+			return null;
+		}
+
+		LinkedList<Point3D> returns = new LinkedList<Point3D>();
+
+		// Find the x/z adjacent blocks
+		returns.add(new Point3D(point.x, point.y, point.z - 1));
+		returns.add(new Point3D(point.x, point.y, point.z + 1));
+		returns.add(new Point3D(point.x - 1, point.y, point.z));
+		returns.add(new Point3D(point.x + 1, point.y, point.z));
+
+		return returns.toArray(new Point3D[returns.size()]);
+	}
+
+	public Point3D getNodePoint() {
+		return nodePoint;
 	}
 
 	/**
@@ -139,130 +373,13 @@ public class BlockTune {
 				world.getBlockMetadata(x, y, z));
 	}
 
-	private int updateCount = 0;
-	private int currNoteColumn = 0;
-
-	public void update(WorldClient world) {
-		// Save time by not checking anything on removed nodes
-		if (state == NodeState.REMOVED) {
-			return;
-		}
-
-		// Ensure that the node's block exists
-		if (getNodeTileEntity(world) == null) {
-			prepareForRemoval();
-
-			// Play sound
-			playSound("mob.irongolem.death", nodePoint, 1.0f, 1.0f);
-
-			return;
-		}
-
-		// Once in a while, check to ensure that the smallest possible structure
-		// is being used
-		// TODO: The once in a while bit
-		CornerSet newestFoundCorners = findCorners(nodePoint, world);
-		if (newestFoundCorners == null || !newestFoundCorners.equals(corners)) {
-			prepareForRemoval();
-			playSound("tile.piston.out", nodePoint, 1.0f, 1.0f);
-			return;
-		}
-
-		// Check structure
-		if (!checkExistingStructure(world)) {
-			prepareForRemoval();
-
-			// Play sound
-			playSound("mob.irongolem.death", nodePoint, 1.0f, 1.0f);
-			return;
-		}
-
-		// Update the floating blocks above each corner
-		updateBlockDisplays(world);
-
-		if (updateCount % 2 == 0) {
-			// Pulse border particles
-			if (Minecraft.getMinecraft().gameSettings.fancyGraphics) {
-				LinkedList<Point3D> particlePoints = corners
-						.getRandomBorderBlocks(0.1f);
-				for (Point3D p : particlePoints) {
-					world.spawnParticle("reddust", p.x + 0.5, p.y + 1,
-							p.z + 0.5, 0, 0.02, 0);
-				}
-			}
-		}
-
-		// TODO: Release synth if turned off for a time
-		// TODO: Never get synth if never turned on
-		// Play notes if necessary
-		if (updateCount % 7 == 0 && isAdjacentSwitchOn(world, 0)) {
-			// Slience any previous notes
-			mySynth.getChannels()[0].allNotesOff();
-			mySynth.getChannels()[1].allNotesOff();
-			mySynth.getChannels()[2].allNotesOff();
-			mySynth.getChannels()[3].allNotesOff();
-			// Read and play new notes
-			for (int i = 0; i < corners.getInteriorHeight(); i++) {
-				// System.out.println ("Reading i="+i);
-				Point3D readPoint = corners.getInteriorPoint(currNoteColumn, i);
-				int pointID = world.getBlockId(readPoint.x, readPoint.y,
-						readPoint.z);
-				if (pointID != 0) {
-					int pointMeta = world.getBlockMetadata(readPoint.x,
-							readPoint.y, readPoint.z);
-					int cornerNote = -1;
-					LinkedList<Point3D> cornersList = corners.getCorners();
-					for (int j = 0; j < cornersList.size(); j++) {
-						Point3D corner = cornersList.get(j);
-						ItemStack cornerItem = blockDisplays.get(corner)
-								.func_92059_d();
-						if (cornerItem.itemID == pointID
-								&& cornerItem.getItemDamage() == pointMeta) {
-							// Switches on corners are redundant: can break
-							// block below!
-							// if ((getNumAdjacent(world, Block.lever.blockID,
-							// corner) <= 0)
-							// || isAdjacentSwitchOn(world, j)) {
-							cornerNote = j;
-							// }
-							break;
-						}
-					}
-
-					if (cornerNote >= 0) {
-						int noteValue = scale.getNoteForStep(i);
-						// System.out.println(Note.getStringForNote((byte)
-						// noteValue));
-						mySynth.getChannels()[cornerNote]
-								.noteOn(noteValue, 127);
-
-						spawnNoteParticleAbove(readPoint,
-								(float) cornerNote * 0.2f, 0.2f, world);
-
-						spawnNoteParticleAbove(cornersList.get(cornerNote),
-								(float) cornerNote * 0.2f, 1f, world);
-
-					}
-				}
-			}
-
-			// Increment current column
-			currNoteColumn = (currNoteColumn + 1) % corners.getInteriorWidth();
-
-		}
-
-		// Increment update count
-		updateCount++;
-	}
-
 	private void spawnNoteParticleAbove(Point3D location, float color,
 			float variance, World world) {
-		float offset = ((1f-variance) / 2f);
-		world.spawnParticle("note",
-				(float)location.x + offset + (variance * rand.nextFloat()), (float)location.y
-						+ 1f,
-				(float)location.z + offset + (variance * rand.nextFloat()), color, 0,
-				0);
+		float offset = ((1f - variance) / 2f);
+		world.spawnParticle("note", (float) location.x + offset
+				+ (variance * rand.nextFloat()), (float) location.y + 1f,
+				(float) location.z + offset + (variance * rand.nextFloat()),
+				color, 0, 0);
 	}
 
 	/**
@@ -303,7 +420,7 @@ public class BlockTune {
 			e.setDead();
 		}
 
-		MCDitty.getSynthPool().returnUsedSynth(mySynth, null, null);
+		player.close();
 	}
 
 	private boolean checkExistingStructure(World world) {
@@ -325,12 +442,27 @@ public class BlockTune {
 		return true;
 	}
 
-	private static void playSound(String sound, Point3D point, float volume,
-			float pitch) {
-		Minecraft.getMinecraft().sndManager.playSound(sound, point.x + 0.5f,
-				point.y + 0.5f, point.z + 0.5f,
-				volume * Minecraft.getMinecraft().gameSettings.soundVolume,
-				pitch);
+	private void playSoundFromCorners(String sound, float volume, float pitch) {
+		if (corners.getInteriorHeight() > 16 || corners.getInteriorWidth() > 16) {
+			for (Point3D point : corners.getCorners()) {
+				Minecraft.getMinecraft().sndManager
+						.playSound(
+								sound,
+								point.x + 0.5f,
+								point.y + 0.5f,
+								point.z + 0.5f,
+								volume
+										* Minecraft.getMinecraft().gameSettings.soundVolume,
+								pitch);
+			}
+		} else {
+			// small enough that we can get away just playing one sound
+			Point3D point = getNodePoint();
+			Minecraft.getMinecraft().sndManager.playSound(sound,
+					point.x + 0.5f, point.y + 0.5f, point.z + 0.5f,
+					volume * Minecraft.getMinecraft().gameSettings.soundVolume,
+					pitch);
+		}
 	}
 
 	private TileEntityRecordPlayer getNodeTileEntity(World world) {
@@ -475,6 +607,121 @@ public class BlockTune {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.wikispaces.mcditty.blockTune.BlockTuneAccess#getFrameCount()
+	 */
+	@Override
+	public int getFrameCount() {
+		return corners.getInteriorWidth();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.wikispaces.mcditty.blockTune.BlockTuneAccess#isPaused()
+	 */
+	@Override
+	public boolean isPaused() {
+		if (!isAdjacentSwitchOn(world, 0)) {
+			return true;
+		} else if (Minecraft.getMinecraft().isGamePaused) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.wikispaces.mcditty.blockTune.BlockTuneAccess#isLooping()
+	 */
+	@Override
+	public boolean isLooping() {
+		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.wikispaces.mcditty.blockTune.BlockTuneAccess#getMasterVolume()
+	 */
+	@Override
+	public double getMasterVolume() {
+		return 1d;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.wikispaces.mcditty.blockTune.BlockTuneAccess#getFrame(int)
+	 */
+	@Override
+	public Frame getFrame(int frameNum) {
+		Frame frame = new Frame(1);
+
+		// Climb upwards through the column
+		for (int y = 0; y < corners.getInteriorHeight(); y++) {
+			// Get point referenced
+			Point3D readPoint = corners.getInteriorPoint(frameNum, y);
+
+			int pointID = world.getBlockId(readPoint.x, readPoint.y,
+					readPoint.z);
+			if (pointID != 0) {
+				int pointMeta = world.getBlockMetadata(readPoint.x,
+						readPoint.y, readPoint.z);
+				int cornerNote = -1;
+				LinkedList<Point3D> cornersList = corners.getCorners();
+				for (int j = 0; j < cornersList.size(); j++) {
+					Point3D corner = cornersList.get(j);
+					ItemStack cornerItem = blockDisplays.get(corner)
+							.func_92059_d();
+					if (cornerItem == null) {
+						continue;
+					}
+
+					if (cornerItem.itemID == pointID
+							&& cornerItem.getItemDamage() == pointMeta) {
+						// Switches on corners are redundant: can break
+						// block below!
+						// if ((getNumAdjacent(world, Block.lever.blockID,
+						// corner) <= 0)
+						// || isAdjacentSwitchOn(world, j)) {
+						cornerNote = j;
+						// }
+						break;
+					}
+				}
+
+				if (cornerNote >= 0) {
+					byte noteValue = (byte) scale.getNoteForStep(y);
+					frame.addNoteStart(cornerNote, noteValue);
+
+					// Queue up particles
+					spawnNoteParticleAbove(readPoint,
+							(float) cornerNote * 0.2f, 0.2f, world);
+					spawnNoteParticleAbove(cornersList.get(cornerNote),
+							(float) cornerNote * 0.2f, 1f, world);
+				}
+			}
+		}
+
+		return frame;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.wikispaces.mcditty.blockTune.BlockTuneAccess#onFramePlayed(int)
+	 */
+	@Override
+	public void onFramePlayed(Frame frame, int frameNum) {
+		// Show queued up particles
+		flushParticleRequests();
+	}
+
 	private static class CornerSet {
 		public Point3D xCorner;
 		public Point3D zCorner;
@@ -518,13 +765,13 @@ public class BlockTune {
 		public LinkedList<Point3D> getCorners() {
 			LinkedList<Point3D> cornerList = new LinkedList<Point3D>();
 			cornerList.add(startCorner);
-			if (!isXBottomAxis()) {
+			if (isXBottomAxis()) {
 				cornerList.add(xCorner);
 			} else {
 				cornerList.add(zCorner);
 			}
 			cornerList.add(farCorner);
-			if (!isXBottomAxis()) {
+			if (isXBottomAxis()) {
 				cornerList.add(zCorner);
 			} else {
 				cornerList.add(xCorner);
@@ -534,13 +781,13 @@ public class BlockTune {
 
 		public LinkedList<Point3D> getCornersExceptStart() {
 			LinkedList<Point3D> cornerList = new LinkedList<Point3D>();
-			if (!isXBottomAxis()) {
+			if (isXBottomAxis()) {
 				cornerList.add(xCorner);
 			} else {
 				cornerList.add(zCorner);
 			}
 			cornerList.add(farCorner);
-			if (!isXBottomAxis()) {
+			if (isXBottomAxis()) {
 				cornerList.add(zCorner);
 			} else {
 				cornerList.add(xCorner);
@@ -659,94 +906,9 @@ public class BlockTune {
 		}
 	}
 
-	public static boolean isTileEntityNode(TileEntity block, WorldClient world) {
-		if (block instanceof TileEntityRecordPlayer) {
-			if (searchForStructure(world, block)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * @return
-	 */
-	public boolean isRemoved() {
-		return state == NodeState.REMOVED;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof BlockTune) {
-			BlockTune node = (BlockTune) obj;
-			if (nodePoint.equals(node.nodePoint)) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Returns the 6 points directly adjacent to a block in 3D-space. If a block
-	 * is at y=0 or y=255, the returned list of points will only be 5 elements
-	 * long.
-	 * 
-	 * @param point
-	 *            if null, method returns null
-	 * @return a 5 or 6 element array of Point3D
-	 */
-	public static Point3D[] getAdjacentBlocks(Point3D point) {
-		if (point == null) {
-			return null;
-		}
-
-		LinkedList<Point3D> returns = new LinkedList<Point3D>();
-
-		// Find the x/z adjacent blocks
-		returns.add(new Point3D(point.x, point.y, point.z - 1));
-		returns.add(new Point3D(point.x, point.y, point.z + 1));
-		returns.add(new Point3D(point.x - 1, point.y, point.z));
-		returns.add(new Point3D(point.x + 1, point.y, point.z));
-
-		// Find the y adjacent blocks
-		if (point.y > 0) {
-			returns.add(new Point3D(point.x, point.y - 1, point.z));
-		}
-
-		if (point.y < 255) {
-			returns.add(new Point3D(point.x, point.y + 1, point.z));
-		}
-
-		return returns.toArray(new Point3D[returns.size()]);
-	}
-
-	/**
-	 * Returns the 4 points directly adjacent to a block in 2D space, on the x
-	 * and z coordinates.
-	 * 
-	 * @param point
-	 *            if null, method returns null
-	 * @return a 4 element array of Point3D
-	 */
-	public static Point3D[] getAdjacentBlocksXZ(Point3D point) {
-		if (point == null) {
-			return null;
-		}
-
-		LinkedList<Point3D> returns = new LinkedList<Point3D>();
-
-		// Find the x/z adjacent blocks
-		returns.add(new Point3D(point.x, point.y, point.z - 1));
-		returns.add(new Point3D(point.x, point.y, point.z + 1));
-		returns.add(new Point3D(point.x - 1, point.y, point.z));
-		returns.add(new Point3D(point.x + 1, point.y, point.z));
-
-		return returns.toArray(new Point3D[returns.size()]);
-	}
-
-	public Point3D getNodePoint() {
-		return nodePoint;
+	private static class PreciseParticleRequest {
+		public Vec3 location;
+		public Vec3 velocity;
+		public String type;
 	}
 }
