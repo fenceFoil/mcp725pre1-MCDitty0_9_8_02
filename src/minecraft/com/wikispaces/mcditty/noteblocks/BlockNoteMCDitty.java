@@ -204,6 +204,12 @@ public class BlockNoteMCDitty extends BlockNote {
 		String noteType = intToNoteType(noteTypeNum);
 
 		if (!MCDittyConfig.getBoolean("noteblock.mute")) {
+			// Handle noteblock octave adjustment
+			int adjust = BlockNoteMCDitty.getOctaveAdjust(x, y, z);
+			if (adjust != 0) {
+				noteType = noteType + "_" + adjust + "o";
+			}
+			
 			world.playSoundEffect((double) x + 0.5D, (double) y + 0.5D,
 					(double) z + 0.5D, "note." + noteType, 3.0F,
 					pitchMultiplier);
@@ -415,6 +421,10 @@ public class BlockNoteMCDitty extends BlockNote {
 	}
 
 	private static int getBlockOctaveAdjust(int x, int y, int z) {
+		if (Minecraft.getMinecraft() == null || Minecraft.getMinecraft().theWorld == null) {
+			return 0;
+		}
+		
 		int blockID = Minecraft.getMinecraft().theWorld.getBlockId(x, y, z);
 		// System.out.println (blockID);
 		if (blockID == Block.netherrack.blockID) {
