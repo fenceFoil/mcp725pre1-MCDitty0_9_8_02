@@ -29,14 +29,8 @@ import java.util.LinkedList;
 import javax.sound.midi.Instrument;
 import javax.sound.midi.MidiUnavailableException;
 
-import net.minecraft.client.Minecraft;
-
-import org.jfugue.Player;
-import org.lwjgl.input.Keyboard;
-
 import com.sun.media.sound.SF2Soundbank;
 import com.sun.media.sound.SoftSynthesizer;
-import com.wikispaces.mcditty.Finder;
 
 /**
  * Responsible for caching a number of synthesizers ready to play ditties at a
@@ -49,6 +43,15 @@ public class MIDISynthPool extends Thread {
 	private Object cachedSynthMutex = new Object();
 	// private SoftSynthesizer cachedSynth = null;
 	private LinkedList<SoftSynthesizer> pool = new LinkedList<SoftSynthesizer>();
+	private NoNewSynthIndicator noNewSynthIndicator = null;
+
+	private MIDISynthPool() {
+
+	}
+
+	public MIDISynthPool(NoNewSynthIndicator indicator) {
+		noNewSynthIndicator = indicator;
+	}
 
 	@Override
 	public void run() {
@@ -71,17 +74,14 @@ public class MIDISynthPool extends Thread {
 
 	private void updatePool() {
 		boolean isWalkingForward = false;
-		if (Minecraft.getMinecraft() != null
-				&& Minecraft.getMinecraft().gameSettings != null
-				&& Minecraft.getMinecraft().gameSettings.keyBindForward != null) {
-			isWalkingForward = Keyboard
-					.isKeyDown(Minecraft.getMinecraft().gameSettings.keyBindForward.keyCode);
+		if (noNewSynthIndicator != null) {
+			isWalkingForward = noNewSynthIndicator.getNewSynthsAllowed();
 		}
 		if (pool.size() < POOL_SIZE
-				//&& DittyPlayerThread.jFuguePlayerThreads.size() <= 0
-				&& !isWalkingForward) { 
-			//System.out.println("Adding a new synth to the cache. n="
-			//		+ pool.size());
+		// && DittyPlayerThread.jFuguePlayerThreads.size() <= 0
+				&& !isWalkingForward) {
+			// System.out.println("Adding a new synth to the cache. n="
+			// + pool.size());
 			SoftSynthesizer newSynth = createOpenedSynth();
 			synchronized (cachedSynthMutex) {
 				pool.add(newSynth);
@@ -89,8 +89,8 @@ public class MIDISynthPool extends Thread {
 			// System.out.println("Done.");
 		} else if (pool.size() > 2 * POOL_SIZE) {
 			synchronized (cachedSynthMutex) {
-				//System.out.println("Removing a synth from the cache n="
-				//		+ pool.size());
+				// System.out.println("Removing a synth from the cache n="
+				// + pool.size());
 				pool.poll().close();
 			}
 		}
@@ -115,14 +115,14 @@ public class MIDISynthPool extends Thread {
 		synchronized (cachedSynthMutex) {
 			if (pool.size() > 0) {
 				// Try to use the cached synth
-				//System.out.println("Using pool synth. Remaining = "
-				//		+ pool.size());
+				// System.out.println("Using pool synth. Remaining = "
+				// + pool.size());
 				return pool.pollLast();
 			}
 		}
 
 		// Still here? A new synth must then be created
-		//System.out.println("Synth pool empty: creating new synth.");
+		// System.out.println("Synth pool empty: creating new synth.");
 		return createOpenedSynth();
 	}
 

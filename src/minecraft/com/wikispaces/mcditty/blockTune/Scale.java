@@ -31,11 +31,14 @@ import org.jfugue.elements.Note;
 public class Scale {
 	public static final int[] PENTATONIC_STEPS = { 2, 2, 3, 2, 3 };
 	public static final int[] DIATONIC_STEPS = { 2, 2, 1, 2, 2, 2, 1 };
+	public static final int[] CHROMATIC_STEPS = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			1, 1 };
 
 	public static final Scale PENTATONIC_MAJOR = new Scale(PENTATONIC_STEPS, 0);
 	public static final Scale PENTATONIC_MINOR = new Scale(PENTATONIC_STEPS, 4);
 	public static final Scale DIATONIC_MAJOR = new Scale(PENTATONIC_STEPS, 0);
 	public static final Scale DIATONIC_MINOR = new Scale(PENTATONIC_STEPS, 5);
+	public static final Scale CHROMATIC = new Scale(CHROMATIC_STEPS, 0);
 
 	// public static final int MAJOR_DIATONIC = 0;
 	// public static final int MAJOR_PENTA = 0;

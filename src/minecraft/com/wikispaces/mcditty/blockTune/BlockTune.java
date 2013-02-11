@@ -23,13 +23,18 @@
  */
 package com.wikispaces.mcditty.blockTune;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Properties;
 import java.util.Random;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.AxisAlignedBB;
+import net.minecraft.src.BiomeGenBase;
 import net.minecraft.src.Block;
+import net.minecraft.src.GuiMainMenu;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntityNote;
@@ -42,6 +47,7 @@ import org.jfugue.elements.Note;
 
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.Point3D;
+import com.wikispaces.mcditty.resources.MCDittyResourceManager;
 
 /**
  * @author William
@@ -57,7 +63,7 @@ public class BlockTune implements BlockTuneAccess {
 
 	private HashMap<Point3D, EntityItemDisplay> blockDisplays = new HashMap<Point3D, EntityItemDisplay>();
 
-	private Scale scale = Scale.PENTATONIC_MAJOR;
+	private Scale scale = Scale.PENTATONIC_MINOR;
 
 	private static Random rand = new Random();
 
@@ -70,7 +76,7 @@ public class BlockTune implements BlockTuneAccess {
 
 	private LinkedList<PreciseParticleRequest> particleRequests = new LinkedList<BlockTune.PreciseParticleRequest>();
 
-	// private int currNoteColumn = 0;
+	private BiomeGenBase biome;
 
 	/**
 	 * @param tile
@@ -89,24 +95,61 @@ public class BlockTune implements BlockTuneAccess {
 		}
 
 		// Set up scale
-		scale.setBaseNote(Note.createNote("C5").getValue()
-				+ ((nodePoint.y - 64) / 2));
+		// Base note ranges over 1 octave for y=0-255, with D4 at y=64
+		scale.setBaseNote((int) (Note.createNote("D4").getValue() + ((((double) nodePoint.y - 64) * (12d / 256d)))));
 
 		// Set up bouding box
-//		Point3D bbCorner1 = corners.getInteriorPoint(-5, -5);
-//		Point3D bbCorner2 = corners
-//				.getInteriorPoint(corners.getInteriorWidth() + 4,
-//						corners.getInteriorHeight() + 4);
+		// Point3D bbCorner1 = corners.getInteriorPoint(-5, -5);
+		// Point3D bbCorner2 = corners
+		// .getInteriorPoint(corners.getInteriorWidth() + 4,
+		// corners.getInteriorHeight() + 4);
 		Point3D bbCorner1 = corners.startCorner;
 		Point3D bbCorner2 = corners.farCorner;
 		bounds = AxisAlignedBB.getBoundingBox(bbCorner1.x, bbCorner1.y,
 				bbCorner1.z, bbCorner2.x, bbCorner2.y + 3, bbCorner2.z);
-		
+
 		// Set up block displays
 		updateBlockDisplays(world);
 
 		// Start player
 		player.start();
+		
+		// Set up instruments
+		setUpInstruments();
+	}
+
+	/**
+	 * 
+	 */
+	private void setUpInstruments() {
+		biome = world.getBiomeGenForCoords(nodePoint.x, nodePoint.z);
+		if (biome == BiomeGenBase.mushroomIsland
+				|| biome == BiomeGenBase.mushroomIslandShore) {
+			for (int i = 0; i < 4; i++) {
+				// Random leads
+				player.setInstrument(i, rand.nextInt(8) + 80);
+			}
+		} else {
+			try {
+				Properties biomeInstruments = new Properties();
+				biomeInstruments.load(new ByteArrayInputStream(
+						MCDittyResourceManager.loadCached(
+								"blockTune/biomeInstruments.txt").getBytes()));
+				String instrumentsCSV = biomeInstruments.getProperty("biome"
+						+ biome.biomeID);
+				if (instrumentsCSV == null || instrumentsCSV.length() <= 0) {
+					return;
+				} else {
+					String[] instruments = instrumentsCSV.split(",");
+					for (int i = 0; i < 4; i++) {
+						player.setInstrument(i,
+								Integer.parseInt(instruments[i]));
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void update(WorldClient world) {
@@ -624,10 +667,21 @@ public class BlockTune implements BlockTuneAccess {
 	 */
 	@Override
 	public boolean isPaused() {
-		if (!isAdjacentSwitchOn(world, 0)) {
-			return true;
-		} else if (Minecraft.getMinecraft().isGamePaused) {
-			return true;
+		try {
+			if (!isAdjacentSwitchOn(world, 0)) {
+				return true;
+			} else if (Minecraft.getMinecraft().isGamePaused) {
+				return true;
+			} else if (Minecraft.getMinecraft().currentScreen instanceof GuiMainMenu) {
+				// In fact, if we're in the main menu...
+				prepareForRemoval();
+
+				// Then return
+				return true;
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		return false;

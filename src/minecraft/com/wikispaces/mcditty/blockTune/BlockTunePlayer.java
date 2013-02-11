@@ -26,8 +26,7 @@ package com.wikispaces.mcditty.blockTune;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.src.BlockSign;
+import javax.sound.midi.Patch;
 
 import com.sun.media.sound.SoftSynthesizer;
 import com.wikispaces.mcditty.ditty.MIDISynthPool;
@@ -53,7 +52,7 @@ public class BlockTunePlayer extends Thread {
 	/**
 	 * 0-127: Midi attack velocity for a note
 	 */
-	private static final int NOTE_VELOCITY = 127;
+	private static final int NOTE_VELOCITY = 63;
 
 	/**
 	 * Source of music
@@ -68,7 +67,7 @@ public class BlockTunePlayer extends Thread {
 	/**
 	 * Tempo: beat = frame here
 	 */
-	private double beatsPerSecond = 7;
+	private double beatsPerSecond = 8;
 
 	/**
 	 * Synthesizer used by this player
@@ -91,6 +90,8 @@ public class BlockTunePlayer extends Thread {
 	 */
 	private boolean[] channelsUsedLastFrame = new boolean[16];
 
+	private Patch[] instruments = new Patch[16];
+
 	/**
 	 * Set up a new blocktune player
 	 * 
@@ -100,7 +101,7 @@ public class BlockTunePlayer extends Thread {
 	public BlockTunePlayer(BlockTuneAccess tuneAccess, MIDISynthPool synthPool) {
 		this.tuneAccess = tuneAccess;
 		this.synthPool = synthPool;
-		
+
 		setName("MCDitty BlockTune Player");
 		setPriority(MAX_PRIORITY);
 	}
@@ -236,17 +237,21 @@ public class BlockTunePlayer extends Thread {
 	 */
 	private void setUpSynth() {
 		synth = synthPool.getOpenedSynth();
-		
+
 		// Set up instruments
-//		synth.getChannels()[0].programChange(1);
-//		synth.getChannels()[1].programChange(13);
-//		synth.getChannels()[2].programChange(10);
-//		synth.getChannels()[3].programChange(27);
-		
-		synth.getChannels()[0].programChange(13);
-		synth.getChannels()[1].programChange(24);
-		synth.getChannels()[2].programChange(53);
-		synth.getChannels()[3].programChange(79);
+		setUpChannelInstruments();
+	}
+
+	private void setUpChannelInstruments() {
+		for (int i = 0; i < instruments.length; i++) {
+			Patch p = instruments[i];
+			if (p != null && synth != null && synth.getChannels() != null
+					&& synth.getChannels()[i] != null) {
+				if (synth.getChannels()[i].getProgram() != p.getProgram()) {
+					synth.getChannels()[i].programChange(p.getProgram());
+				}
+			}
+		}
 	}
 
 	/**
@@ -264,4 +269,8 @@ public class BlockTunePlayer extends Thread {
 		synth = null;
 	}
 
+	public void setInstrument(int channel, int program) {
+		instruments[channel] = new Patch(0, program);
+		setUpChannelInstruments();
+	}
 }

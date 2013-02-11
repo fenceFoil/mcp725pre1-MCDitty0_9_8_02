@@ -83,6 +83,7 @@ import com.wikispaces.mcditty.disco.DiscoFloorDoneListener;
 import com.wikispaces.mcditty.disco.MeasureDiscoFloorThread;
 import com.wikispaces.mcditty.ditty.DittyPlayerThread;
 import com.wikispaces.mcditty.ditty.MIDISynthPool;
+import com.wikispaces.mcditty.ditty.NoNewSynthIndicator;
 import com.wikispaces.mcditty.ditty.event.CreateBotEvent;
 import com.wikispaces.mcditty.ditty.event.CreateEmitterEvent;
 import com.wikispaces.mcditty.ditty.event.CueEvent;
@@ -123,7 +124,7 @@ import com.wikispaces.mcditty.signs.keywords.ProxPadKeyword;
  * 
  * TODO: Move many ditty-playing related methods from BlockSign to MCDitty
  */
-public class MCDitty implements TickListener {
+public class MCDitty implements TickListener, NoNewSynthIndicator {
 
 	/**
 	 * All unique signs in the world that have ever been created during this
@@ -457,7 +458,7 @@ public class MCDitty implements TickListener {
 		// System.out.println("MCDitty Load: JFugue: "
 		// + jfugueLoadTime + ", SFX: "
 		// + sfxLoadTime+", SignRendererTrig: "+trigLoadTime);
-		
+
 	}
 
 	/**
@@ -1459,7 +1460,7 @@ public class MCDitty implements TickListener {
 		hookEntity2.addTickListener(BlockSign.mcDittyMod);
 		hookEntity2.addTickListener(fireworkExploder);
 		hookEntity2.addTickListener(blockTuneManager);
-		
+
 		// TEMP TODO: Added bugfix
 		// Apply bugfix for empty jukeboxes ejecting null itemstack if loaded
 		// from save file and broken
@@ -2174,12 +2175,30 @@ public class MCDitty implements TickListener {
 
 	public static void setUpSynthPool() {
 		if (synthPool == null) {
-			synthPool = new MIDISynthPool();
+			synthPool = new MIDISynthPool(BlockSign.mcDittyMod);
 			synthPool.start();
 		}
 	}
 
 	public static MIDISynthPool getSynthPool() {
 		return synthPool;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.wikispaces.mcditty.ditty.NoNewSynthIndicator#getNewSynthsAllowed()
+	 */
+	@Override
+	public boolean getNewSynthsAllowed() {
+		if (Minecraft.getMinecraft() != null
+				&& Minecraft.getMinecraft().gameSettings != null
+				&& Minecraft.getMinecraft().gameSettings.keyBindForward != null) {
+			return Keyboard
+					.isKeyDown(Minecraft.getMinecraft().gameSettings.keyBindForward.keyCode);
+		} else {
+			return true;
+		}
 	}
 }

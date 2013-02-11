@@ -1,0 +1,8 @@
+#ocean
+biome0=40,48,73,123
+#plains
+biome1=
+#desert
+biome2=
+#extremeHills
+biome3=
