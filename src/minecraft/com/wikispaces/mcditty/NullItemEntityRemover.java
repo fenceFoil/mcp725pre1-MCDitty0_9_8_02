@@ -55,23 +55,26 @@ public class NullItemEntityRemover implements TickListener {
 				}
 			}
 		}
-		int serverNum = 0;
-		for (WorldServer server : minecraft.getIntegratedServer().worldServers) {
-			for (Object o : server.loadedEntityList) {
-				if (o instanceof EntityItem) {
-					EntityItem e = (EntityItem) o;
-					if (e.func_92059_d().itemID == 0) {
-						// Buggy item stack found
-						// Kill it with fire!
-						System.err
-								.println("MCDitty: Destroyed a buggy EntityItem in WorldServer #"
-										+ serverNum
-										+ ". This is a nasty jukebox bug in Vanilla Minecraft (See https://mojang.atlassian.net/browse/MC-2711)");
-						e.setDead();
+		if (minecraft.getIntegratedServer() != null
+				&& minecraft.getIntegratedServer().worldServers != null) {
+			int serverNum = 0;
+			for (WorldServer server : minecraft.getIntegratedServer().worldServers) {
+				for (Object o : server.loadedEntityList) {
+					if (o instanceof EntityItem) {
+						EntityItem e = (EntityItem) o;
+						if (e.func_92059_d().itemID == 0) {
+							// Buggy item stack found
+							// Kill it with fire!
+							System.err
+									.println("MCDitty: Destroyed a buggy EntityItem in WorldServer #"
+											+ serverNum
+											+ ". This is a nasty jukebox bug in Vanilla Minecraft (See https://mojang.atlassian.net/browse/MC-2711)");
+							e.setDead();
+						}
 					}
 				}
+				serverNum++;
 			}
-			serverNum++;
 		}
 		return true;
 	}
