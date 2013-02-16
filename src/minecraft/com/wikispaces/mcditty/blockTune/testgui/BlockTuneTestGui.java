@@ -258,4 +258,12 @@ public class BlockTuneTestGui extends JFrame implements BlockTuneAccess,
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.wikispaces.mcditty.blockTune.BlockTuneAccess#getBeatsPerSecond()
+	 */
+	@Override
+	public double getBeatsPerSecond() {
+		return 8;
+	}
+
 }

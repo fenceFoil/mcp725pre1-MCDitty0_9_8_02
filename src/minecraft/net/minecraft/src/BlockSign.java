@@ -1938,45 +1938,7 @@ public class BlockSign extends BlockContainer {
 	}
 
 	private static String getMinecraftAdjustedVolumeToken(int volumePercent) {
-		int sixteenBitVolume = 16383; // 16383 is the highest volume value
-
-		// Factor in the Minecraft volume, if possible (can be null if this code
-		// is called as Minecraft loads)
-		if (Minecraft.getMinecraft() != null) {
-			if (Minecraft.getMinecraft().gameSettings != null) {
-				float mcVolume;
-
-				// Get the appropriate MC volume.
-				if (MCDittyConfig.getVolumeMode() == MCDittyConfig.USE_MUSIC_VOLUME) {
-					mcVolume = Minecraft.getMinecraft().gameSettings.musicVolume;
-				} else if (MCDittyConfig.getVolumeMode() == MCDittyConfig.USE_SOUND_VOLUME) {
-					mcVolume = Minecraft.getMinecraft().gameSettings.soundVolume;
-				} else {
-					// Ignore MC volume
-					mcVolume = 1.0f;
-				}
-
-				if (mcVolume == 0f) {
-					sixteenBitVolume = 0;
-				} else if (mcVolume >= 0.75f) {
-					// No change; leave at max
-				} else {
-					sixteenBitVolume = (int) ((float) sixteenBitVolume * (mcVolume + 0.25f));
-				}
-			}
-		}
-
-		// Factor in volume in argument
-		if (volumePercent == 100) {
-			// Make sure that volume is always highest with no rounding errors
-			// No change
-		} else if (volumePercent == 0) {
-			// Make sure that volume is always 0 with no rounding errors
-			// Mute volume
-			sixteenBitVolume = 0;
-		} else {
-			sixteenBitVolume = (int) ((float) sixteenBitVolume * ((float) volumePercent / 100f));
-		}
+		int sixteenBitVolume = MCDitty.getMinecraftAdjustedSixteenBitVolume(volumePercent);
 
 		return "X[Volume]=" + sixteenBitVolume;
 	}

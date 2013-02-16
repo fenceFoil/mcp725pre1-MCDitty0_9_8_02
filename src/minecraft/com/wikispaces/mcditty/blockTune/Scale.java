@@ -23,8 +23,6 @@
  */
 package com.wikispaces.mcditty.blockTune;
 
-import org.jfugue.elements.Note;
-
 /**
  *
  */
@@ -45,13 +43,20 @@ public class Scale {
 	// public static final int MINOR_PENTA = 4;
 	// public static final int MINOR_DIA = 5;
 
-	private int baseNote = Note.createNote("C5").getValue();
+	// One octave below middle C: C4 -> 48
+	private int baseNote = 48;
 	private int[] steps = PENTATONIC_STEPS;
 	private int mode = 0;
 
 	public Scale(int[] steps, int mode) {
 		this.steps = steps;
 		setMode(mode);
+	}
+
+	public Scale(int[] steps, int mode, int baseNote) {
+		this.steps = steps;
+		setMode(mode);
+		setBaseNote(baseNote);
 	}
 
 	public int getNoteForStep(int step) {
@@ -69,6 +74,10 @@ public class Scale {
 		baseNote = value;
 	}
 
+	public int getBaseNote() {
+		return baseNote;
+	}
+
 	public int getMode() {
 		return mode;
 	}
@@ -76,4 +85,31 @@ public class Scale {
 	public void setMode(int mode) {
 		this.mode = mode;
 	}
+
+	public int[] getSteps() {
+		return steps;
+	}
+
+	public int getNumSteps() {
+		if (steps == null) {
+			return 0;
+		} else {
+			return steps.length;
+		}
+	}
+
+	public void setSteps(int[] steps) {
+		this.steps = steps;
+	}
+
+	@Override
+	public Scale clone() {
+		Scale newScale = new Scale(getSteps(), getMode(), getBaseNote());
+		return newScale;
+	}
+
+	public static double getNoteFreq(double noteValue) {
+		return 8.1757989156 * Math.pow(2.0, noteValue / 12.0);
+	}
+
 }

@@ -25,6 +25,7 @@ package com.wikispaces.mcditty.blockTune;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -39,11 +40,17 @@ import net.minecraft.src.ItemStack;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntityNote;
 import net.minecraft.src.TileEntityRecordPlayer;
+import net.minecraft.src.TileEntitySign;
 import net.minecraft.src.Vec3;
 import net.minecraft.src.World;
 import net.minecraft.src.WorldClient;
 
 import org.jfugue.elements.Note;
+
+import aurelienribon.tweenengine.Tween;
+import aurelienribon.tweenengine.TweenManager;
+import aurelienribon.tweenengine.TweenUtils;
+import aurelienribon.tweenengine.equations.Sine;
 
 import com.wikispaces.mcditty.MCDitty;
 import com.wikispaces.mcditty.Point3D;
@@ -63,7 +70,7 @@ public class BlockTune implements BlockTuneAccess {
 
 	private HashMap<Point3D, EntityItemDisplay> blockDisplays = new HashMap<Point3D, EntityItemDisplay>();
 
-	private Scale scale = Scale.PENTATONIC_MINOR;
+	private Scale scale = Scale.PENTATONIC_MAJOR.clone();
 
 	private static Random rand = new Random();
 
@@ -77,6 +84,19 @@ public class BlockTune implements BlockTuneAccess {
 	private LinkedList<PreciseParticleRequest> particleRequests = new LinkedList<BlockTune.PreciseParticleRequest>();
 
 	private BiomeGenBase biome;
+
+	private double beatsPerSecond = 8;
+
+	private boolean wasRainingBefore = false;
+
+	private int[] instrumentTranspositions = new int[4];
+
+	/**
+	 * Set up tween accessor
+	 */
+	static {
+		Tween.registerAccessor(BlockTune.class, new BlockTuneTweenAccessor());
+	}
 
 	/**
 	 * @param tile
@@ -113,7 +133,7 @@ public class BlockTune implements BlockTuneAccess {
 
 		// Start player
 		player.start();
-		
+
 		// Set up instruments
 		setUpInstruments();
 	}
@@ -128,6 +148,7 @@ public class BlockTune implements BlockTuneAccess {
 			for (int i = 0; i < 4; i++) {
 				// Random leads
 				player.setInstrument(i, rand.nextInt(8) + 80);
+				instrumentTranspositions[i] = 12 * (rand.nextInt(5) - 1);
 			}
 		} else {
 			try {
@@ -138,17 +159,77 @@ public class BlockTune implements BlockTuneAccess {
 				String instrumentsCSV = biomeInstruments.getProperty("biome"
 						+ biome.biomeID);
 				if (instrumentsCSV == null || instrumentsCSV.length() <= 0) {
-					return;
+					setUpDefaultInstruments();
 				} else {
 					String[] instruments = instrumentsCSV.split(",");
 					for (int i = 0; i < 4; i++) {
-						player.setInstrument(i,
-								Integer.parseInt(instruments[i]));
+						int instrumentNum = Integer.parseInt(instruments[i]);
+						player.setInstrument(i, instrumentNum);
+						instrumentTranspositions[i] = getDefaultTransposition(instrumentNum);
 					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+
+	/**
+	 * Sets up a basic, defaultish set of instruments for when a biome is
+	 * unlisted in the instruments config file.
+	 */
+	private void setUpDefaultInstruments() {
+		Properties biomeInstruments = new Properties();
+		try {
+			biomeInstruments.load(new ByteArrayInputStream(
+					MCDittyResourceManager.loadCached(
+							"blockTune/biomeInstruments.txt").getBytes()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String instrumentsCSV = biomeInstruments.getProperty("default");
+		if (instrumentsCSV == null || instrumentsCSV.length() <= 0) {
+			return;
+		} else {
+			String[] instruments = instrumentsCSV.split(",");
+			for (int i = 0; i < 4; i++) {
+				int instrumentNum = Integer.parseInt(instruments[i]);
+				player.setInstrument(i, instrumentNum);
+				instrumentTranspositions[i] = getDefaultTransposition(instrumentNum);
+			}
+		}
+	}
+
+	/**
+	 * Returns the transposition in semitones from C4 (middle C - 1 octave)
+	 * required to make the given instrument sound decent playing across 3
+	 * octaves upwards from C4. After three octaves, I figure you're just asking
+	 * for it.
+	 * 
+	 * @param instrumentNum
+	 * @return
+	 */
+	private int getDefaultTransposition(int instrumentNum) {
+		switch (instrumentNum) {
+		// TODO: Temp transpositions until I finish complete list
+		case 22:
+			return -24;
+		case 114:
+			return 12;
+
+			// GM Level 1 Instrument Families
+			// 0-7: Piano
+			// 8-15: Chromatic Percussion
+			// Glockenspiel: F6-C9
+		case 9:
+			return 24;
+			// Music box
+		case 10:
+			return 12;
+			// 16-23: Organ
+			// TODO: Classes after
+		default:
+			return 0;
 		}
 	}
 
@@ -192,8 +273,46 @@ public class BlockTune implements BlockTuneAccess {
 		// Update the floating blocks above each corner
 		updateBlockDisplays(world);
 
-		// // Process any particle requests
-		// processParticleRequests();
+		// Check that the correct scale for the time of day is being used
+		// Major for day, minor for night
+		if (world.getWorldTime() % 24000 > 12000) {
+			// Night time
+			if (scale.getSteps() == scale.PENTATONIC_STEPS
+					&& scale.getMode() == 0) {
+				scale.setMode(4);
+				Tween.to(this, BlockTuneTweenAccessor.TWEEN_TYPE_TEMPO,
+						10 * 1000).target((float) (beatsPerSecond * 0.6f))
+						.ease(Sine.INOUT).start(BlockTuneManager.manager);
+			}
+		} else {
+			// Day time
+			if (scale.getSteps() == scale.PENTATONIC_STEPS
+					&& scale.getMode() == 4) {
+				scale.setMode(0);
+				Tween.to(this, BlockTuneTweenAccessor.TWEEN_TYPE_TEMPO,
+						10 * 1000)
+						.target((float) (beatsPerSecond * (1f / 0.6f)))
+						.ease(Sine.INOUT).start(BlockTuneManager.manager);
+			}
+		}
+
+		// Adjust for weather
+		if (world.getRainStrength(0) > 0.5 && !wasRainingBefore) {
+			wasRainingBefore = true;
+			// Raining
+			// Move key down 6 semitones
+			Tween.to(this, BlockTuneTweenAccessor.TWEEN_TYPE_BASE_NOTE,
+					5 * 1000).target(scale.getBaseNote() - 6).ease(Sine.IN)
+					.start(BlockTuneManager.manager);
+		} else if (world.getRainStrength(0) <= 0.5 && wasRainingBefore) {
+			wasRainingBefore = false;
+			// Not raining
+			// Raining
+			// Move key up 6 semitones
+			Tween.to(this, BlockTuneTweenAccessor.TWEEN_TYPE_BASE_NOTE,
+					5 * 1000).target(scale.getBaseNote() + 6).ease(Sine.IN)
+					.start(BlockTuneManager.manager);
+		}
 
 		if (updateCount % 2 == 0) {
 			// Pulse border particles
@@ -207,67 +326,75 @@ public class BlockTune implements BlockTuneAccess {
 			}
 		}
 
-		// // TODO: Release synth if turned off for a time
-		// // TODO: Never get synth if never turned on
-		// // Play notes if necessary
-		// if (updateCount % 3 == 0 && isAdjacentSwitchOn(world, 0)) {
-		// // Slience any previous notes
-		// mySynth.getChannels()[0].allNotesOff();
-		// mySynth.getChannels()[1].allNotesOff();
-		// mySynth.getChannels()[2].allNotesOff();
-		// mySynth.getChannels()[3].allNotesOff();
-		// // Read and play new notes
-		// for (int i = 0; i < corners.getInteriorHeight(); i++) {
-		// // System.out.println ("Reading i="+i);
-		// Point3D readPoint = corners.getInteriorPoint(currNoteColumn, i);
-		// int pointID = world.getBlockId(readPoint.x, readPoint.y,
-		// readPoint.z);
-		// if (pointID != 0) {
-		// int pointMeta = world.getBlockMetadata(readPoint.x,
-		// readPoint.y, readPoint.z);
-		// int cornerNote = -1;
-		// LinkedList<Point3D> cornersList = corners.getCorners();
-		// for (int j = 0; j < cornersList.size(); j++) {
-		// Point3D corner = cornersList.get(j);
-		// ItemStack cornerItem = blockDisplays.get(corner)
-		// .func_92059_d();
-		// if (cornerItem.itemID == pointID
-		// && cornerItem.getItemDamage() == pointMeta) {
-		// // Switches on corners are redundant: can break
-		// // block below!
-		// // if ((getNumAdjacent(world, Block.lever.blockID,
-		// // corner) <= 0)
-		// // || isAdjacentSwitchOn(world, j)) {
-		// cornerNote = j;
-		// // }
-		// break;
-		// }
-		// }
-		//
-		// if (cornerNote >= 0) {
-		// int noteValue = scale.getNoteForStep(i);
-		// // System.out.println(Note.getStringForNote((byte)
-		// // noteValue));
-		// mySynth.getChannels()[cornerNote]
-		// .noteOn(noteValue, 127);
-		//
-		// spawnNoteParticleAbove(readPoint,
-		// (float) cornerNote * 0.2f, 0.2f, world);
-		//
-		// spawnNoteParticleAbove(cornersList.get(cornerNote),
-		// (float) cornerNote * 0.2f, 1f, world);
-		//
-		// }
-		// }
-		// }
-		//
-		// // Increment current column
-		// currNoteColumn = (currNoteColumn + 1) % corners.getInteriorWidth();
-		//
-		// }
+		// Update text on adjacent sign
+		if (getNumAdjacent(world, Block.signWall.blockID, nodePoint) > 0) {
+			TileEntitySign tileEntitySign = getAdjacentSignTileEntity(nodePoint);
+			if (tileEntitySign != null) {
+				if (updateCount % 200 == 0) {
+					clearSign(tileEntitySign);
+					tileEntitySign.signText[0] = "Lowest Note: ";
+					tileEntitySign.signText[1] = new Note((byte) scale.getBaseNote())
+									.getMusicString();
+				} else if (updateCount % 200 == 50) {
+					clearSign(tileEntitySign);
+					tileEntitySign.signText[0] = "Scale:";
+					if (scale.getNumSteps() == 5) {
+						tileEntitySign.signText[1] = "Pentatonic";
+					} else if (scale.getNumSteps() == 7) {
+						tileEntitySign.signText[1] = "Diatonic";
+					} else if (scale.getNumSteps() == 12) {
+						tileEntitySign.signText[1] = "Chromatic";
+					} else {
+						tileEntitySign.signText[1] = "?";
+					}
+				} else if (updateCount % 200 == 100) {
+					clearSign(tileEntitySign);
+					tileEntitySign.signText[0] = "Mode:";
+					if (scale.getMode() == 0) {
+						tileEntitySign.signText[1] = "Major";
+					} else if ((scale.getNumSteps() == 5)
+							&& (scale.getMode() == 4)) {
+						tileEntitySign.signText[1] = "Minor";
+					} else if ((scale.getNumSteps() == 7)
+							&& (scale.getMode() == 5)) {
+						tileEntitySign.signText[1] = "Minor";
+					} else {
+						tileEntitySign.signText[1] = scale.getMode()
+								+ " Semitones";
+					}
+				} else if (updateCount % 200 == 150) {
+					clearSign(tileEntitySign);
+					tileEntitySign.signText[0] = "BlockTune";
+					tileEntitySign.signText[2] = "Length:";
+					tileEntitySign.signText[3] = Integer.toString(getFrameCount());
+				}
+			}
+		}
 
 		// Increment update count
 		updateCount++;
+	}
+
+	/**
+	 * 
+	 * @param tileEntitySign
+	 * @return the array containing the sign's text, where changes will be
+	 *         reflected on the sign
+	 */
+	public static String[] clearSign(TileEntitySign tileEntitySign) {
+		String[] blankSignText = { "", "", "", "" };
+		tileEntitySign.signText = blankSignText;
+		return tileEntitySign.signText;
+	}
+
+	private TileEntitySign getAdjacentSignTileEntity(Point3D point) {
+		for (Point3D p : getAdjacentBlocks(point)) {
+			TileEntity t = world.getBlockTileEntity(p.x, p.y, p.z);
+			if (t != null && t instanceof TileEntitySign) {
+				return (TileEntitySign) t;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -486,7 +613,8 @@ public class BlockTune implements BlockTuneAccess {
 	}
 
 	private void playSoundFromCorners(String sound, float volume, float pitch) {
-		if (corners.getInteriorHeight() > 16 || corners.getInteriorWidth() > 16) {
+		// 20 is arbitrary; 16 is range of sounds in MC (?)
+		if (corners.getInteriorHeight() > 20 || corners.getInteriorWidth() > 20) {
 			for (Point3D point : corners.getCorners()) {
 				Minecraft.getMinecraft().sndManager
 						.playSound(
@@ -684,6 +812,11 @@ public class BlockTune implements BlockTuneAccess {
 			e.printStackTrace();
 		}
 
+		// Check for player distance
+		if (getPlayerDistance() > 32 * 32) {
+			return true;
+		}
+
 		return false;
 	}
 
@@ -704,7 +837,44 @@ public class BlockTune implements BlockTuneAccess {
 	 */
 	@Override
 	public double getMasterVolume() {
-		return 1d;
+		double base = (MCDitty.getMinecraftAdjustedSixteenBitVolume(100) >> 7) / 127d;
+
+		// Find distance from closest corner to player
+		double shortestDistance = getPlayerDistance();
+
+		// Factor into master volume
+		// If player is within 16 blocks, make no change
+		// Decrease linearly for the following 16 blocks away
+		if (shortestDistance <= 16 * 16) {
+			return base;
+		} else {
+			return (1 - ((shortestDistance - 16d * 16d) / (16d * 16d))) * base;
+		}
+	}
+
+	/**
+	 * Value is squared; actual distance in blocks is the square root of the
+	 * result of this method
+	 * 
+	 * @return
+	 */
+	private double getPlayerDistance() {
+		double shortestDistance = Double.MAX_VALUE;
+		try {
+			Point3D playerPoint = new Point3D(
+					(int) Minecraft.getMinecraft().thePlayer.posX,
+					(int) Minecraft.getMinecraft().thePlayer.posY,
+					(int) Minecraft.getMinecraft().thePlayer.posZ);
+			for (Point3D corner : corners.getCorners()) {
+				double cornerDist = corner.distanceToRel(playerPoint);
+				if (cornerDist < shortestDistance) {
+					shortestDistance = cornerDist;
+				}
+			}
+		} catch (Exception e) {
+			shortestDistance = 89098909292d;
+		}
+		return shortestDistance;
 	}
 
 	/*
@@ -736,8 +906,7 @@ public class BlockTune implements BlockTuneAccess {
 						continue;
 					}
 
-					if (cornerItem.itemID == pointID
-							&& cornerItem.getItemDamage() == pointMeta) {
+					if (blockAreSimilar(cornerItem, pointID, pointMeta)) {
 						// Switches on corners are redundant: can break
 						// block below!
 						// if ((getNumAdjacent(world, Block.lever.blockID,
@@ -751,6 +920,7 @@ public class BlockTune implements BlockTuneAccess {
 
 				if (cornerNote >= 0) {
 					byte noteValue = (byte) scale.getNoteForStep(y);
+					noteValue += instrumentTranspositions[cornerNote];
 					frame.addNoteStart(cornerNote, noteValue);
 
 					// Queue up particles
@@ -763,6 +933,104 @@ public class BlockTune implements BlockTuneAccess {
 		}
 
 		return frame;
+	}
+
+	/**
+	 * Block IDs that cannot be judged as the same block (for purposes of
+	 * instrument blocks) by their block ID alone. MUST BE SORTED.
+	 */
+	private static final int[] idsWhereMetaMatters = { 6, 17, 18, 34, 35, 43,
+			44, 59, 69, 70, 72, 78, 84, 92, 93, 94, 97, 98, 104, 105, 107, 115,
+			118, 120, 125, 126, 127, 139, 140, 141, 142, 147, 148, 155 };
+
+	/**
+	 * Like idsWhereMetaMatters except that there is nothing special about
+	 * comparing the meta values: if they're different, the blocks are
+	 * different, period. Contrast with saplings (2 bits specify types, 1 is
+	 * just a counter for their growth that should be ignored) and several other
+	 * blocks. MUST BE SORTED.
+	 */
+	private static final int[] idsWhereMetaMattersStrictly = { 24, 35, 43, 59,
+			70, 72, 78, 84, 92, 97, 98, 104, 105, 115, 118, 125, 139, 140, 141,
+			142, 147, 148, 155 };
+
+	private static final HashMap<Integer, Integer> metaCompareMasks = new HashMap<Integer, Integer>();
+	static {
+		// 6, 17, 18, 44, 69, 93, 94, 107, 120, 126, 127
+
+		// Only care about first two bits
+		metaCompareMasks.put(6, 0x3);
+		metaCompareMasks.put(17, 0x3);
+		metaCompareMasks.put(18, 0x3);
+
+		// Only care about first three bits
+		metaCompareMasks.put(44, 0x7);
+		metaCompareMasks.put(126, 0x7);
+
+		// Only care about last bit
+		metaCompareMasks.put(69, 0x8);
+
+		// Only care about top two bits
+		metaCompareMasks.put(93, 0xC);
+		metaCompareMasks.put(94, 0xC);
+		metaCompareMasks.put(127, 0xC);
+
+		// Only care about third bit
+		metaCompareMasks.put(107, 0x4);
+		metaCompareMasks.put(120, 0x4);
+	}
+
+	/**
+	 * @param cornerItem
+	 * @param pointID
+	 * @param pointMeta
+	 * @return
+	 */
+	private boolean blockAreSimilar(ItemStack cornerItem, int pointID,
+			int pointMeta) {
+		// If ids are dissimilar, then duh, the blocks are different
+		if (cornerItem.itemID != pointID) {
+			return false;
+		}
+
+		if (contains(idsWhereMetaMatters, pointID)) {
+			// Meta matters; can we get away with a meta == meta?
+			if (contains(idsWhereMetaMattersStrictly, pointID)) {
+				// Yes!
+				return cornerItem.getItemDamage() == pointMeta;
+			} else {
+				// No, there's a special comparison
+				Integer mask = metaCompareMasks.get(pointID);
+				if (mask == null) {
+					mask = 0xf;
+				}
+				// Mask metadata values and compare remaining bits
+				if ((cornerItem.getItemDamage() & mask) == (pointMeta & mask)) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		} else {
+			// Just compare ids (was done already at top of method)
+			return true;
+		}
+	}
+
+	/**
+	 * True if passed array contains v
+	 * 
+	 * @param array
+	 * @param v
+	 * @return
+	 */
+	public static boolean contains(int[] array, int v) {
+		for (int i : array) {
+			if (i == v) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/*
@@ -964,5 +1232,29 @@ public class BlockTune implements BlockTuneAccess {
 		public Vec3 location;
 		public Vec3 velocity;
 		public String type;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.wikispaces.mcditty.blockTune.BlockTuneAccess#getBeatsPerSecond()
+	 */
+	@Override
+	public double getBeatsPerSecond() {
+		return beatsPerSecond;
+	}
+
+	/**
+	 * @param f
+	 */
+	public void setBeatsPerSecond(float f) {
+		beatsPerSecond = f;
+	}
+
+	/**
+	 * @return
+	 */
+	public Scale getScale() {
+		return scale;
 	}
 }

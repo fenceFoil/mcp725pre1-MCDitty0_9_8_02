@@ -26,6 +26,7 @@ package com.wikispaces.mcditty.blockTune;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import javax.sound.midi.MidiChannel;
 import javax.sound.midi.Patch;
 
 import com.sun.media.sound.SoftSynthesizer;
@@ -92,6 +93,8 @@ public class BlockTunePlayer extends Thread {
 
 	private Patch[] instruments = new Patch[16];
 
+	private double lastMasterVolume = 1;
+
 	/**
 	 * Set up a new blocktune player
 	 * 
@@ -109,64 +112,103 @@ public class BlockTunePlayer extends Thread {
 	@Override
 	public void run() {
 		while (!exiting) {
-			// If paused, wait until unpaused again or interrupted
-			if (tuneAccess.isPaused()) {
-				long pauseStart = System.currentTimeMillis();
-
-				// Turn off instruments
-				turnOffPlayingNotes();
-
-				// Wait
-				while (tuneAccess.isPaused() && !exiting) {
-					if (!isSynthClosed()
-							&& System.currentTimeMillis() - pauseStart > RELEASE_SYNTH_TIME) {
-						closeSynth();
-					}
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-					}
-				}
+			boolean updateResult = update();
+			if (updateResult == false) {
+				exiting = true;
 			}
-
-			// Decide what frame to play next
-			if (currFrame >= tuneAccess.getFrameCount()) {
-				if (tuneAccess.isLooping()) {
-					currFrame = 0;
-				} else {
-					break;
-				}
-			}
-
-			// Read frame
-			Frame frame = tuneAccess.getFrame(currFrame);
-
-			// Handle null frame
-			if (frame == null) {
-				frame = NULL_FRAME;
-			}
-
-			// Play any notes
-			playFrame(frame);
-
-			// Tell blockTune
-			tuneAccess.onFramePlayed(frame, currFrame);
-
-			// Delay until next frame
-			long endTime = (long) (System.nanoTime() + (1000000000d / beatsPerSecond));
-			while (System.nanoTime() < endTime && !exiting) {
-				try {
-					Thread.sleep(20);
-				} catch (InterruptedException e) {
-				}
-			}
-
-			// Increment current frame
-			currFrame++;
 		}
 
 		// Tune over; close the synth
 		closeSynth();
+	}
+	
+	/**
+	 * 
+	 * @return false if the block tune should stop updating
+	 */
+	private boolean update() {
+		// If paused, wait until unpaused again or interrupted
+		if (tuneAccess.isPaused()) {
+			long pauseStart = System.currentTimeMillis();
+
+			// Turn off instruments
+			turnOffPlayingNotes();
+
+			// Wait
+			while (tuneAccess.isPaused() && !exiting) {
+				if (!isSynthClosed()
+						&& System.currentTimeMillis() - pauseStart > RELEASE_SYNTH_TIME) {
+					closeSynth();
+				}
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+
+		// Update tempo
+		beatsPerSecond = tuneAccess.getBeatsPerSecond();
+
+		// Update volumes if they have changed and there is a synth
+		// available
+		if (synth != null && synth.getChannels() != null) {
+			double currMasterVolume = tuneAccess.getMasterVolume();
+			if (currMasterVolume != lastMasterVolume) {
+				// Master volume has changed (right now there is no channel
+				// volume control, so just change all chanells to new master
+				// volume)
+
+				// Change coarse volume to a value between 0 and 1
+				double boundedVolume = Math.min(1,
+						Math.max(0, currMasterVolume));
+				// Get value from 0 to 127 from that
+				byte coarseVolume = (byte) (boundedVolume * 127);
+				// Apply this volume to all channels
+				for (MidiChannel c : synth.getChannels()) {
+					c.controlChange(0x07, coarseVolume);
+				}
+			}
+			lastMasterVolume = currMasterVolume;
+		}
+
+		// Decide what frame to play next
+		if (currFrame >= tuneAccess.getFrameCount()) {
+			if (tuneAccess.isLooping()) {
+				currFrame = 0;
+			} else {
+				return false;
+			}
+		}
+
+		// Read frame
+		Frame frame = tuneAccess.getFrame(currFrame);
+
+		// Handle null frame
+		if (frame == null) {
+			frame = NULL_FRAME;
+		}
+
+		// Play any notes
+		playFrame(frame);
+
+		// Tell blockTune
+		tuneAccess.onFramePlayed(frame, currFrame);
+
+		// Delay until next frame
+		long endTime = (long) (System.nanoTime() + (1000000000d / beatsPerSecond));
+		while (System.nanoTime() < endTime && !exiting) {
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {
+			}
+		}
+
+		// Increment current frame
+		currFrame++;
+		
+		// Say that we still need to repeat
+		return true;
 	}
 
 	/**

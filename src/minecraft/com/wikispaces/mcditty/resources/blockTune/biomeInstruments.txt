@@ -1,8 +1,10 @@
 #ocean
-biome0=40,48,73,123
+biome0=40,48,73,114
 #plains
 biome1=
 #desert
 biome2=
 #extremeHills
 biome3=
+#Default
+default=12,32,66,0

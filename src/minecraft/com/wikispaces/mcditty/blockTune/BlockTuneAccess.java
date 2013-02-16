@@ -59,6 +59,8 @@ public interface BlockTuneAccess {
 	public Frame getFrame(int frameNum);
 
 	// public Frame[] getFrames(int len, int offset);
+	
+	public double getBeatsPerSecond();
 
 	/**
 	 * Called by BlockTunePlayer, signaling that a frame has just been played

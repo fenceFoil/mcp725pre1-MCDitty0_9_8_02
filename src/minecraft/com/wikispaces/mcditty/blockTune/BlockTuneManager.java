@@ -29,6 +29,7 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.TileEntityRecordPlayer;
 import net.minecraft.src.WorldClient;
+import aurelienribon.tweenengine.TweenManager;
 
 import com.wikispaces.mcditty.Point3D;
 import com.wikispaces.mcditty.TickListener;
@@ -43,8 +44,12 @@ import com.wikispaces.mcditty.TickListener;
 public class BlockTuneManager implements TickListener {
 
 	private LinkedList<BlockTune> trackedNodes = new LinkedList<BlockTune>();
+	
+	public static TweenManager manager = new TweenManager();
 
 	int tickCounter = 0;
+	
+	private long lastUpdateMillis = System.currentTimeMillis();
 
 	@Override
 	public boolean onTick(float partialTick, Minecraft minecraft) {
@@ -65,6 +70,10 @@ public class BlockTuneManager implements TickListener {
 			}
 		}
 		trackedNodes.removeAll(removedNodes);
+		
+		long nowMillis = System.currentTimeMillis();
+		manager.update(nowMillis - lastUpdateMillis);
+		lastUpdateMillis = nowMillis;
 
 		tickCounter++;
 		return true;
