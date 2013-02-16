@@ -1404,11 +1404,7 @@ public class MCDitty implements TickListener, NoNewSynthIndicator {
 	}
 
 	/**
-	 * Tries to create a new entity to hook into Minecraft ticks with, removing
-	 * any old ones.
-	 * 
-	 * Unfortunately, that last bit is a tad optimistic given a) Minecraft's
-	 * wonky entity lists and b) my wonky understanding of them.
+	 * Tries to create a new entity to hook into Minecraft ticks with.
 	 */
 	public static void createHookEntity(MCDitty mcditty) {
 		try {
@@ -1443,6 +1439,7 @@ public class MCDitty implements TickListener, NoNewSynthIndicator {
 
 			// If possible, add the MCDitty as a tickListener
 			if (hookEntity != null) {
+
 				addTickListenersToHookEntity(hookEntity);
 			}
 		} catch (Exception e) {
@@ -2200,5 +2197,48 @@ public class MCDitty implements TickListener, NoNewSynthIndicator {
 		} else {
 			return true;
 		}
+	}
+
+	public static int getMinecraftAdjustedSixteenBitVolume(int volumePercent) {
+		int sixteenBitVolume = 16383; // 16383 is the highest volume value
+	
+		// Factor in the Minecraft volume, if possible (can be null if this code
+		// is called as Minecraft loads)
+		if (Minecraft.getMinecraft() != null) {
+			if (Minecraft.getMinecraft().gameSettings != null) {
+				float mcVolume;
+	
+				// Get the appropriate MC volume.
+				if (MCDittyConfig.getVolumeMode() == MCDittyConfig.USE_MUSIC_VOLUME) {
+					mcVolume = Minecraft.getMinecraft().gameSettings.musicVolume;
+				} else if (MCDittyConfig.getVolumeMode() == MCDittyConfig.USE_SOUND_VOLUME) {
+					mcVolume = Minecraft.getMinecraft().gameSettings.soundVolume;
+				} else {
+					// Ignore MC volume
+					mcVolume = 1.0f;
+				}
+	
+				if (mcVolume == 0f) {
+					sixteenBitVolume = 0;
+				} else if (mcVolume >= 0.75f) {
+					// No change; leave at max
+				} else {
+					sixteenBitVolume = (int) ((float) sixteenBitVolume * (mcVolume + 0.25f));
+				}
+			}
+		}
+	
+		// Factor in volume in argument
+		if (volumePercent == 100) {
+			// Make sure that volume is always highest with no rounding errors
+			// No change
+		} else if (volumePercent == 0) {
+			// Make sure that volume is always 0 with no rounding errors
+			// Mute volume
+			sixteenBitVolume = 0;
+		} else {
+			sixteenBitVolume = (int) ((float) sixteenBitVolume * ((float) volumePercent / 100f));
+		}
+		return sixteenBitVolume;
 	}
 }
