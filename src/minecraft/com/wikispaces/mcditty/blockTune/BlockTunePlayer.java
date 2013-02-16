@@ -30,6 +30,7 @@ import javax.sound.midi.MidiChannel;
 import javax.sound.midi.Patch;
 
 import com.sun.media.sound.SoftSynthesizer;
+import com.wikispaces.mcditty.config.MCDittyConfig;
 import com.wikispaces.mcditty.ditty.MIDISynthPool;
 
 /**
@@ -290,6 +291,7 @@ public class BlockTunePlayer extends Thread {
 			if (p != null && synth != null && synth.getChannels() != null
 					&& synth.getChannels()[i] != null) {
 				if (synth.getChannels()[i].getProgram() != p.getProgram()) {
+					synth.loadInstrument(MCDittyConfig.customSF2.getCachedSoundbank().getInstrument(p));
 					synth.getChannels()[i].programChange(p.getProgram());
 				}
 			}
