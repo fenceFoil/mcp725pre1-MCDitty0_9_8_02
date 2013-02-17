@@ -122,7 +122,7 @@ public class BlockTunePlayer extends Thread {
 		// Tune over; close the synth
 		closeSynth();
 	}
-	
+
 	/**
 	 * 
 	 * @return false if the block tune should stop updating
@@ -207,7 +207,7 @@ public class BlockTunePlayer extends Thread {
 
 		// Increment current frame
 		currFrame++;
-		
+
 		// Say that we still need to repeat
 		return true;
 	}
@@ -291,7 +291,11 @@ public class BlockTunePlayer extends Thread {
 			if (p != null && synth != null && synth.getChannels() != null
 					&& synth.getChannels()[i] != null) {
 				if (synth.getChannels()[i].getProgram() != p.getProgram()) {
-					synth.loadInstrument(MCDittyConfig.customSF2.getCachedSoundbank().getInstrument(p));
+					if (MCDittyConfig.customSF2 != null
+							&& MCDittyConfig.customSF2.isSF2Loaded()) {
+						synth.loadInstrument(MCDittyConfig.customSF2
+								.getCachedSoundbank().getInstrument(p));
+					}
 					synth.getChannels()[i].programChange(p.getProgram());
 				}
 			}
