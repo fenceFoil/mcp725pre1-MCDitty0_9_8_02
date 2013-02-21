@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2012 William Karnavas 
+ * Copyright (c) 2012-2013 William Karnavas 
  * All Rights Reserved
  */
 
@@ -140,13 +140,14 @@ import com.minetunes.signs.keywords.ParsedKeyword;
 import com.minetunes.signs.keywords.ProxPadKeyword;
 
 /**
- * The central class of the MineTunes mod. Houses code to play ditties, do
- * things as they play during the game loop, handle keyboard and mouse input,
- * and hook into the Minecraft game loop.
+ * The central, singleton class of the MineTunes mod. Houses code to play
+ * ditties, do things as they play during the game loop, handle keyboard and
+ * mouse input, and hook into the Minecraft game loop.
  * 
- * TODO: Move many ditty-playing related methods from BlockSignMinetunes to MineTunes
+ * TODO: Move many ditty-playing related methods from BlockSignMinetunes to
+ * MineTunes
  */
-public class Minetunes implements TickListener, NoNewSynthIndicator {
+public class Minetunes {
 
 	/**
 	 * A Properties text file on the internet with the versions of various
@@ -227,14 +228,12 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	 */
 	private static LinkedList<Comment> comments = new LinkedList<Comment>();
 
-	private boolean guiKeyPreviousPressedState = false;
+	private static boolean guiKeyPreviousPressedState = false;
 
 	/**
 	 * Whether the first tick of the game has yet to happen.
 	 */
-	private boolean firstTick = true;
-
-	public static Minetunes instance = null;
+	private static boolean firstTick = true;
 
 	public static MIDISynthPool synthPool;
 
@@ -305,7 +304,66 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	public static TutorialWorldUpdater tutorialUpdater = new TutorialWorldUpdater(
 			MINETUNES_VERSIONS_URL);
 
-	public Minetunes() {
+	private static boolean loaded = false;
+
+	/**
+	 * Can be called multiple times; only takes effect on first call
+	 */
+	public static void initMinetunesMod() {
+		if (!loaded) {
+			// Start MCDitty!
+			load();
+			loaded = true;
+
+			// Also begin the tick hook entity checker
+			TickHookEntity.start();
+			addTickListenersToHookEntity();
+		}
+	}
+
+	/**
+	 * Runs all the most costly parts of loading MineTunes. Called as early in
+	 * the game's loading as possible.
+	 */
+	private static void load() {
+		// Enable calling onTickInGame each tick
+		// TODO: REENABLE WHEN MODLOADER COMES BACK!!! REMOVED 1.3.1
+		// ModLoader.setInGameHook(this, true, true);
+
+		// Todo: Add achievement
+
+		long startTime = System.currentTimeMillis();
+		// Init the sound engine (with a Gervill synthesizer)
+		// NOTE: JUDGED TOO EXPENSIVE
+		// try {
+		// Player p = new Player(new SoftSynthesizer());
+		// p.play("Rwww");
+		// } catch (MidiUnavailableException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+
+		// Cache a few synths
+		setUpSynthPool();
+		long jfugueLoadTime = System.currentTimeMillis() - startTime;
+
+		// Init the SFX table
+		startTime = System.currentTimeMillis();
+		try {
+			SFXManager.load();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (SAXException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		long sfxLoadTime = System.currentTimeMillis() - startTime;
+
+		// Init the Sign Renderer Trig Tables
+		startTime = System.currentTimeMillis();
+		TileEntitySignRendererMinetunes.createTrigTables();
+		long trigLoadTime = System.currentTimeMillis() - startTime;
 
 		// Set up modified note block
 		// First, the original Minecraft noteblock must be discarded
@@ -385,67 +443,6 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 			e1.printStackTrace();
 		}
 
-	}
-
-	/**
-	 * Can be called multiple times; only takes effect on first call
-	 */
-	public static void initMinetunesMod() {
-		if (instance == null) {
-			// Start MCDitty!
-			instance = new Minetunes();
-			instance.load();
-
-			// Also begin the tick hook entity checker
-			TickHookEntity.start();
-			addTickListenersToHookEntity();
-		}
-	}
-
-	/**
-	 * Runs all the most costly parts of loading MineTunes. Called as early in
-	 * the game's loading as possible.
-	 */
-	public static void load() {
-		// Enable calling onTickInGame each tick
-		// TODO: REENABLE WHEN MODLOADER COMES BACK!!! REMOVED 1.3.1
-		// ModLoader.setInGameHook(this, true, true);
-
-		// Todo: Add achievement
-
-		long startTime = System.currentTimeMillis();
-		// Init the sound engine (with a Gervill synthesizer)
-		// NOTE: JUDGED TOO EXPENSIVE
-		// try {
-		// Player p = new Player(new SoftSynthesizer());
-		// p.play("Rwww");
-		// } catch (MidiUnavailableException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-
-		// Cache a few synths
-		setUpSynthPool();
-		long jfugueLoadTime = System.currentTimeMillis() - startTime;
-
-		// Init the SFX table
-		startTime = System.currentTimeMillis();
-		try {
-			SFXManager.load();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (SAXException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		long sfxLoadTime = System.currentTimeMillis() - startTime;
-
-		// Init the Sign Renderer Trig Tables
-		startTime = System.currentTimeMillis();
-		TileEntitySignRendererMinetunes.createTrigTables();
-		long trigLoadTime = System.currentTimeMillis() - startTime;
-
 		// Start the entity checker update thread
 		Thread t = new Thread(new Runnable() {
 
@@ -505,10 +502,16 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 								registeredTileEntityRenderers.put(
 										TileEntitySignMinetunes.class, r);
 							}
-							
+
 							// Change the tile entity associated with BlockSign
-							Finder.setUniqueTypedFieldFromClass(BlockSign.class, Class.class, Block.signPost, TileEntitySignMinetunes.class);
-							Finder.setUniqueTypedFieldFromClass(BlockSign.class, Class.class, Block.signWall, TileEntitySignMinetunes.class);
+							Finder.setUniqueTypedFieldFromClass(
+									BlockSign.class, Class.class,
+									Block.signPost,
+									TileEntitySignMinetunes.class);
+							Finder.setUniqueTypedFieldFromClass(
+									BlockSign.class, Class.class,
+									Block.signWall,
+									TileEntitySignMinetunes.class);
 						} catch (IllegalArgumentException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -538,7 +541,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	/**
 	 * Run on the first tick of the game.
 	 */
-	public void doFirstTickSetup() {
+	public static void doFirstTickSetup() {
 		// // Win installed achievement
 		// REMOVED for 1.3.1 update
 		// ModLoader.getMinecraftInstance().thePlayer.addStat(
@@ -646,7 +649,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	 * @param minecraft
 	 * @return
 	 */
-	public boolean onTick(float partialTick, Minecraft minecraft) {
+	public static boolean onTick(float partialTick, Minecraft minecraft) {
 		// Do in any tick, not just in game (see below section)
 		addButtonsToGuis();
 		swapSignGui();
@@ -715,7 +718,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	 * its "modified sign" packet, and you can't save the sign text you change
 	 * in the Minetunes editor anymore (sign update packets are one-shot deals).
 	 */
-	private void swapSignGui() {
+	private static void swapSignGui() {
 		try {
 			if (Minecraft.getMinecraft().currentScreen instanceof GuiEditSign
 					&& !(Minecraft.getMinecraft().currentScreen instanceof GuiEditSignMinetunes)) {
@@ -744,7 +747,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 		}
 	}
 
-	private void handleMouseInput(Minecraft minecraft) {
+	private static void handleMouseInput(Minecraft minecraft) {
 		if (minecraft != null && minecraft.objectMouseOver != null
 				&& !MinetunesConfig.getMinetunesOff()) {
 			// Handle the player looking at a noteblock
@@ -779,7 +782,8 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 					held = heldStack.itemID;
 				}
 
-				if (BlockSignMinetunes.getSignBlockType(hoverPoint, minecraft.theWorld) != null) {
+				if (BlockSignMinetunes.getSignBlockType(hoverPoint,
+						minecraft.theWorld) != null) {
 					// A sign has been clicked!
 					// Perform some functions of
 					// BlockSignMinetunes.blockActivated
@@ -815,9 +819,9 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 					} else if (!isIDAxe(held)
 							&& !minecraft.thePlayer.isSneaking()) {
 						// Manually trigger blockActivated
-						BlockSignMinetunes.blockActivated(
-								minecraft.theWorld, hoverPoint.x, hoverPoint.y,
-								hoverPoint.z, minecraft.thePlayer);
+						BlockSignMinetunes.blockActivated(minecraft.theWorld,
+								hoverPoint.x, hoverPoint.y, hoverPoint.z,
+								minecraft.thePlayer);
 					}
 				} else {
 					// If not aiming at a sign
@@ -847,7 +851,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 		}
 	}
 
-	private int getNoteBlockValue(Point3D hoverPoint, World world) {
+	private static int getNoteBlockValue(Point3D hoverPoint, World world) {
 		TileEntity tile = world.getBlockTileEntity(hoverPoint.x, hoverPoint.y,
 				hoverPoint.z);
 		if (tile != null && tile instanceof TileEntityNote) {
@@ -860,7 +864,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 		}
 	}
 
-	private void showProxpadCorners(Minecraft minecraft) {
+	private static void showProxpadCorners(Minecraft minecraft) {
 		if (MinetunesConfig.DEBUG) {
 			for (ProxPadBoundingBox bb : proxPadBBs) {
 				if (rand.nextDouble() > 0.7f) {
@@ -878,7 +882,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 		}
 	}
 
-	private void addButtonsToGuis() {
+	private static void addButtonsToGuis() {
 		GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
 		if (currentScreen != null) {
 			List mControlList = null;
@@ -919,7 +923,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 		}
 	}
 
-	public void processLyricsRequests() {
+	public static void processLyricsRequests() {
 		synchronized (lyricsQueue) {
 			if (lyricsQueue.size() > 0) {
 				CueEvent l = lyricsQueue.pollFirst();
@@ -937,7 +941,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 		}
 	}
 
-	public void processParticleRequests(Minecraft minecraft) {
+	public static void processParticleRequests(Minecraft minecraft) {
 		synchronized (particleRequestQueue) {
 			LinkedList<ParticleRequest> delayed = new LinkedList<ParticleRequest>();
 			while (particleRequestQueue.size() > 0) {
@@ -1085,7 +1089,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	 * @param rangePlusMinus
 	 * @return
 	 */
-	private double getBoundedGaussian(double rangePlusMinus) {
+	private static double getBoundedGaussian(double rangePlusMinus) {
 		double candidateValue = rand.nextGaussian();
 		if (candidateValue > rangePlusMinus) {
 			return rangePlusMinus;
@@ -1117,7 +1121,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 		return (id == 267 || id == 268 || id == 272 || id == 276 || id == 283);
 	}
 
-	public void checkForKeyCommands() {
+	public static void checkForKeyCommands() {
 		keypressHandler.update();
 	}
 
@@ -1127,7 +1131,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	 * 
 	 * @param minecraft
 	 */
-	public void updateProxpads(Minecraft minecraft) {
+	public static void updateProxpads(Minecraft minecraft) {
 		// Eschew all proxpad updates and activations if MineTunes is off
 		if (MinetunesConfig.getMinetunesOff()) {
 			return;
@@ -1271,7 +1275,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	 * TODO: Update proxpad keyword sign parsing to parse the whole sign, not
 	 * individual lines.
 	 */
-	public void addBBsToNewProxpads() {
+	public static void addBBsToNewProxpads() {
 		for (int i = 0; i < proxPadBBs.size(); i++) {
 			ProxPadBoundingBox bb = proxPadBBs.get(i);
 
@@ -1440,7 +1444,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	 * 
 	 * @param minecraft
 	 */
-	public void updateSignBlockDamages(Minecraft minecraft) {
+	public static void updateSignBlockDamages(Minecraft minecraft) {
 		// Show damage states on signs
 		if (damageValues != null) {
 			// Cycle through the damaged blocks, setting the damage on each sign
@@ -2215,7 +2219,19 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 
 	public static void setUpSynthPool() {
 		if (synthPool == null) {
-			synthPool = new MIDISynthPool(Minetunes.instance);
+			synthPool = new MIDISynthPool(new NoNewSynthIndicator() {
+
+				@Override
+				public boolean getNewSynthsAllowed() {
+					if (Minecraft.getMinecraft() != null
+							&& Minecraft.getMinecraft().gameSettings != null
+							&& Minecraft.getMinecraft().gameSettings.keyBindForward != null) {
+						return Keyboard.isKeyDown(Minecraft.getMinecraft().gameSettings.keyBindForward.keyCode);
+					} else {
+						return true;
+					}
+				}
+			});
 			synthPool.start();
 		}
 	}
@@ -2224,31 +2240,19 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 		return synthPool;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.wikispaces.MineTunes.ditty.NoNewSynthIndicator#getNewSynthsAllowed()
-	 */
-	@Override
-	public boolean getNewSynthsAllowed() {
-		if (Minecraft.getMinecraft() != null
-				&& Minecraft.getMinecraft().gameSettings != null
-				&& Minecraft.getMinecraft().gameSettings.keyBindForward != null) {
-			return Keyboard
-					.isKeyDown(Minecraft.getMinecraft().gameSettings.keyBindForward.keyCode);
-		} else {
-			return true;
-		}
-	}
-
 	/**
 	 * @param hookEntity2
 	 */
 	private static void addTickListenersToHookEntity() {
 
 		// Add MineTunes and the fireworks exploder
-		TickHookEntity.addTickListener(instance);
+		TickHookEntity.addTickListener(new TickListener() {
+
+			@Override
+			public boolean onTick(float partialTick, Minecraft minecraft) {
+				return onTick(partialTick, minecraft);
+			}
+		});
 		TickHookEntity.addTickListener(fireworkExploder);
 		TickHookEntity.addTickListener(blockTuneManager);
 

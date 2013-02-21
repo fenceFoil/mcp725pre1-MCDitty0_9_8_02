@@ -93,7 +93,9 @@ import com.minetunes.signs.keywords.TransposeKeyword;
 import com.minetunes.signs.keywords.VolumeKeyword;
 
 /**
- * @author William
+ * Contains members which were previously located in
+ * net.minecraft.src.BlockSign. NOT used to replace the vanilla BlockSign for
+ * the fields Block.signWall and Block.signPost, does NOT extend BlockSign
  * 
  */
 public class BlockSignMinetunes {
@@ -101,37 +103,6 @@ public class BlockSignMinetunes {
 	private static boolean isMinetunesLoaded = false;
 	private static Random random = new Random();
 	private static LinkedList<MaxPlaysLockPoint> maxPlaysLockPoints = new LinkedList<MaxPlaysLockPoint>();
-	/**
-	 * 
-	 * Following code (excluding code above this notice):
-	 * 
-	 * Copyright (c) 2012 William Karnavas All Rights Reserved
-	 * 
-	 */
-
-	/**
-	 * 
-	 * This file is part of MineTunes.
-	 * 
-	 * MineTunes is free software: you can redistribute it and/or modify it
-	 * under the terms of the GNU Lesser General Public License as published by
-	 * the Free Software Foundation, either version 3 of the License, or (at
-	 * your option) any later version.
-	 * 
-	 * MineTunes is distributed in the hope that it will be useful, but WITHOUT
-	 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-	 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
-	 * License for more details.
-	 * 
-	 * You should have received a copy of the GNU Lesser General Public License
-	 * along with MineTunes. If not, see <http://www.gnu.org/licenses/>.
-	 * 
-	 */
-
-	/**
-	 * Following code is for the MineTunes mod, and is (mostly) not code written
-	 * by Mojang AB
-	 */
 
 	/** Chars that can be parts of color codes */
 	private final static String[] colorCodeChars = { "0", "1", "2", "3", "4",
@@ -174,7 +145,7 @@ public class BlockSignMinetunes {
 	 * 
 	 * Public so that the DittyXML parser can share.
 	 */
-	public static MusicStringParser musicStringParser = new MusicStringParser();
+	public static final MusicStringParser musicStringParser = new MusicStringParser();
 	public static final String SYNC_VOICES_TOKEN = "~syncC";
 	public static final String SYNC_WITH_TOKEN = "~syncW";
 	public static final String NOTE_EFFECT_TOKEN = "~M";
@@ -2146,8 +2117,8 @@ public class BlockSignMinetunes {
 					// which has already been checked
 					for (int i = signsInFirstRow.size() - 1; i >= 0; i--) {
 						Point3D currPoint = signsInFirstRow.get(i);
-						if (isSign(currPoint.x, currPoint.y - 1,
-								currPoint.z, world)
+						if (isSign(currPoint.x, currPoint.y - 1, currPoint.z,
+								world)
 								&& (whitelist == null || whitelist
 										.contains(currPoint))) {
 							// There is a sign beneath this sign! Return it as
