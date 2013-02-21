@@ -1,115 +1,68 @@
 package net.minecraft.src;
 
+public class TileEntitySign extends TileEntity
+{
+    /** An array of four strings storing the lines of text on the sign. */
+    public String[] signText = new String[] {"", "", "", ""};
 
+    /**
+     * The index of the line currently being edited. Only used on client side, but defined on both. Note this is only
+     * really used when the > < are going to be visible.
+     */
+    public int lineBeingEdited = -1;
+    private boolean isEditable = true;
 
-import com.minetunes.Finder;
-import com.minetunes.Minetunes;
+    /**
+     * Writes a tile entity to NBT.
+     */
+    public void writeToNBT(NBTTagCompound par1NBTTagCompound)
+    {
+        super.writeToNBT(par1NBTTagCompound);
+        par1NBTTagCompound.setString("Text1", this.signText[0]);
+        par1NBTTagCompound.setString("Text2", this.signText[1]);
+        par1NBTTagCompound.setString("Text3", this.signText[2]);
+        par1NBTTagCompound.setString("Text4", this.signText[3]);
+    }
 
-/**
- * Changes to Mojang AB code are copyrighted:
- * 
- * Copyright (c) 2012 William Karnavas All Rights Reserved
- */
+    /**
+     * Reads a tile entity from NBT.
+     */
+    public void readFromNBT(NBTTagCompound par1NBTTagCompound)
+    {
+        this.isEditable = false;
+        super.readFromNBT(par1NBTTagCompound);
 
-/**
- * 
- * This file is part of MineTunes.
- * 
- * MineTunes is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Lesser General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
- * 
- * MineTunes is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with MineTunes. If not, see <http://www.gnu.org/licenses/>.
- * 
- */
+        for (int var2 = 0; var2 < 4; ++var2)
+        {
+            this.signText[var2] = par1NBTTagCompound.getString("Text" + (var2 + 1));
 
-public class TileEntitySign extends TileEntity {
+            if (this.signText[var2].length() > 15)
+            {
+                this.signText[var2] = this.signText[var2].substring(0, 15);
+            }
+        }
+    }
 
-	public String signText[] = { "", "", "", "" };
+    /**
+     * Overriden in a sign to provide the text.
+     */
+    public Packet getDescriptionPacket()
+    {
+        String[] var1 = new String[4];
+        System.arraycopy(this.signText, 0, var1, 0, 4);
+        return new Packet130UpdateSign(this.xCoord, this.yCoord, this.zCoord, var1);
+    }
 
-	/**
-	 * The index of the line currently being edited. Only used on client side,
-	 * but defined on both. Note this is only really used when the > < are going
-	 * to be visible.
-	 */
-	public int lineBeingEdited;
-	private boolean isEditable;
+    public boolean isEditable()
+    {
+        return this.isEditable;
+    }
 
-	public TileEntitySign() {
-		lineBeingEdited = -1;
-		isEditable = true;
-	}
-
-	/**
-	 * Notably, this method is called by NetClientHandler when it changes the
-	 * text of a sign after reading a packet.
-	 * 
-	 * Here, it checks to see if the sign's text has been changed by a buggy
-	 * packet, and resets it if it has been.
-	 */
-	@Override
-	public void onInventoryChanged() {
-		super.onInventoryChanged();
-	}
-
-	/**
-	 * Writes a tile entity to NBT.
-	 * 
-	 * You may note that this is completely unaltered from an unmodified
-	 * TileEntitySign's code.
-	 */
-	public void writeToNBT(NBTTagCompound par1NBTTagCompound) {
-		super.writeToNBT(par1NBTTagCompound);
-		par1NBTTagCompound.setString("Text1", signText[0]);
-		par1NBTTagCompound.setString("Text2", signText[1]);
-		par1NBTTagCompound.setString("Text3", signText[2]);
-		par1NBTTagCompound.setString("Text4", signText[3]);
-	}
-
-	/**
-	 * Reads a tile entity from NBT. Again, same as a vanilla TileEntitySign
-	 */
-	public void readFromNBT(NBTTagCompound par1NBTTagCompound) {
-		// System.out.println ("Reading sign from NBT...");
-		isEditable = false;
-		super.readFromNBT(par1NBTTagCompound);
-
-		for (int i = 0; i < 4; i++) {
-			signText[i] = par1NBTTagCompound.getString((new StringBuilder())
-					.append("Text").append(i + 1).toString());
-
-			if (signText[i].length() > 15) {
-				signText[i] = signText[i].substring(0, 15);
-			}
-		}
-	}
-
-	public boolean isEditable() {
-		return isEditable;
-	}
-
-	/**
-	 * Sets the sign's isEditable flag to the specified parameter.
-	 */
-	public void setEditable(boolean par1) {
-		isEditable = par1;
-	}
-
-	/**
-	 * New in 1.3.1 Release
-	 */
-	@Override
-	public Packet getDescriptionPacket() {
-		// System.out.println ("func 70319 called");
-		String as[] = new String[4];
-		System.arraycopy(signText, 0, as, 0, 4);
-		return new Packet130UpdateSign(xCoord, yCoord, zCoord, as);
-	}
+    /**
+     * Sets the sign's isEditable flag to the specified parameter.
+     */
+    public void setEditable(boolean par1)
+    {
+        this.isEditable = par1;
+    }
 }
