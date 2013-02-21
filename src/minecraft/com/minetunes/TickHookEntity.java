@@ -107,14 +107,6 @@ public class TickHookEntity extends Entity {
 	}
 
 	/**
-	 * Add a new listener for tick events. An event is fired every time
-	 * onupdate() is called on the tick hook entity.
-	 */
-	public static void addTickListener(TickListener t) {
-		tickListeners.add(t);
-	}
-
-	/**
 	 * @param par1World
 	 */
 	private TickHookEntity(World par1World) {
@@ -197,6 +189,14 @@ public class TickHookEntity extends Entity {
 			TickHookEntity.hookEntity = null;
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Add a new listener for tick events. An event is fired every time
+	 * onupdate() is called on the tick hook entity.
+	 */
+	public static void addTickListener(TickListener t) {
+		tickListeners.add(t);
 	}
 
 	/**
