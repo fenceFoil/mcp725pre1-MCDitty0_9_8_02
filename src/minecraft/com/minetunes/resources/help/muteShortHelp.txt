@@ -1,0 +1,9 @@
+Mute
+
+Stops all playing ditties.
+
+If part of a ditty, all other ditties are stopped before this one starts.
+
+You can also mute MineTunes from the keyboard by pressing Ctrl+M.
+
+§bSee:§r OneAtATime

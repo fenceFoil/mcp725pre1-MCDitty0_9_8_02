@@ -1,13 +1,9 @@
 package net.minecraft.src;
 
-import java.util.HashMap;
-import java.util.LinkedList;
 
-import net.minecraft.client.Minecraft;
 
-import com.wikispaces.mcditty.Finder;
-import com.wikispaces.mcditty.MCDitty;
-import com.wikispaces.mcditty.Point3D;
+import com.minetunes.Finder;
+import com.minetunes.Minetunes;
 
 /**
  * Changes to Mojang AB code are copyrighted:
@@ -17,49 +13,24 @@ import com.wikispaces.mcditty.Point3D;
 
 /**
  * 
- * This file is part of MCDitty.
+ * This file is part of MineTunes.
  * 
- * MCDitty is free software: you can redistribute it and/or modify it under the
+ * MineTunes is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Lesser General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option) any
  * later version.
  * 
- * MCDitty is distributed in the hope that it will be useful, but WITHOUT ANY
+ * MineTunes is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with MCDitty. If not, see <http://www.gnu.org/licenses/>.
+ * along with MineTunes. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
 
 public class TileEntitySign extends TileEntity {
-
-	public boolean startBlinking = false;
-	public boolean blinking = false;
-	public long blinkingEndTime = 0;
-	public boolean[] errorBlinkLine;
-
-	public String signColorCode = null;
-
-	/**
-	 * Text that is appended to the beginning of each line of the sign before
-	 * display.
-	 */
-	public String[] highlightLine;
-
-	/**
-	 * How much the sign is damaged, as caused by a player punching it.
-	 */
-	public int damage = 0;
-
-	/**
-	 * Whether the player has picked this sign to play in a test
-	 */
-	public boolean picked = false;
-
-	private float[] highlightColor = { -1, -1, -1, -1 };
 
 	public String signText[] = { "", "", "", "" };
 
@@ -69,32 +40,12 @@ public class TileEntitySign extends TileEntity {
 	 * to be visible.
 	 */
 	public int lineBeingEdited;
-	public int charBeingEdited = 0;
-	public boolean alwaysRender = false;
 	private boolean isEditable;
-
-	private LinkedList<String[]> pastTexts = null;
 
 	public TileEntitySign() {
 		lineBeingEdited = -1;
 		isEditable = true;
-
-		errorBlinkLine = new boolean[4];
-		for (int i = 0; i < errorBlinkLine.length; i++) {
-			errorBlinkLine[i] = false;
-		}
-
-		highlightLine = new String[4];
-		for (int i = 0; i < highlightLine.length; i++) {
-			highlightLine[i] = "";
-		}
-
-		// Add this sign to MCDitty's list of all signs ever for possible
-		// recovery
-		MCDitty.signRecoveryList.add(this);
 	}
-
-	private String[] lastSignText = { "", "", "", "" };
 
 	/**
 	 * Notably, this method is called by NetClientHandler when it changes the
@@ -138,9 +89,6 @@ public class TileEntitySign extends TileEntity {
 				signText[i] = signText[i].substring(0, 15);
 			}
 		}
-
-		// MCDitty: Check for any proxpads
-		MCDitty.onSignLoaded(this);
 	}
 
 	public boolean isEditable() {
@@ -155,39 +103,6 @@ public class TileEntitySign extends TileEntity {
 	}
 
 	/**
-	 * @return the highlightColor
-	 */
-	public float[] getHighlightColor() {
-		return highlightColor;
-	}
-
-	/**
-	 * @param highlightColor
-	 *            the highlightColor to set
-	 */
-	public void setHighlightColor(float[] highlightColor) {
-		this.highlightColor = highlightColor;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.TileEntity#updateEntity()
-	 */
-	@Override
-	public void updateEntity() {
-		if (signText[2].length() >= 2
-				&& signText[2].toCharArray()[signText[2].length() - 2] == '%') {
-			if (signColorCode == null) {
-				signColorCode = TileEntitySignRenderer
-						.getSignColorCode(signText);
-			}
-		} else {
-			signColorCode = null;
-		}
-	}
-
-	/**
 	 * New in 1.3.1 Release
 	 */
 	@Override
@@ -196,149 +111,5 @@ public class TileEntitySign extends TileEntity {
 		String as[] = new String[4];
 		System.arraycopy(signText, 0, as, 0, 4);
 		return new Packet130UpdateSign(xCoord, yCoord, zCoord, as);
-	}
-
-	public void clearHighlightedLines() {
-		for (int i = 0; i < signText.length; i++) {
-			highlightLine[i] = "";
-		}
-	}
-
-	public Point3D posToPoint3D() {
-		return new Point3D(xCoord, yCoord, zCoord);
-	}
-
-	public Point3D posToPoint3D(Point3D changeThisPoint) {
-		changeThisPoint.x = xCoord;
-		changeThisPoint.y = yCoord;
-		changeThisPoint.z = zCoord;
-		return changeThisPoint;
-	}
-
-	private boolean opaqueAnchorCalculated = false;
-	private boolean isAnchorOpaque = false;
-
-	public boolean isAnchorBlockOpaque() {
-		if (!opaqueAnchorCalculated) {
-			try {
-				Point3D blockBehindSign = BlockSign.getBlockAttachedTo(this);
-				if (Block.blocksList[Minecraft.getMinecraft().theWorld
-						.getBlockId(blockBehindSign.x, blockBehindSign.y,
-								blockBehindSign.z)].isOpaqueCube()) {
-					isAnchorOpaque = true;
-				}
-				opaqueAnchorCalculated = true;
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-				opaqueAnchorCalculated = false;
-				return false;
-			}
-		}
-		return isAnchorOpaque;
-	}
-
-	public String[] copySignText() {
-		String[] s = new String[4];
-		System.arraycopy(signText, 0, s, 0, 4);
-		return s;
-	}
-
-	/**
-	 * Returns a copy of signText, or, if there is a color code in the sign, a
-	 * copy without the color code in line 3.
-	 * 
-	 * TODO: Efficiency, more of it!
-	 * 
-	 * @return
-	 */
-	public String[] getSignTextNoCodes() {
-		signColorCode = TileEntitySignRenderer.getSignColorCode(signText);
-		if (signColorCode != null) {
-			// Save code
-			// Return a stripped copy of sign text
-			String[] s = copySignText();
-			TileEntitySignRenderer.removeSignColorCodes(s);
-			return s;
-		} else {
-			return signText;
-		}
-	}
-
-	/**
-	 * MCDitty: Copies an array of strings
-	 * 
-	 * @param strings
-	 *            Input array
-	 * @return Copy array
-	 */
-	public static String[] copyOfSignText(String[] strings) {
-		String[] copy = new String[strings.length];
-		for (int i = 0; i < strings.length; i++) {
-			copy[i] = String.copyValueOf(strings[i].toCharArray());
-		}
-		return copy;
-	}
-
-	private static HashMap<String, String> names = new HashMap<String, String>();
-	static {
-		names.put("0", "Black");
-		names.put("1", "Blue");
-		names.put("2", "Green");
-		names.put("3", "Aqua");
-		names.put("4", "Red");
-		names.put("5", "Purple");
-		names.put("6", "Orange");
-		names.put("7", "Grey");
-		names.put("8", "Stone");
-		names.put("9", "Lt Blue");
-		names.put("a", "Lime");
-		names.put("b", "Sky");
-		names.put("c", "Lt Red");
-		names.put("d", "Pink");
-		names.put("e", "Yellow");
-		names.put("f", "White");
-	}
-
-	public static String getNameForSignColorCode(String code) {
-		if (code == null) {
-			return "";
-		}
-		String name = names.get(code.toLowerCase());
-		if (name == null) {
-			return "Other";
-		} else {
-			return name;
-		}
-	}
-
-	private static String codeCycle = "0123456789abcdef";
-
-	public static String nextCodeInCycle(String currCode) {
-		if (currCode.length() != 1) {
-			return currCode;
-		}
-
-		int currIndex = codeCycle.indexOf(currCode);
-		currIndex++;
-		if (currIndex >= codeCycle.length()) {
-			currIndex = 0;
-		}
-
-		return "" + codeCycle.toCharArray()[currIndex];
-	}
-
-	public static String prevCodeInCycle(String currCode) {
-		if (currCode.length() != 1) {
-			return currCode;
-		}
-
-		int currIndex = codeCycle.indexOf(currCode);
-		currIndex--;
-		if (currIndex < 0) {
-			currIndex = codeCycle.length() - 1;
-		}
-
-		return "" + codeCycle.toCharArray()[currIndex];
 	}
 }

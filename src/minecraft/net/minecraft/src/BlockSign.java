@@ -1,103 +1,72 @@
 package net.minecraft.src;
 
-import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
-import java.util.jar.JarOutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 import net.minecraft.client.Minecraft;
 
 import org.jfugue.Player;
 import org.jfugue.parsers.MusicStringParser;
 
-import com.wikispaces.mcditty.CompareVersion;
-import com.wikispaces.mcditty.CueScheduler;
-import com.wikispaces.mcditty.Finder;
-import com.wikispaces.mcditty.MCDitty;
-import com.wikispaces.mcditty.MCDittyRightClickCheckThread;
-import com.wikispaces.mcditty.MCDittyTickHookEntity;
-import com.wikispaces.mcditty.MuteDittyThread;
-import com.wikispaces.mcditty.PlayDittyFromSignWorkThread;
-import com.wikispaces.mcditty.Point3D;
-import com.wikispaces.mcditty.RenderMCDittyUpdateHook;
-import com.wikispaces.mcditty.autoUpdate.RunCommandThread;
-import com.wikispaces.mcditty.config.MCDittyConfig;
-import com.wikispaces.mcditty.disco.DiscoFloor;
-import com.wikispaces.mcditty.ditty.Ditty;
-import com.wikispaces.mcditty.ditty.DittyPlayerThread;
-import com.wikispaces.mcditty.ditty.event.CreateBotEvent;
-import com.wikispaces.mcditty.ditty.event.CreateEmitterEvent;
-import com.wikispaces.mcditty.ditty.event.CueEvent;
-import com.wikispaces.mcditty.ditty.event.FireworkEvent;
-import com.wikispaces.mcditty.ditty.event.NoteStartEvent;
-import com.wikispaces.mcditty.ditty.event.PlayMidiDittyEvent;
-import com.wikispaces.mcditty.ditty.event.SFXInstrumentEvent;
-import com.wikispaces.mcditty.ditty.event.SFXInstrumentOffEvent;
-import com.wikispaces.mcditty.ditty.event.SFXMCDittyEvent;
-import com.wikispaces.mcditty.ditty.event.VolumeEvent;
-import com.wikispaces.mcditty.gui.GuiMCDittyChangelog;
-import com.wikispaces.mcditty.particle.ParticleRequest;
-import com.wikispaces.mcditty.resources.MCDittyResourceManager;
-import com.wikispaces.mcditty.signs.Comment;
-import com.wikispaces.mcditty.signs.MaxPlaysLockPoint;
-import com.wikispaces.mcditty.signs.ParsedSign;
-import com.wikispaces.mcditty.signs.SignDitty;
-import com.wikispaces.mcditty.signs.SignLine;
-import com.wikispaces.mcditty.signs.SignLineHighlight;
-import com.wikispaces.mcditty.signs.SignParser;
-import com.wikispaces.mcditty.signs.keywords.AccelerateKeyword;
-import com.wikispaces.mcditty.signs.keywords.DiscoKeyword;
-import com.wikispaces.mcditty.signs.keywords.EmitterKeyword;
-import com.wikispaces.mcditty.signs.keywords.ExplicitGotoKeyword;
-import com.wikispaces.mcditty.signs.keywords.FireworkKeyword;
-import com.wikispaces.mcditty.signs.keywords.GotoKeyword;
-import com.wikispaces.mcditty.signs.keywords.LyricKeyword;
-import com.wikispaces.mcditty.signs.keywords.MaxPlaysKeyword;
-import com.wikispaces.mcditty.signs.keywords.NewBotKeyword;
-import com.wikispaces.mcditty.signs.keywords.OctavesKeyword;
-import com.wikispaces.mcditty.signs.keywords.OctavesOffKeyword;
-import com.wikispaces.mcditty.signs.keywords.ParsedKeyword;
-import com.wikispaces.mcditty.signs.keywords.PattKeyword;
-import com.wikispaces.mcditty.signs.keywords.PatternKeyword;
-import com.wikispaces.mcditty.signs.keywords.PreLyricKeyword;
-import com.wikispaces.mcditty.signs.keywords.RepeatKeyword;
-import com.wikispaces.mcditty.signs.keywords.SFXInstKeyword;
-import com.wikispaces.mcditty.signs.keywords.SFXInstOffKeyword;
-import com.wikispaces.mcditty.signs.keywords.SFXKeyword;
-import com.wikispaces.mcditty.signs.keywords.StaccatoKeyword;
-import com.wikispaces.mcditty.signs.keywords.SyncWithKeyword;
-import com.wikispaces.mcditty.signs.keywords.TransposeKeyword;
-import com.wikispaces.mcditty.signs.keywords.VolumeKeyword;
-import com.wikispaces.mcditty.test.SignLogPoint;
-import com.wikispaces.mcditty.test.TileEntitySkullRenderer2;
+import com.minetunes.CueScheduler;
+import com.minetunes.Minetunes;
+import com.minetunes.PlayDittyFromSignWorkThread;
+import com.minetunes.Point3D;
+import com.minetunes.RightClickCheckThread;
+import com.minetunes.config.MinetunesConfig;
+import com.minetunes.disco.DiscoFloor;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.ditty.DittyPlayerThread;
+import com.minetunes.ditty.event.CreateBotEvent;
+import com.minetunes.ditty.event.CreateEmitterEvent;
+import com.minetunes.ditty.event.FireworkEvent;
+import com.minetunes.ditty.event.NoteStartEvent;
+import com.minetunes.ditty.event.PlayMidiDittyEvent;
+import com.minetunes.ditty.event.SFXEvent;
+import com.minetunes.ditty.event.SFXInstrumentEvent;
+import com.minetunes.ditty.event.SFXInstrumentOffEvent;
+import com.minetunes.ditty.event.VolumeEvent;
+import com.minetunes.particle.ParticleRequest;
+import com.minetunes.signs.Comment;
+import com.minetunes.signs.MaxPlaysLockPoint;
+import com.minetunes.signs.ParsedSign;
+import com.minetunes.signs.SignDitty;
+import com.minetunes.signs.SignLine;
+import com.minetunes.signs.SignLineHighlight;
+import com.minetunes.signs.SignLogPoint;
+import com.minetunes.signs.SignParser;
+import com.minetunes.signs.TileEntitySignMinetunes;
+import com.minetunes.signs.keywords.AccelerateKeyword;
+import com.minetunes.signs.keywords.DiscoKeyword;
+import com.minetunes.signs.keywords.EmitterKeyword;
+import com.minetunes.signs.keywords.ExplicitGotoKeyword;
+import com.minetunes.signs.keywords.FireworkKeyword;
+import com.minetunes.signs.keywords.GotoKeyword;
+import com.minetunes.signs.keywords.LyricKeyword;
+import com.minetunes.signs.keywords.MaxPlaysKeyword;
+import com.minetunes.signs.keywords.NewBotKeyword;
+import com.minetunes.signs.keywords.OctavesKeyword;
+import com.minetunes.signs.keywords.OctavesOffKeyword;
+import com.minetunes.signs.keywords.ParsedKeyword;
+import com.minetunes.signs.keywords.PattKeyword;
+import com.minetunes.signs.keywords.PatternKeyword;
+import com.minetunes.signs.keywords.PreLyricKeyword;
+import com.minetunes.signs.keywords.RepeatKeyword;
+import com.minetunes.signs.keywords.SFXInstKeyword;
+import com.minetunes.signs.keywords.SFXInstOffKeyword;
+import com.minetunes.signs.keywords.SFXKeyword;
+import com.minetunes.signs.keywords.StaccatoKeyword;
+import com.minetunes.signs.keywords.SyncWithKeyword;
+import com.minetunes.signs.keywords.TransposeKeyword;
+import com.minetunes.signs.keywords.VolumeKeyword;
 
 public class BlockSign extends BlockContainer {
 	private Class signEntityClass;
@@ -105,7 +74,7 @@ public class BlockSign extends BlockContainer {
 	/** Whether this is a freestanding sign or a wall-mounted sign */
 	private boolean isFreestanding;
 
-	private static boolean isMCDittyLoaded = false;
+	private static boolean isMinetunesLoaded = false;
 
 	private static Random random = new Random();
 
@@ -116,14 +85,17 @@ public class BlockSign extends BlockContainer {
 		isFreestanding = par3;
 		blockIndexInTexture = 4;
 		signEntityClass = par2Class;
-		float f = 0.25F;
-		float f1 = 1.0F;
-		setBlockBounds(0.5F - f, 0.0F, 0.5F - f, 0.5F + f, f1, 0.5F + f);
+		float bbHalfWidth = 0.5f / 2;
+		float bbHeight = 1.0f;
+		setBlockBounds(0.5F - bbHalfWidth, 0.0F, 0.5F - bbHalfWidth, 0.5F + bbHalfWidth, bbHeight, 0.5F + bbHalfWidth);
 
-		// As this is called during game load, init MCDitty here as well
-		if (!isMCDittyLoaded) {
-			initMCDittyMod();
+		// As this is called during game load, init Minetunes here as well
+		if (!isMinetunesLoaded) {
+			Minetunes.initMinetunesMod();
 		}
+		
+		// Override default tile entity
+		signEntityClass = TileEntitySignMinetunes.class;
 	}
 
 	/**
@@ -243,25 +215,25 @@ public class BlockSign extends BlockContainer {
 
 	/**
 	 * 
-	 * This file is part of MCDitty.
+	 * This file is part of MineTunes.
 	 * 
-	 * MCDitty is free software: you can redistribute it and/or modify it under
+	 * MineTunes is free software: you can redistribute it and/or modify it under
 	 * the terms of the GNU Lesser General Public License as published by the
 	 * Free Software Foundation, either version 3 of the License, or (at your
 	 * option) any later version.
 	 * 
-	 * MCDitty is distributed in the hope that it will be useful, but WITHOUT
+	 * MineTunes is distributed in the hope that it will be useful, but WITHOUT
 	 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 	 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 	 * License for more details.
 	 * 
 	 * You should have received a copy of the GNU Lesser General Public License
-	 * along with MCDitty. If not, see <http://www.gnu.org/licenses/>.
+	 * along with MineTunes. If not, see <http://www.gnu.org/licenses/>.
 	 * 
 	 */
 
 	/**
-	 * Following code is for the MCDitty mod, and is (mostly) not code written
+	 * Following code is for the MineTunes mod, and is (mostly) not code written
 	 * by Mojang AB
 	 */
 
@@ -386,7 +358,7 @@ public class BlockSign extends BlockContainer {
 	/**
 	 * In Minecraft 1.2.5 and below, this was called when a player clicked a
 	 * block. It has been moved to the server's side in 1.3.1, and is no longer
-	 * called except by MCDitty functions.
+	 * called except by Minetunes functions.
 	 * 
 	 * @param par1World
 	 * @param parX
@@ -401,7 +373,7 @@ public class BlockSign extends BlockContainer {
 
 		if (!clickHeld) {
 			clickHeld = true;
-			MCDittyRightClickCheckThread t = new MCDittyRightClickCheckThread();
+			RightClickCheckThread t = new RightClickCheckThread();
 			t.start();
 
 			// System.out.println ("BlockActivated");
@@ -412,23 +384,19 @@ public class BlockSign extends BlockContainer {
 				held = heldStack.itemID;
 				// System.out.println (held);
 			}
-			if ((held == 271) || MCDittyConfig.mcdittyOff) {
+			if ((held == 271) || MinetunesConfig.getMinetunesOff()) {
 				// Holding wooden axe: do nothing.
-			} else if (MCDitty.isIDShovel(held)) {
+			} else if (Minetunes.isIDShovel(held)) {
 				// Shovel! "Scoop up" sign text.
 				GuiEditSign.addTextToSavedSigns(((TileEntitySign) par1World
 						.getBlockTileEntity(parX, parY, parZ)).signText);
-				writeChatMessage(par1World, "§2Sign's text has been saved.");
+				Minetunes.writeChatMessage(par1World, "§2Sign's text has been saved.");
 			} else {
 				playDittyFromSigns(par1World, parX, parY, parZ);
 			}
 		}
 		return true;
 	}
-
-	// Loud signs send a chat message starting with this:
-	// Odd case reduces odds of a normal person chatting this
-	// public static final String MCDITTY_LOUD_CHAT_START = "McDiTtY:";
 
 	public static final int FACES_SOUTH = 0;
 	public static final int FACES_WEST = 1;
@@ -487,7 +455,7 @@ public class BlockSign extends BlockContainer {
 
 		Thread t = new PlayDittyFromSignWorkThread(world, x, y, z,
 				oneAtATimeOn, false, null);
-		//t.setPriority(Thread.MIN_PRIORITY);
+		// t.setPriority(Thread.MIN_PRIORITY);
 		t.start();
 	}
 
@@ -495,7 +463,7 @@ public class BlockSign extends BlockContainer {
 	 * Performs the hard work of reading signs from a world, generating a
 	 * DittyProperties and musicString from them, and playing them with JFugue.
 	 * 
-	 * The Core and Star Method of MCDitty, in other words.
+	 * The Core and Star Method of Minetunes, in other words.
 	 * 
 	 * @param world
 	 *            world that signs are contained in
@@ -549,13 +517,13 @@ public class BlockSign extends BlockContainer {
 		long startTime = System.nanoTime();
 
 		// Update config file
-		MCDittyConfig.checkConfig(world);
+		MinetunesConfig.loadAndUpdateSettings();
 
 		// TODO: If signs have been picked and there isn't a whitelist given,
 		// set the whitelist to all picked signs
-		if (signWhitelist == null && MCDitty.getPickedSigns().size() > 0) {
+		if (signWhitelist == null && Minetunes.getPickedSigns().size() > 0) {
 			signWhitelist = new LinkedList<Point3D>();
-			for (TileEntitySign t : MCDitty.getPickedSigns()) {
+			for (TileEntitySign t : Minetunes.getPickedSigns()) {
 				signWhitelist.add(new Point3D(t.xCoord, t.yCoord, t.zCoord));
 			}
 		}
@@ -567,7 +535,7 @@ public class BlockSign extends BlockContainer {
 		if (signWhitelist != null) {
 			boolean isOnList = false;
 			Point3D tempPoint = new Point3D();
-			for (TileEntitySign t : MCDitty.getPickedSigns()) {
+			for (TileEntitySign t : Minetunes.getPickedSigns()) {
 				tempPoint.x = t.xCoord;
 				tempPoint.y = t.yCoord;
 				tempPoint.z = t.zCoord;
@@ -579,7 +547,7 @@ public class BlockSign extends BlockContainer {
 			if (!isOnList) {
 				// Bad start point
 				if (!silent) {
-					writeChatMessage(world, "§2This sign is unpicked.");
+					Minetunes.writeChatMessage(world, "§2This sign is unpicked.");
 					return null;
 				}
 			}
@@ -624,8 +592,8 @@ public class BlockSign extends BlockContainer {
 		// loop
 		if (musicStringToPlay == null) {
 			// Infinite loop found; display errors, and do not play song
-			if (!silent && MCDittyConfig.showErrors) {
-				writeChatMessage(
+			if (!silent && MinetunesConfig.getBoolean("signs.showErrors")) {
+				Minetunes.writeChatMessage(
 						world,
 						"§cThere is an infinite loop in this song. It is probably caused by signs arranged in a circle, or gotos that point back at each other.");
 			}
@@ -678,17 +646,17 @@ public class BlockSign extends BlockContainer {
 				// Handle muting before playing a song
 				if (dittyProperties.getMuting()) {
 					// Mute: stop all playing music except this music
-					mutePlayingDitties(dittyProperties.getDittyID());
+					Minetunes.mutePlayingDitties(dittyProperties.getDittyID());
 				}
 
 				// If applicable, save midi of song
 				if (dittyProperties.getMidiSaveFile() != null
-						&& MCDittyConfig.midiSavingEnabled) {
+						&& MinetunesConfig.getBoolean("signs.saveMidiEnabled")) {
 					try {
 						saveMidiFile(dittyProperties.getMidiSaveFile(), ditty);
-						if (!silent && MCDittyConfig.showMidiMessageEnabled) {
+						if (!silent && MinetunesConfig.getBoolean("midiSavedMessage")) {
 							// Show midi message
-							writeChatMessage(world, "§dSaved Midi: "
+							Minetunes.writeChatMessage(world, "§dSaved Midi: "
 									+ dittyProperties.getMidiSaveFile()
 											.getName());
 						}
@@ -700,30 +668,30 @@ public class BlockSign extends BlockContainer {
 					}
 				}
 
-				// Register any disco floors with MCDitty
-				MCDitty.addDiscoFloors(dittyProperties.getDiscoFloors());
+				// Register any disco floors with Minetunes
+				Minetunes.addDiscoFloors(dittyProperties.getDiscoFloors());
 
 				// Maestro, commence!
 				dittyProperties.setMusicString(ditty);
-				playDitty(dittyProperties);
+				DittyPlayerThread.playDitty(dittyProperties);
 
 				// Emit single particle, if necessary
-				if ((MCDittyConfig.emitOnlyOneParticle)
-						|| MCDittyConfig.particlesEnabled) {
-					MCDitty.executeTimedDittyEvent(new NoteStartEvent(
+				if ((MinetunesConfig.noteParticlesDisabled)
+						|| MinetunesConfig.particlesEnabled) {
+					Minetunes.executeTimedDittyEvent(new NoteStartEvent(
 							startPoint, 0, 0, 0, null, dittyProperties
 									.getDittyID()));
 				}
 			}
 
-			if (!silent && MCDittyConfig.showErrors) {
+			if (!silent && MinetunesConfig.getBoolean("signs.showErrors")) {
 				// Show chat messages: first handle the buffer, cutting it down
 				// to
 				// one if that option is enabled
 				LinkedList<String> chatMessageBuffer = dittyProperties
 						.getErrorMessages();
 
-				if (MCDittyConfig.onlyFirstErrorShown
+				if (MinetunesConfig.getBoolean("signs.firstErrorOnly")
 						&& chatMessageBuffer.size() > 0) {
 					// If we only show the first, discard the rest and create a
 					// new
@@ -736,14 +704,14 @@ public class BlockSign extends BlockContainer {
 				// Then find the player, and empty the message buffer into his
 				// chat.
 				for (String s : chatMessageBuffer) {
-					writeChatMessage(world, s);
+					Minetunes.writeChatMessage(world, s);
 				}
 
 				if (chatMessageBuffer.size() > 0) {
 					// Emit error particles
-					if (MCDittyConfig.particlesEnabled) {
+					if (MinetunesConfig.particlesEnabled) {
 						for (int i = 0; i < 3; i++) {
-							MCDitty.requestParticle(new ParticleRequest(
+							Minetunes.requestParticle(new ParticleRequest(
 									startPoint, "smoke"));
 						}
 					}
@@ -751,7 +719,7 @@ public class BlockSign extends BlockContainer {
 			}
 
 			// Add lines to blink
-			if (MCDittyConfig.showErrorsOnSigns) {
+			if (MinetunesConfig.getBoolean("signs.highlightErrorLines")) {
 				for (SignLine signLine : dittyProperties
 						.getHighlightedErrorLines()) {
 					highlightSignErrorLine(world, signLine);
@@ -769,7 +737,7 @@ public class BlockSign extends BlockContainer {
 			if (dittyProperties.getErrorMessages().size() <= 0
 					&& dittyProperties.getMuting()) {
 				// Mute: stop all playing music
-				mutePlayingDitties();
+				Minetunes.mutePlayingDitties();
 			}
 		}
 
@@ -809,6 +777,9 @@ public class BlockSign extends BlockContainer {
 			LinkedList<SignLogPoint> signsReadList, SignDitty ditty,
 			int subpatternLevel, LinkedList<Point3D> signWhitelist) {
 		// MCDitty.slowDownMC(2);
+		
+		// Load the settings for lyrics
+		boolean lyricsEnabled = MinetunesConfig.getBoolean("lyrics.enabled");
 
 		// Contains musicstring read from pattern
 		StringBuilder readMusicString = new StringBuilder();
@@ -837,7 +808,7 @@ public class BlockSign extends BlockContainer {
 		int currSignMetadata = 0;
 		int currSignFacing = -1;
 		Block currSignType = null;
-		TileEntitySign currSignTileEntity = null;
+		TileEntitySignMinetunes currSignTileEntity = null;
 
 		// If this is set to true, the pattern has ended due to a keyword (such
 		// as end)
@@ -889,8 +860,8 @@ public class BlockSign extends BlockContainer {
 					currSignPoint.x, currSignPoint.y, currSignPoint.z);
 			// Flag denoting this as an empty sign
 			boolean signIsEmpty = false;
-			if (currBlockTileEntity instanceof TileEntitySign) {
-				currSignTileEntity = (TileEntitySign) currBlockTileEntity;
+			if (currBlockTileEntity instanceof TileEntitySignMinetunes) {
+				currSignTileEntity = (TileEntitySignMinetunes) currBlockTileEntity;
 				int emptyLineTally = 0;
 				String[] signText = currSignTileEntity.getSignTextNoCodes();
 				for (String s : signText) {
@@ -1281,9 +1252,8 @@ public class BlockSign extends BlockContainer {
 
 							// Otherwise, good filename. Note it, and move on.
 							// Will save later, once signs are read.
-							File minecraftDir = Minecraft.getMinecraftDir();
-							File midiSaveFile = new File(minecraftDir.getPath()
-									+ "/MCDitty/midi/" + givenFilename + ".mid");
+							File midiSaveFile = new File(MinetunesConfig.getMinetunesDir().getPath()
+									+ File.separator + "midi", givenFilename + ".mid");
 							simpleLog("Good filename: midi is "
 									+ midiSaveFile.getPath());
 
@@ -1434,7 +1404,7 @@ public class BlockSign extends BlockContainer {
 					} else if (keyword.equals("reset")) {
 						// Reset keyword: replace with a more
 						// musicstring-neutral token
-						// Do not check for errors! The token is a MCDitty-only
+						// Do not check for errors! The token is a MineTunes-only
 						// token.
 						ditty.addMusicStringTokens(readMusicString,
 								getResetToken(), false);
@@ -1461,7 +1431,7 @@ public class BlockSign extends BlockContainer {
 								signText, l.getColorCode());
 
 						// Adding to existing lyric?
-						if (MCDittyConfig.lyricsEnabled) {
+						if (lyricsEnabled) {
 							CueScheduler lyrics = ditty.getLyricsStorage();
 							lyrics.addLyricText(l.getLabel(), lyricText,
 									l.getRepetition());
@@ -1492,7 +1462,7 @@ public class BlockSign extends BlockContainer {
 								signText, l.getColorCode());
 
 						// Adding to existing lyric?
-						if (MCDittyConfig.lyricsEnabled) {
+						if (lyricsEnabled) {
 							CueScheduler lyrics = ditty.getLyricsStorage();
 							lyrics.addLyricPreText(l.getLabel(), lyricText);
 						}
@@ -1531,7 +1501,7 @@ public class BlockSign extends BlockContainer {
 						SFXKeyword k = SFXKeyword.parse(currLine);
 
 						// Add event
-						int eventID = ditty.addDittyEvent(new SFXMCDittyEvent(k
+						int eventID = ditty.addDittyEvent(new SFXEvent(k
 								.getEffectName(), -1, ditty.getDittyID()));
 						// Add token
 						ditty.addMusicStringTokens(readMusicString,
@@ -1552,7 +1522,7 @@ public class BlockSign extends BlockContainer {
 						if (args[1].equals("tex")) {
 							// Does nothing for now
 							// ModLoader.getMinecraftInstance().texturePackList.setTexturePack(new
-							// MCDittyTexturePack());
+							// MineTunesTexturePack());
 						}
 					} else if (keyword.equals("volume")) {
 						// Inserts a volume token into the song
@@ -1790,7 +1760,7 @@ public class BlockSign extends BlockContainer {
 						// Unrecognized keyword; announce with error
 						ditty.addErrorMessage("§b"
 								+ keyword
-								+ "§c was recognized as a keyword, but no action was given for it in readPattern. This is a bug in MCDitty.");
+								+ "§c was recognized as a keyword, but no action was given for it in readPattern. This is a bug in MineTunes.");
 						ditty.addErrorHighlight(currSignPoint, line);
 					}
 				} else {
@@ -1890,7 +1860,7 @@ public class BlockSign extends BlockContainer {
 			}
 		}
 
-		MCDitty.stopMCSlowdown();
+		Minetunes.stopMCSlowdown();
 		return readMusicString;
 	}
 
@@ -1938,7 +1908,8 @@ public class BlockSign extends BlockContainer {
 	}
 
 	private static String getMinecraftAdjustedVolumeToken(int volumePercent) {
-		int sixteenBitVolume = MCDitty.getMinecraftAdjustedSixteenBitVolume(volumePercent);
+		int sixteenBitVolume = Minetunes
+				.getMinecraftAdjustedSixteenBitVolume(volumePercent);
 
 		return "X[Volume]=" + sixteenBitVolume;
 	}
@@ -2010,15 +1981,6 @@ public class BlockSign extends BlockContainer {
 				signLog.add(sign);
 			}
 		}
-	}
-
-	/**
-	 * Instructs all playing mcditty songs to mute themselves.
-	 * 
-	 * @param
-	 */
-	public static void mutePlayingDitties(int... exceptedDittyIDs) {
-		new MuteDittyThread(exceptedDittyIDs).start();
 	}
 
 	/**
@@ -2188,8 +2150,8 @@ public class BlockSign extends BlockContainer {
 	private static void highlightSignErrorLine(World world, SignLine signLine) {
 		TileEntity t = world.getBlockTileEntity(signLine.x, signLine.y,
 				signLine.z);
-		if (t instanceof TileEntitySign) {
-			TileEntitySign t2 = (TileEntitySign) t;
+		if (t instanceof TileEntitySignMinetunes) {
+			TileEntitySignMinetunes t2 = (TileEntitySignMinetunes) t;
 			t2.startBlinking = true;
 			t2.errorBlinkLine[signLine.getLine()] = true;
 			simpleLog("Starting sign error blinking");
@@ -2198,11 +2160,11 @@ public class BlockSign extends BlockContainer {
 
 	private static void highlightSignLine(World world,
 			SignLineHighlight signLine) {
-		if (MCDittyConfig.highlightEnabled) {
+		if (MinetunesConfig.highlightEnabled) {
 			TileEntity t = world.getBlockTileEntity(signLine.x, signLine.y,
 					signLine.z);
-			if (t instanceof TileEntitySign) {
-				TileEntitySign t2 = (TileEntitySign) t;
+			if (t instanceof TileEntitySignMinetunes) {
+				TileEntitySignMinetunes t2 = (TileEntitySignMinetunes) t;
 				t2.highlightLine[signLine.getLine()] = signLine
 						.getHighlightCode();
 			}
@@ -2527,26 +2489,6 @@ public class BlockSign extends BlockContainer {
 	// }
 	// }
 
-	/**
-	 * If argument world is null, queues up message in Mcditty.class
-	 * 
-	 * @param world
-	 * @param message
-	 */
-	public static void writeChatMessage(World world, String message) {
-		if (world != null) {
-			List entities = world.playerEntities;
-			for (Object p : entities) {
-				if (p instanceof EntityPlayerSP) {
-					((EntityPlayerSP) p).addChatMessage(message);
-					break;
-				}
-			}
-		} else {
-			MCDitty.addLyricToQueue(new CueEvent(message));
-		}
-	}
-
 	private static boolean isSign(Point3D point, World world) {
 		return isSign(point.x, point.y, point.z, world);
 	}
@@ -2558,22 +2500,6 @@ public class BlockSign extends BlockContainer {
 		} else {
 			return false;
 		}
-	}
-
-	public static void playMusicString(String tune) {
-		// Convenience method for playDitty
-		Ditty d = new Ditty();
-		d.setMusicString(tune);
-		playDitty(d);
-	}
-
-	public static void playDitty(Ditty prop) {
-		DittyPlayerThread playerThread = new DittyPlayerThread(prop);
-		if (MCDittyConfig.debug) {
-			simpleLog("Playing MusicString: " + prop.getMusicString());
-		}
-		playerThread.setPriority(Thread.MAX_PRIORITY);
-		playerThread.start();
 	}
 
 	// Mutex for saving midis
@@ -2642,212 +2568,18 @@ public class BlockSign extends BlockContainer {
 		}
 	}
 
-	private static String currentVersionBuffer = null;
-
-	/**
-	 * Attempts to retrieve the current version of MCDitty from a file on the
-	 * internet.
-	 * 
-	 * Note: If it successfully downloads the current version, it will remember
-	 * it and not actually check the internet on future calls.
-	 * 
-	 * @return If successful, the version from the file. If not, it will return
-	 *         a string that starts with "§c"
-	 */
-	public static String downloadCurrentVersion(String mcVersion) {
-		if (currentVersionBuffer != null) {
-			return currentVersionBuffer;
-		} else {
-			simpleLog("downloadCurrentVersion called");
-
-			// Create a url pointing at the current version file on dropbox
-			URL currentVersionURL = null;
-			try {
-				// currentVersionURL = new
-				// URL("http://mcditty.wikispaces.com/file/view/MCDitty_Current_Version.txt");
-				String url;
-				url = "http://dl.dropbox.com/s/lwl4uvift9e1tvp/MCDitty_Current_Version.txt";
-				currentVersionURL = new URL(url);
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-				// If the person (fenceFoil, hopefully) editing this has half a
-				// wit
-				// about his person, this will never happen.
-				return "§cVersion File URL Malformed";
-			}
-
-			// Open connection to file, and download it.
-			String currVersionLegacy = null;
-			ArrayList<String> currentVersionLines = new ArrayList<String>();
-			try {
-				// Open connection
-				BufferedReader currVersionIn = new BufferedReader(
-						new InputStreamReader(currentVersionURL.openStream()));
-				// Read the first line of the file: this is a straight version
-				// number.
-				// This version number is outdated, as it does not take the
-				// current
-				// MC version into account.
-				currVersionLegacy = currVersionIn.readLine();
-				// Read subsequent lines until the words "END Versions"
-				while (true) {
-					String lineIn = currVersionIn.readLine();
-					if (lineIn == null) {
-						break;
-					} else if (lineIn.equalsIgnoreCase("end versions")) {
-						// End of versions keys
-						// Stop reading
-						break;
-					} else {
-						currentVersionLines.add(lineIn);
-					}
-				}
-				currVersionIn.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-				return "§cCouldn't Download Version File";
-			}
-
-			// Find the current version of MCDitty for the current version of
-			// Minecraft
-
-			// Process the downloaded strings into a map
-			HashMap<String, String> versionKeys = new HashMap<String, String>();
-			for (String s : currentVersionLines) {
-				String[] parts = s.split(":");
-				if (parts.length != 2) {
-					// Inavlid key: too many parts
-					return "§cVersion File Has Illegible Key: " + s;
-				}
-
-				// Check each version number for proper syntax
-				for (String part : parts) {
-					// Proxper syntax: One to four parts, separated by dots:
-					// each
-					// part can
-					// be numbers or a *
-					if (!CompareVersion.isVersionNumber(part)) {
-						return "§cInvalid Number in Version File: " + s;
-					}
-				}
-
-				// Finally, add key
-				versionKeys.put(parts[0], parts[1]);
-			}
-
-			// Get the version for this version of Minecraft
-			String foundVersion = versionKeys.get(mcVersion);
-
-			if (foundVersion == null) {
-				// No version of MCDitty given in file for this version of MC
-				return "§cNo Version for MC " + mcVersion;
-			}
-
-			simpleLog("downloadCurrentVersion successfully returned "
-					+ foundVersion);
-			currentVersionBuffer = foundVersion;
-			return foundVersion;
-		}
-	}
-
-	/**
-	 * Opens this mod's MCForums thread in a browser
-	 * 
-	 * @return null if successful, or a message if there's an error
-	 */
-	public static String openMCForumsThread() {
-		if (Desktop.isDesktopSupported()) {
-			try {
-				Desktop.getDesktop()
-						.browse(new URI(
-								"http://www.minecraftforum.net/topic/1146661-wip-086-125-mcditty-make-music-with-vanilla-signs/"));
-			} catch (IOException e) {
-				e.printStackTrace();
-				return "Can't open browser for some reason";
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
-				return "Bug in MCDitty: MCForums Thread URL is Invalid";
-			}
-		} else {
-			return "Can't open browser for some reason";
-		}
-		return null;
-	}
-
-	/**
-	 * Opens this mod's changelog in a text editor.
-	 * 
-	 * @return null if successful, or a message if there's an error
-	 */
-	public static String downloadAndShowChangelog(GuiScreen backScreen) {
-		URL changeLogURL = null;
-		try {
-			// changeLogURL = new
-			// URL("http://mcditty.wikispaces.com/file/view/MCDitty_Changelog.txt");
-			changeLogURL = new URL(
-					"http://dl.dropbox.com/s/td2etwtujs5635n/MCDitty_Changelog.txt");
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			// If the person (fenceFoil, hopefully) editing this has half a wit
-			// about his person, this will never happen.
-			return "Malformed URL for the Changelog Address";
-		}
-
-		File changeLogTempFile;
-		try {
-			changeLogTempFile = File.createTempFile("MCDittyChangelogTemp",
-					".txt");
-			changeLogTempFile.deleteOnExit();
-			BufferedReader changeLogIn = new BufferedReader(
-					new InputStreamReader(changeLogURL.openStream()));
-			BufferedWriter changeLogOut = new BufferedWriter(new FileWriter(
-					changeLogTempFile));
-			while (true) {
-				String lineIn = changeLogIn.readLine();
-				if (lineIn == null) {
-					break;
-				} else {
-					changeLogOut.write(lineIn);
-					changeLogOut.newLine();
-				}
-			}
-			changeLogOut.close();
-			changeLogIn.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return "Changelog File No Longer Exists :(";
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "Could Not Download Changelog";
-		}
-
-		// if (Desktop.isDesktopSupported()) {
-		// try {
-		// Desktop.getDesktop().open(changeLogTempFile);
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// return "Can't open text editor for some reason";
-		// }
-		// } else {
-		// return "Can't open text editor for some reason";
-		// }
-
-		GuiMCDittyChangelog changelogGui = new GuiMCDittyChangelog(backScreen,
-				changeLogTempFile, "MCDitty Changelog");
-		Minecraft.getMinecraft().displayGuiScreen(changelogGui);
-		return null;
-	}
-
 	public static ArrayList<String[]> importSignsFromFile(File f)
 			throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader(f));
 		// Check first line to see if this file is valid
 		String firstLine = in.readLine();
 		if (firstLine != null) {
-			if (!firstLine.trim().equalsIgnoreCase("MCDitty Exported Signs")) {
+			if (!firstLine.trim().equalsIgnoreCase("Exported Signs")) {
+				in.close();
 				return null;
 			}
 		} else {
+			in.close();
 			return null;
 		}
 
@@ -2864,7 +2596,7 @@ public class BlockSign extends BlockContainer {
 					i--;
 					continue;
 				} else if (lineIn
-						.equalsIgnoreCase("End of MCDitty Exported Signs")) {
+						.equalsIgnoreCase("End of Exported Signs")) {
 					// End of file.
 					lineIn = null;
 					break;
@@ -2894,7 +2626,7 @@ public class BlockSign extends BlockContainer {
 	public static void exportSignsToFile(List<String[]> signs, File f)
 			throws IOException {
 		BufferedWriter out = new BufferedWriter(new FileWriter(f));
-		out.write("MCDitty Exported Signs");
+		out.write("Exported Signs");
 		out.newLine();
 		for (String[] sign : signs) {
 			out.write("###############X");
@@ -2904,448 +2636,14 @@ public class BlockSign extends BlockContainer {
 				out.newLine();
 			}
 		}
-		out.write("End of MCDitty Exported Signs");
+		out.write("End of Exported Signs");
 		out.close();
 	}
 
 	public static void simpleLog(String logString) {
-		if (MCDittyConfig.debug) {
+		if (MinetunesConfig.DEBUG) {
 			System.out.println(logString);
 		}
-	}
-
-	/**
-	 * Signals that MCDitty has run autoupdate already, and should not be run
-	 * again
-	 */
-	public static boolean autoUpdating = false;
-
-	public static String autoUpdate() {
-		if (autoUpdating == true) {
-			return "§bCan't auto update twice! Restart Minecraft before trying again.";
-		}
-		autoUpdating = true;
-		simpleLog("downloadCurrentVersion called");
-
-		showTextAsLyricNow("§aAuto-Updating MCDitty to the latest version...");
-		showTextAsLyricNow("Checking for a new version...");
-
-		String newVersion = downloadCurrentVersion(MCDittyConfig.MC_CURRENT_VERSION);
-		if (CompareVersion.isVersionNumber(newVersion)) {
-			showTextAsLyricNow("§aUpdating to version " + newVersion
-					+ " for Minecraft " + MCDittyConfig.MC_CURRENT_VERSION);
-		} else {
-			showTextAsLyricNow("Error getting new version info: " + newVersion);
-		}
-
-		showTextAsLyricNow("§aDownloading new version...");
-
-		// Create a url pointing at the current version download file on dropbox
-		URL currentDownloadVersionsURL = null;
-		try {
-			// currentVersionURL = new
-			// URL("http://mcditty.wikispaces.com/file/view/MCDitty_Current_Version.txt");
-			String url;
-			url = "http://dl.dropbox.com/s/2vi0z7om4kotsx1/MCDitty_Download_Latest.txt";
-			currentDownloadVersionsURL = new URL(url);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			// If the person (fenceFoil, hopefully) editing this has half a wit
-			// about his person, this will never happen.
-			return "§cVersion Download File URL Malformed";
-		}
-
-		// Open connection to download versions file, and download it.
-		ArrayList<String> currentVersionLines = new ArrayList<String>();
-		try {
-			// Open connection
-			BufferedReader currVersionIn = new BufferedReader(
-					new InputStreamReader(
-							currentDownloadVersionsURL.openStream()));
-			// Read lines until the words "END Versions"
-			while (true) {
-				String lineIn = currVersionIn.readLine();
-				if (lineIn == null) {
-					break;
-				} else if (lineIn.equalsIgnoreCase("end versions")) {
-					// End of versions keys
-					// Stop reading
-					break;
-				} else {
-					currentVersionLines.add(lineIn);
-				}
-			}
-			currVersionIn.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "§cCouldn't Download 'New Version Download URLs' File";
-		}
-
-		// Find the latest version download URL for the current version of
-		// Minecraft
-
-		// Process the downloaded urls into a map
-		HashMap<String, String> versionDownloadURLKeys = new HashMap<String, String>();
-		for (String s : currentVersionLines) {
-			String[] parts = s.split(":");
-			if (parts.length <= 1) {
-				// Inavlid key: too few parts
-				return "§cVersion Download URL Table Has Illegible Key: " + s;
-			}
-
-			// Check each MC version number for proper syntax
-			if (!CompareVersion.isVersionNumber(parts[0])) {
-				return "§cInvalid Version Number in Version Download URL Table: "
-						+ s;
-			}
-
-			// Check url validity (from the end of the version number and first
-			// colon)
-			String url = s.substring((parts[0].length() - 1) + 2);
-			// Check that url is valid
-			if (!url.matches("(http|https)://([\\w-]+\\.)+[\\w-]+(/[\\w- ./?%&=]*)?")) {
-				return "§cInvalid Download URL: " + url;
-			}
-
-			// // URL Must be on dropbox
-			// if (!url.toLowerCase().startsWith("http://dl.dropbox.com/")) {
-			// return "§cDownload URL is not on DropBox";
-			// }
-
-			// Finally, add key
-			versionDownloadURLKeys.put(parts[0], url);
-
-			simpleLog("Version Download URL Key Read: " + parts[0] + " : "
-					+ url);
-		}
-
-		// Get the download url for this version of Minecraft
-		String foundVersionURL = versionDownloadURLKeys
-				.get(MCDittyConfig.MC_CURRENT_VERSION);
-
-		if (foundVersionURL == null) {
-			// No version of MCDitty given in file for this version of MC
-			return "§cNo Download URL for MC "
-					+ MCDittyConfig.MC_CURRENT_VERSION;
-		}
-
-		// Download new version of MCDitty!
-		URL versionDownloadURL;
-		try {
-			versionDownloadURL = new URL(foundVersionURL);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			return "§cDownload URL for new version cannot be read: "
-					+ foundVersionURL;
-		}
-
-		// Create new file to download to
-		File downloadDir = new File(Minecraft.getMinecraft().getMinecraftDir()
-				+ File.separator + "MCDitty/Versions/");
-		if (!downloadDir.exists()) {
-			downloadDir.mkdirs();
-		}
-		File newVersionFile = new File(downloadDir,
-				foundVersionURL.substring(foundVersionURL.lastIndexOf("/") + 1));
-		simpleLog("Saving new version as " + newVersionFile.getPath());
-		try {
-			newVersionFile.createNewFile();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "§cCould not create file: " + newVersionFile.getPath();
-		}
-
-		// Download file
-		try {
-			ReadableByteChannel downloadByteChannel = Channels
-					.newChannel(versionDownloadURL.openStream());
-			FileOutputStream newVersionZipFileOutputStream = new FileOutputStream(
-					newVersionFile);
-			// TODO: Show download progress
-			newVersionZipFileOutputStream.getChannel().transferFrom(
-					downloadByteChannel, 0, 1 << 24);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "§cCould not download new version.";
-		}
-
-		showTextAsLyricNow("§aDownload successful!");
-
-		showTextAsLyricNow("§aReading minecraft.jar...");
-
-		File minecraftFile = new File(Minecraft.getMinecraft().getMinecraftDir()
-				+ File.separator + "bin/minecraft.jar");
-		JarFile minecraftJarFile;
-		LinkedList<JarEntry> minecraftJarEntries = new LinkedList<JarEntry>();
-		try {
-			// Set up to read minecraft.jar
-			minecraftJarFile = new JarFile(minecraftFile);
-			JarInputStream minecraftJarInputStream = new JarInputStream(
-					new FileInputStream(minecraftFile));
-			// Read in a list of the entries in minecraft.jar
-			while (true) {
-				JarEntry entry = minecraftJarInputStream.getNextJarEntry();
-				if (entry == null) {
-					break;
-				}
-				simpleLog("Minecraft Jar: Found entry: " + entry.getName());
-				minecraftJarEntries.add(entry);
-			}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			return "§cCould not read minecraft.jar. You can still install the update yourself: it is in "
-					+ newVersionFile.getPath();
-		}
-
-		showTextAsLyricNow("§aReading new MCDitty zip...");
-
-		ZipFile newVersionZipFile;
-		LinkedList<ZipEntry> newVersionZipEntries = new LinkedList<ZipEntry>();
-		try {
-			// Set up to read new version zip
-			newVersionZipFile = new ZipFile(newVersionFile);
-			ZipInputStream newVersionZipInputStream = new ZipInputStream(
-					new FileInputStream(newVersionFile));
-			// Read in a list of entries in the new version's zip file
-			while (true) {
-				ZipEntry entry = newVersionZipInputStream.getNextEntry();
-				if (entry == null) {
-					break;
-				}
-				newVersionZipEntries.add(entry);
-				simpleLog("NewVersion Jar: Found entry: " + entry.getName());
-			}
-		} catch (ZipException e1) {
-			e1.printStackTrace();
-			return "§cCould not read new version's zip file (ZipException). You can still install the update yourself: it is in "
-					+ newVersionFile.getPath();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			return "§cCould not read new version's zip file. You can still install the update yourself: it is in "
-					+ newVersionFile.getPath();
-		}
-
-		// Decide what files to put in updated minecraft.jar
-		LinkedList<ZipEntry> updatedMinecraftEntries = new LinkedList<ZipEntry>();
-
-		// Start with every file in the old minecraft jar
-		updatedMinecraftEntries.addAll(minecraftJarEntries);
-
-		// Remove all org/jfugue files
-		// Remove all com/wikispaces/mcditty files
-
-		// (Leave all other files; if some are MCDitty they will be copied over
-		// hopefully)
-		// TODO: Make this seperation of MCDitty and MC files better (with
-		// MC1.3, change?)
-		// The way this mod is currently arranged in minecraft.jar, this is the
-		// best we can do towards clearing it entirely.
-		for (int i = 0; i < updatedMinecraftEntries.size(); i++) {
-			JarEntry e = (JarEntry) updatedMinecraftEntries.get(i);
-			if (e.getName().startsWith("org/jfugue/")) {
-				simpleLog("Removing entry: " + e.getName());
-				updatedMinecraftEntries.remove(i);
-				i--;
-			} else if (e.getName().startsWith("com/wikispaces/mcditty/")) {
-				simpleLog("Removing Entry: " + e.getName());
-				updatedMinecraftEntries.remove(i);
-				i--;
-			} else if (e.getName().startsWith("com/weebly/mcditty/")) {
-				simpleLog("Removing Entry: " + e.getName());
-				updatedMinecraftEntries.remove(i);
-				i--;
-			} else if (e.getName().startsWith("de/jarnbjo/")) {
-				simpleLog("Removing Entry: " + e.getName());
-				updatedMinecraftEntries.remove(i);
-				i--;
-			}
-		}
-
-		// Add new files from zip, replacing any entries from minecraft.jar
-		for (int i = 0; i < newVersionZipEntries.size(); i++) {
-			ZipEntry z = newVersionZipEntries.get(i);
-
-			if (z.getName().toLowerCase().contains("mcdittysrc.zip")
-					|| z.getName().toLowerCase().contains("readme.txt")
-					|| z.getName().toLowerCase().contains("lgpl.txt")
-					|| z.getName().toLowerCase().contains("license.txt")) {
-				simpleLog("NOT ADDING FILE FROM NEW ZIP: " + z.getName());
-				continue;
-			}
-
-			// Remove any files with the same name as this from the updated
-			// minecraft files
-			for (int f = 0; f < updatedMinecraftEntries.size(); f++) {
-				if (updatedMinecraftEntries.get(f).getName()
-						.equals(z.getName())) {
-					simpleLog("Overwriting Entry: " + z.getName());
-					updatedMinecraftEntries.remove(f);
-					break;
-				}
-			}
-
-			// Add zip file to updated minecraft's files
-			simpleLog("Adding entry from zip: " + z.getName());
-			updatedMinecraftEntries.add(z);
-		}
-
-		// Note: this code relies on the files from the old minecraft.jar being
-		// "jarEntry"s, and files form the zip being "ZipEntry"s to
-		// differentiate the two sources of files.
-
-		// Write the files into a new minecraft jar file
-		showTextAsLyricNow("§aWriting updated minecraft.jar... 0 Percent");
-
-		try {
-			File newMinecraftFile = new File(Minecraft.getMinecraft()
-					.getMinecraftDir()
-					+ File.separator
-					+ "bin"
-					+ File.separator + "minecraft.updatedMCDitty.jar");
-			if (newMinecraftFile.exists()) {
-				newMinecraftFile.delete();
-			}
-			newMinecraftFile.createNewFile();
-			// JarFile newMinecraftJar = new JarFile(newMinecraftFile);
-			JarOutputStream newMinecraftJarOut = new JarOutputStream(
-					new FileOutputStream(newMinecraftFile));
-			for (int i = 0; i < updatedMinecraftEntries.size(); i++) {
-				ZipEntry e = updatedMinecraftEntries.get(i);
-
-				newMinecraftJarOut.putNextEntry(new JarEntry(e.getName()));
-				InputStream entryDataIn;
-				if (e instanceof JarEntry) {
-					// Read from minecraft.jar
-					entryDataIn = minecraftJarFile.getInputStream(e);
-				} else {
-					// Instance of zipentry
-					// Read from new version's zip
-					entryDataIn = newVersionZipFile.getInputStream(e);
-				}
-				byte[] buffer = new byte[4096];
-				int bytesRead = 0;
-				while ((bytesRead = entryDataIn.read(buffer)) != -1) {
-					newMinecraftJarOut.write(buffer, 0, bytesRead);
-				}
-				entryDataIn.close();
-				newMinecraftJarOut.flush();
-				newMinecraftJarOut.closeEntry();
-
-				simpleLog("Wrote to new jar from "
-						+ ((e instanceof JarEntry) ? "JAR" : "ZIP") + ": "
-						+ e.getName());
-
-				if (i % 200 == 0) {
-					showTextAsLyricNow("§aWriting "
-							+ (int) ((double) i
-									/ (double) updatedMinecraftEntries.size() * 100d)
-							+ " Percent...");
-				}
-			}
-			newMinecraftJarOut.flush();
-			newMinecraftJarOut.finish();
-			newMinecraftJarOut.close();
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-			return "§cCould not create/find an updated minecraft.jar. You can still install the update yourself: it is in "
-					+ newVersionFile.getPath();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			return "§cCould not write an updated minecraft.jar. You can still install the update yourself: it is in "
-					+ newVersionFile.getPath();
-		}
-
-		showTextAsLyricNow("§a100 Percent: Wrote Updated Minecraft.jar!");
-
-		// Extract renaming script to file
-		showTextAsLyricNow("§aExtracting Swapper...");
-		File jarSwapperFile = new File(Minecraft.getMinecraft()
-				.getMinecraftDir()
-				+ File.separator
-				+ "bin/MCDittyJarSwapper.jar");
-		try {
-			ReadableByteChannel jarSwapperChannel = Channels
-					.newChannel(MCDittyResourceManager
-							.getResource("autoUpdate/swapperJar/AutoUpdateJarSwapper.jar"));
-			FileOutputStream jarSwapperFileOutputStream = new FileOutputStream(
-					jarSwapperFile);
-			// TODO: Show extract progress
-			jarSwapperFileOutputStream.getChannel().transferFrom(
-					jarSwapperChannel, 0, 1 << 24);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "§cCould not extract jar swapper. §bYou can still copy the jar file yourself: rename minecraft.updatedMCDitty.jar to minecraft.jar in the .minecraft/bin folder.";
-		} catch (NullPointerException e) {
-			e.printStackTrace();
-			return "§cCould not extract jar swapper. §bYou can still copy the jar file yourself: rename minecraft.updatedMCDitty.jar to minecraft.jar in the .minecraft/bin folder.";
-		}
-
-		showTextAsLyricNow("§aSwapper Extracted!");
-		try {
-			initJarSwapperToRun(jarSwapperFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return "§cCould not start jar swapper. §bYou can still copy the jar file yourself: rename minecraft.updatedMCDitty.jar to minecraft.jar in the .minecraft/bin folder.";
-		}
-
-		showTextAsLyricNow("* §dA backup of the old minecraft.jar was saved.");
-		showTextAsLyricNow("* §dNew version of MCDitty was downloaded to /.minecraft/MCDitty/Versions/");
-		return "* §aUpdate successful! §dNext time you start Minecraft, MCDitty will be updated to version "
-				+ downloadCurrentVersion(MCDittyConfig.MC_CURRENT_VERSION);
-	}
-
-	/**
-	 * Restart the current Java application Adapted From
-	 * http://java.dzone.com/articles/programmatically-restart-java
-	 * 
-	 * @param runBeforeRestart
-	 *            some custom code to be run before restarting
-	 * @throws IOException
-	 */
-	private static void initJarSwapperToRun(File jarToRun) throws IOException {
-		try {
-			// java binary
-			String java = System.getProperty("java.home") + "/bin/java";
-			// init the command to execute, add the vm args
-			final StringBuffer cmd = new StringBuffer("\"" + java + "\" ");
-
-			// program main and program arguments
-			String mainCommand = jarToRun.getPath();
-			// program main is a jar
-			if (mainCommand.endsWith(".jar")) {
-				// if it's a jar, add -jar mainJar
-				cmd.append("-jar " + "\"" + new File(mainCommand).getPath()
-						+ "\"");
-			} else {
-				// else it's a .class, add the classpath and mainClass
-				cmd.append("-cp \"" + System.getProperty("java.class.path")
-						+ "\" " + mainCommand);
-			}
-
-			// Add argument containing the location of this minecraft.jar
-			cmd.append(" " + Minecraft.getMinecraftDir() + File.separator
-					+ "bin" + File.separator);
-
-			// execute the command in a shutdown hook, to be sure that all the
-			// resources have been disposed before running the new file
-			Runtime.getRuntime().addShutdownHook(
-					new RunCommandThread(cmd.toString()));
-
-			System.out.println("Going to run on shutdown: " + cmd.toString());
-		} catch (Exception e) {
-			// something went wrong
-			throw new IOException(
-					"Error while trying to restart the application", e);
-		}
-	}
-
-	/**
-	 * This method is a bit on the blunt side. Should be removed or
-	 * reconsidered.
-	 */
-	public static void showTextAsLyricNow(String text) {
-		CueEvent lyric = new CueEvent(text);
-		MCDitty.addLyricToQueue(lyric);
 	}
 
 	/**
@@ -3436,30 +2734,6 @@ public class BlockSign extends BlockContainer {
 		newCoords.y += up;
 
 		return newCoords;
-	}
-
-	public static MCDitty mcDittyMod = null;
-
-	public static void initMCDittyMod() {
-		if (mcDittyMod == null) {
-			// // TODO: Replace skull renderer
-			// try {
-			// Map map = (Map) GetMinecraft.getUniqueTypedFieldFromClass(
-			// TileEntityRenderer.class, Map.class,
-			// TileEntityRenderer.instance);
-			// map.put(TileEntitySkull.class, new TileEntitySkullRenderer2());
-			// } catch (IllegalArgumentException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// } catch (IllegalAccessException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
-
-			// Start MCDitty!
-			mcDittyMod = new MCDitty();
-			mcDittyMod.load();
-		}
 	}
 
 	/**

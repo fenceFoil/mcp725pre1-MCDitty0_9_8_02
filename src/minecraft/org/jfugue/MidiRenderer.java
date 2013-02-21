@@ -48,20 +48,20 @@ import org.jfugue.elements.Tempo;
 import org.jfugue.elements.Time;
 import org.jfugue.elements.Voice;
 
-import com.wikispaces.mcditty.config.MCDittyConfig;
-import com.wikispaces.mcditty.ditty.InstrumentEventReadListener;
-import com.wikispaces.mcditty.ditty.LyricEventReadListener;
-import com.wikispaces.mcditty.ditty.MCDittyEventReadListener;
-import com.wikispaces.mcditty.ditty.ParticleWorthyNoteReadListener;
-import com.wikispaces.mcditty.ditty.TempoEventReadListener;
-import com.wikispaces.mcditty.jfugue.rendererEffect.AccelerateEffect;
-import com.wikispaces.mcditty.jfugue.rendererEffect.ApplyEffect;
-import com.wikispaces.mcditty.jfugue.rendererEffect.OctavesEffect;
-import com.wikispaces.mcditty.jfugue.rendererEffect.RendererEffect;
-import com.wikispaces.mcditty.jfugue.rendererEffect.StaccatoEffect;
-import com.wikispaces.mcditty.jfugue.rendererEffect.TempoEffect;
-import com.wikispaces.mcditty.jfugue.rendererEffect.TimedJFugueElement;
-import com.wikispaces.mcditty.jfugue.rendererEffect.TransposeEffect;
+import com.minetunes.config.MinetunesConfig;
+import com.minetunes.ditty.InstrumentEventReadListener;
+import com.minetunes.ditty.LyricEventReadListener;
+import com.minetunes.ditty.DittyEventReadListener;
+import com.minetunes.ditty.ParticleWorthyNoteReadListener;
+import com.minetunes.ditty.TempoEventReadListener;
+import com.minetunes.jfugue.rendererEffect.AccelerateEffect;
+import com.minetunes.jfugue.rendererEffect.ApplyEffect;
+import com.minetunes.jfugue.rendererEffect.OctavesEffect;
+import com.minetunes.jfugue.rendererEffect.RendererEffect;
+import com.minetunes.jfugue.rendererEffect.StaccatoEffect;
+import com.minetunes.jfugue.rendererEffect.TempoEffect;
+import com.minetunes.jfugue.rendererEffect.TimedJFugueElement;
+import com.minetunes.jfugue.rendererEffect.TransposeEffect;
 
 /**
  * This class takes a Pattern, and turns it into wonderful music.
@@ -108,7 +108,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	 */
 	private LyricEventReadListener lyricEventReadListener = null;
 	private TempoEventReadListener tempoEventReadListener = null;
-	private MCDittyEventReadListener mcdittyEventReadListener = null;
+	private DittyEventReadListener mcdittyEventReadListener = null;
 	private ParticleWorthyNoteReadListener particleWorthyNoteReadListener = null;
 	private InstrumentEventReadListener instrumentEventReadListener = null;
 
@@ -546,7 +546,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	 */
 	@Override
 	public void mcDittyEvent(MCDittyEvent event) {
-		if (MCDittyConfig.debug) {
+		if (MinetunesConfig.DEBUG) {
 			System.out.println("MidiRenderer: MCDittyEvent hit: "
 					+ event.getVerifyString());
 		}
@@ -698,7 +698,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 		// Report to listsners
 		if (mcdittyEventReadListener != null) {
 			long now = (long) eventManager.getTrackTimerDec();
-			if (MCDittyConfig.debug) {
+			if (MinetunesConfig.DEBUG) {
 				System.out.println("mcDittyEvent: time=" + now);
 			}
 			mcdittyEventReadListener.mcDittyEventRead(event, now, currentTrack,
@@ -876,7 +876,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	 */
 	@Override
 	public void lyricEvent(Lyric event) {
-		if (MCDittyConfig.debug) {
+		if (MinetunesConfig.DEBUG) {
 			System.out.println("MidiRenderer: lyricEvent hit: "
 					+ event.getVerifyString());
 			System.out.println(resolution + ":" + sequenceTiming + ":"
@@ -885,7 +885,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 		if (lyricEventReadListener != null) {
 			// long now = channelTimesMS[currentTrack];
 			long now = (long) eventManager.getTrackTimerDec();
-			if (MCDittyConfig.debug) {
+			if (MinetunesConfig.DEBUG) {
 				System.out.println("lyricEvent: time=" + now);
 			}
 			lyricEventReadListener.lyricEventRead(event, now);
@@ -935,7 +935,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	/**
 	 * @return the mcdittyEventReadListener
 	 */
-	public MCDittyEventReadListener getMcdittyEventReadListener() {
+	public DittyEventReadListener getMcdittyEventReadListener() {
 		return mcdittyEventReadListener;
 	}
 
@@ -944,7 +944,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 	 *            the mcdittyEventReadListener to set
 	 */
 	public void setMcdittyEventReadListener(
-			MCDittyEventReadListener mcdittyEventReadListener) {
+			DittyEventReadListener mcdittyEventReadListener) {
 		this.mcdittyEventReadListener = mcdittyEventReadListener;
 	}
 

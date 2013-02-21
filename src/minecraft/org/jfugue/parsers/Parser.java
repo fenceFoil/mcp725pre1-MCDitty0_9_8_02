@@ -49,7 +49,7 @@ import org.jfugue.elements.Tempo;
 import org.jfugue.elements.Time;
 import org.jfugue.elements.Voice;
 
-import com.wikispaces.mcditty.config.MCDittyConfig;
+import com.minetunes.config.MinetunesConfig;
 
 /**
  * You may notice that there is no parse() method in the Parser class!
@@ -388,11 +388,11 @@ public abstract class Parser
     /** MCDitty: tells all ParserListeners that a lyrics note event has been parsed. */
     protected void fireLyricEvent (Lyric event) {
         ParserListener[] listeners = getParserListeners();
-        if (MCDittyConfig.debug) {
+        if (MinetunesConfig.DEBUG) {
     		System.out.println ("fireLyricEvent: There are "+listeners.length + " listeners:");
         }
         for (ParserListener listener : listeners) {
-        	if (MCDittyConfig.debug) {
+        	if (MinetunesConfig.DEBUG) {
         		System.out.println ("fireLyricEvent: "+listener.getClass().getName());
         	}
             listener.lyricEvent(event);
@@ -402,11 +402,11 @@ public abstract class Parser
     /** MCDitty: tells all ParserListeners that a MCDitty event has been parsed. */
     protected void fireMCDittyEvent (MCDittyEvent event) {
         ParserListener[] listeners = getParserListeners();
-        if (MCDittyConfig.debug) {
+        if (MinetunesConfig.DEBUG) {
     		System.out.println ("fireLyricEvent: There are "+listeners.length + " listeners:");
         }
         for (ParserListener listener : listeners) {
-        	if (MCDittyConfig.debug) {
+        	if (MinetunesConfig.DEBUG) {
         		System.out.println ("fireLyricEvent: "+listener.getClass().getName());
         	}
             listener.mcDittyEvent(event);
@@ -516,7 +516,7 @@ public abstract class Parser
 	public void fireLryicEvent(Lyric event) {
         ParserListener[] listeners = getParserListeners();
         for (ParserListener listener : listeners) {
-        	if (MCDittyConfig.debug) {
+        	if (MinetunesConfig.DEBUG) {
         		System.out.println ("Firing lyric event (Parser): "+event.getVerifyString());
         	}
             listener.lyricEvent(event);

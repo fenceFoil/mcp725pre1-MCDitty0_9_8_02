@@ -7,31 +7,31 @@
 
 /**
  * 
- * This file is part of MCDitty.
+ * This file is part of MineTunes.
  * 
- * MCDitty is free software: you can redistribute it and/or modify it under
+ * MineTunes is free software: you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or (at your
  * option) any later version.
  * 
- * MCDitty is distributed in the hope that it will be useful, but WITHOUT
+ * MineTunes is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with MCDitty. If not, see <http://www.gnu.org/licenses/>.
+ * along with MineTunes. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
 package net.minecraft.src;
 
-import com.wikispaces.mcditty.MCDitty;
+import com.minetunes.Minetunes;
 
 /**
- * Currently unmodified from vanilla: previous MCDittys used this to get note
+ * Currently unmodified from vanilla: previous MineTuness used this to get note
  * block values, and the class must now be included to overwrite the modified
  * class from before. (NOTE: IN 1.4.8 OR 1.5, this class CAN BE REMOVED from the
- * classes MCDITTY MODIFIES)
+ * classes MineTunes MODIFIES)
  * 
  */
 public class EntityNoteFX extends EntityFX {
@@ -42,24 +42,6 @@ public class EntityNoteFX extends EntityFX {
 		this(par1World, par2, par4, par6, par8, par10, par12, 2.0F);
 	}
 
-	/**
-	 * Called when MCDitty makes a note particle. Faster than the constructor
-	 * Minecraft calls, since if dontCheckForNoteblock is true there's no hacky
-	 * check for note block value.
-	 * 
-	 * @param world
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param xVel
-	 *            color of note
-	 * @param yVel
-	 *            ignored
-	 * @param zVel
-	 *            ignored
-	 * @param scaleFactor
-	 *            2.0 is the "normal" value
-	 */
 	public EntityNoteFX(World world, double x, double y, double z, double xVel,
 			double yVel, double zVel, float scaleFactor) {
 		super(world, x, y, z, 0.0D, 0.0D, 0.0D);

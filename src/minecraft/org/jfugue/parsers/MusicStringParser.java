@@ -48,7 +48,7 @@ import org.jfugue.elements.Tempo;
 import org.jfugue.elements.Time;
 import org.jfugue.elements.Voice;
 
-import com.wikispaces.mcditty.config.MCDittyConfig;
+import com.minetunes.config.MinetunesConfig;
 
 /**
  * Parses music strings, and fires events for <code>ParserListener</code>
@@ -365,7 +365,7 @@ public final class MusicStringParser extends Parser {
 	 */
 	private void parseLyricElement(String s) {
 		if (s.length() > 1) {
-			if (MCDittyConfig.debug) {
+			if (MinetunesConfig.DEBUG) {
 				System.out.println("Lyric element parsed: " + s);
 			}
 			fireLyricEvent(new Lyric(s.substring(1)));

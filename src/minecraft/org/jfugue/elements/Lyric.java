@@ -3,14 +3,14 @@ package org.jfugue.elements;
 
 import org.jfugue.visitors.ElementVisitor;
 
-import com.wikispaces.mcditty.config.MCDittyConfig;
+import com.minetunes.config.MinetunesConfig;
 
 public class Lyric implements JFugueElement {
 
 	private String lyricLabel = "";
 
 	public Lyric(String label) {
-		if (MCDittyConfig.debug) {
+		if (MinetunesConfig.DEBUG) {
 			System.out.println("Lyric created: " + label);
 		}
 		setLyricLabel(label);

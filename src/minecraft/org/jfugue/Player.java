@@ -44,9 +44,9 @@ import org.jfugue.parsers.MidiParser;
 import org.jfugue.parsers.MusicStringParser;
 import org.jfugue.parsers.Parser;
 
+import com.minetunes.ditty.DittyPlayerPlayingHookListener;
 import com.sun.media.sound.SF2Soundbank;
 import com.sun.media.sound.SF2SoundbankReader;
-import com.wikispaces.mcditty.ditty.DittyPlayerPlayingHookListener;
 
 /**
  * Prepares a pattern to be turned into music by the Renderer. This class also

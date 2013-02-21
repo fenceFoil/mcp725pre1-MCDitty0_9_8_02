@@ -1,0 +1,5 @@
+IsDitty
+
+Even if a ditty is littered with tons of errors, force MineTunes to read song and show errors.
+
+Normally, MineTunes will deem a ditty where most of the words are errors as random text.

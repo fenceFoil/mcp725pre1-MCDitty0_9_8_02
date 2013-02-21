@@ -1,0 +1,16 @@
+* §eLeft§r and §eRight§r: Move cursor
+* §eCtrl+Left§r and §eCtrl+Right§r: Move cursor by words (or notes in a chord)
+* §eUp§r, §eDown§r, and §eEnter§r: Select lines
+* §eCtrl+Up§r, §eCtrl+Enter§r, and §eCtrl+Down§r: Move lines
+* §eBackspace§r and §eDelete§r: Remove a letter
+* §eCtrl+Backspace§r: Remove a word
+* §eHome§r and §eEnd§r: Move to start/end of line
+* §eCtrl+Home§r and §eCtrl+End§r: Move to start/end of sign
+* §eInsert§r: Toggle insert/overwrite
+* §ePage Up§r and §ePage Down§r: Load saved signs
+	* At the top of the list there's always a new sign.
+* §eCtrl+M§r switches between MineTunes and Normal mode.
+* §eCtrl+K§r switches help modes: Detect, MusicString-Only, Keyword-Only, and Hidden.
+* §eCtrl+R§r recalls signs that were here in the world before.
+* §eCtrl+T§r tests the music on this sign.
+* §eEscape§r: Close sign editor

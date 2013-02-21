@@ -43,7 +43,7 @@ import org.jfugue.elements.Time;
 import org.jfugue.elements.Voice;
 import org.jfugue.parsers.MusicStringParser;
 
-import com.wikispaces.mcditty.config.MCDittyConfig;
+import com.minetunes.config.MinetunesConfig;
 
 /**
  * Assists the StreamingPlayer in converting Patterns to MIDI.
@@ -205,7 +205,7 @@ public class StreamingMidiRenderer implements ParserListener {
 	@Override
 	public void lyricEvent(Lyric lyric) {
 		long now = eventManager.getTrackTimer();
-		if (MCDittyConfig.debug) {
+		if (MinetunesConfig.DEBUG) {
 			System.out.println("Lyric at " + now + ": " + lyric.getVerifyString());
 			System.err.println("This method is still unfinished: StreamingMidiRenderer.lyricEvent");
 		}
@@ -217,7 +217,7 @@ public class StreamingMidiRenderer implements ParserListener {
 	@Override
 	public void mcDittyEvent(MCDittyEvent event) {
 		long now = eventManager.getTrackTimer();
-		if (MCDittyConfig.debug) {
+		if (MinetunesConfig.DEBUG) {
 			System.out.println("MCDittyEvent at " + now + ": " + event.getVerifyString());
 		}
 		System.err.println("This method is still unfinished: StreamingMidiRenderer.mcDittyEvent");

@@ -6,36 +6,40 @@ import net.minecraft.client.Minecraft;
 
 import org.lwjgl.opengl.GL11;
 
-import com.wikispaces.mcditty.Finder;
-import com.wikispaces.mcditty.MCDitty;
-import com.wikispaces.mcditty.Point3D;
-import com.wikispaces.mcditty.config.MCDittyConfig;
+import com.minetunes.Finder;
+import com.minetunes.Minetunes;
+import com.minetunes.Point3D;
+import com.minetunes.config.MinetunesConfig;
+import com.minetunes.signs.TileEntitySignMinetunes;
 
 /**
  * 
- * This file is part of MCDitty.
+ * This file is part of MineTunes.
  * 
- * MCDitty is free software: you can redistribute it and/or modify it under
+ * MineTunes is free software: you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or (at your
  * option) any later version.
  * 
- * MCDitty is distributed in the hope that it will be useful, but WITHOUT
+ * MineTunes is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
  * License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public License
- * along with MCDitty. If not, see <http://www.gnu.org/licenses/>.
+ * along with MineTunes. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
 
 /**
- * Marked changes in code below are for the MCDitty mod. MCDitty code is
+ * Marked changes in code below are for the MineTunes mod. MineTunes code is
  * Copyright (c) 2012 William Karnavas All Rights Reserved.
  */
 
 public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
+
+	public static int blinkTimeMS = 6000;
+	public static boolean blinkSignsRed = true;
 
 	/** The ModelSign instance used by the TileEntitySignRenderer */
 	private ModelSign modelSign;
@@ -47,11 +51,11 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 	public TileEntitySignRenderer() {
 		modelSign = new ModelSign();
 
-		// MCDitty: try to create update tick hook entity
-		MCDitty.createHookEntity(BlockSign.mcDittyMod);
+		// MineTunes: try to create update tick hook entity
+		Minetunes.createHookEntity(Minetunes.instance);
 	}
 
-	public static long lastMCDittyTickHookEntityCheckTime = System
+	public static long lastMineTunesTickHookEntityCheckTime = System
 			.currentTimeMillis();
 	public static int updateTimeCounter = 1000000;
 	public static long currentSystemTime = 0;
@@ -76,14 +80,21 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 	public static Minecraft mc = Minecraft.getMinecraft();
 
 	// TODO: Replace "tick" with the term "frame" everywhere?
-	public void renderTileEntitySignAt(TileEntitySign signEntity, double par2,
-			double par4, double par6, float par8) {
+	public void renderTileEntitySignAt(TileEntitySign signEntityArg,
+			double par2, double par4, double par6, float par8) {
 		// Note that since this renderer may have been called (rather unusually)
 		// in the earliest parts of the game's loading (to set up the trig
 		// tables), its TileEntitySignRender.mc field may be null. Rectify that
 		// here.
 		if (mc == null) {
 			mc = Minecraft.getMinecraft();
+		}
+
+		TileEntitySignMinetunes signEntity;
+		if (!(signEntityArg instanceof TileEntitySignMinetunes)) {
+			signEntity = new TileEntitySignMinetunes(signEntityArg);
+		} else {
+			signEntity = (TileEntitySignMinetunes) signEntityArg;
 		}
 
 		if (par8 == lastTickFraction) {
@@ -125,8 +136,9 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 		boolean renderText = true;
 		boolean renderSign = true;
 		boolean doNotHideForSure = false;
-		
-		if (!fullRenderingEnabled && !signEntity.alwaysRender && renderCountLastTick > 100) {
+
+		if (!fullRenderingEnabled && !signEntity.alwaysRender
+				&& renderCountLastTick > 100) {
 			// Decide whether to render sign text (expensive)
 			renderText = false;
 			renderSign = false;
@@ -297,34 +309,36 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 			modelSign.signStick.showModel = false;
 		}
 
-		// MCDITTY
-		// MC 1.3.1: Hijack this method to continuously ensure that the MCDitty
+		// MineTunes
+		// MC 1.3.1: Hijack this method to continuously ensure that the
+		// MineTunes
 		// tick hook entity still exists
 		// Check once a second
 		// Also, add a button to any options menu
-		if (currentSystemTime - lastMCDittyTickHookEntityCheckTime > 1000) {
-			MCDitty.createHookEntity(BlockSign.mcDittyMod);
-			lastMCDittyTickHookEntityCheckTime = currentSystemTime;
+		if (currentSystemTime - lastMineTunesTickHookEntityCheckTime > 1000) {
+			Minetunes.createHookEntity(Minetunes.instance);
+			lastMineTunesTickHookEntityCheckTime = currentSystemTime;
 		}
 
 		// IF YOU ARE READING THIS, DELETE THIS SOURCE
-//		// Fix a bug in 1.3 + SSP, which is fixed by recalling a sign from the
-//		// sign editor.
-//		// Auto-recall.
-//		if (signEntity.bug1_3InvalidText) {
-//			TileEntitySign[] signsHereBefore = MCDitty.getUniqueSignsForPos(
-//					signEntity.xCoord, signEntity.yCoord, signEntity.zCoord,
-//					false);
-//			if (signsHereBefore != null && signsHereBefore.length >= 1) {
-//				// System.out.println("Auto-recalling a sign; "
-//				// + signsHereBefore.length
-//				// + " were in the recall buffer.");
-//				System.arraycopy(
-//						signsHereBefore[signsHereBefore.length - 1].signText,
-//						0, signEntity.signText, 0, 4);
-//			}
-//			signEntity.bug1_3InvalidText = false;
-//		}
+		// // Fix a bug in 1.3 + SSP, which is fixed by recalling a sign from
+		// the
+		// // sign editor.
+		// // Auto-recall.
+		// if (signEntity.bug1_3InvalidText) {
+		// TileEntitySign[] signsHereBefore = MineTunes.getUniqueSignsForPos(
+		// signEntity.xCoord, signEntity.yCoord, signEntity.zCoord,
+		// false);
+		// if (signsHereBefore != null && signsHereBefore.length >= 1) {
+		// // System.out.println("Auto-recalling a sign; "
+		// // + signsHereBefore.length
+		// // + " were in the recall buffer.");
+		// System.arraycopy(
+		// signsHereBefore[signsHereBefore.length - 1].signText,
+		// 0, signEntity.signText, 0, 4);
+		// }
+		// signEntity.bug1_3InvalidText = false;
+		// }
 
 		boolean blinkTextStateOn = false;
 
@@ -351,7 +365,7 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 			signEntity.startBlinking = false;
 			signEntity.blinking = true;
 			signEntity.blinkingEndTime = System.currentTimeMillis()
-					+ MCDittyConfig.blinkTimeMS;
+					+ blinkTimeMS;
 		}
 
 		// Handle ongoing blinking
@@ -359,7 +373,7 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 			// System.out.println ("Sign is blinking");
 			double halfSecsTillEnd = (double) (signEntity.blinkingEndTime - System
 					.currentTimeMillis()) / 500d;
-			double halfSecsTotal = ((double) (MCDittyConfig.blinkTimeMS)) / 500d;
+			double halfSecsTotal = ((double) (blinkTimeMS)) / 500d;
 			if ((int) halfSecsTillEnd % 2 == 0) {
 				// On blink state one, look normal
 				// Tell further code that the blink state is "off"
@@ -369,8 +383,7 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 
 				// For a while, blink whole sign (if this feature is turned
 				// on)
-				if ((halfSecsTillEnd / halfSecsTotal) > 0.5d
-						&& MCDittyConfig.blinkSignsTexturesEnabled) {
+				if ((halfSecsTillEnd / halfSecsTotal) > 0.5d && blinkSignsRed) {
 					// No more changing texture: change colors, my son!
 					GL11.glColor4f(0xff, 0, 0, 0xff);
 				} else {
@@ -383,7 +396,7 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 			}
 
 			if (signEntity.blinkingEndTime < System.currentTimeMillis()) {
-				// TODO: Move this into methods in TileEntityMCDitty Sign!
+				// TODO: Move this into methods in TileEntityMineTunes Sign!
 				// Time to stop blinking
 				signEntity.blinking = false;
 				for (int i = 0; i < signEntity.signText.length; i++) {
@@ -411,7 +424,7 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 		// Render sign text
 		if (renderText) {
 			String[] text = signEntity.getSignTextNoCodes();
-			
+
 			FontRenderer fontrenderer = getFontRenderer();
 			int j = 0;
 
@@ -446,13 +459,11 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 							.append(" §r<").toString();
 					fontrenderer.drawString(s, -fontrenderer.getStringWidth(s
 							.replaceAll("§.", "").replaceFirst("|", "")) / 2,
-							currRenderLine * 10 - text.length
-									* 5, j);
+							currRenderLine * 10 - text.length * 5, j);
 				} else {
 					fontrenderer.drawString(sWithCaret, -fontrenderer
 							.getStringWidth(s.replaceAll("§.", "")) / 2,
-							currRenderLine * 10 - text.length
-									* 5, j);
+							currRenderLine * 10 - text.length * 5, j);
 				}
 			}
 		}
@@ -580,7 +591,7 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 			return null;
 		}
 
-		//String thirdLine = signText[2];
+		// String thirdLine = signText[2];
 
 		if (signText[2] == null || signText[2].length() < 2) {
 			return null;
@@ -589,8 +600,8 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 		String code = signText[2].substring(signText[2].length() - 2);
 		if (code.matches("%[\\dabcdefABCDEF]")) {
 			// Code present!
-			//System.out.println (code.substring(1));
-			//new Exception().printStackTrace();
+			// System.out.println (code.substring(1));
+			// new Exception().printStackTrace();
 			return code.substring(1);
 		} else {
 			return null;
@@ -656,7 +667,7 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 	 */
 	public static boolean removeSignColorCodes(String[] signText) {
 		if (getSignColorCode(signText) != null) {
-			signText[2] = signText[2].substring(0, signText[2].length()-2);
+			signText[2] = signText[2].substring(0, signText[2].length() - 2);
 			return true;
 		} else {
 			return false;

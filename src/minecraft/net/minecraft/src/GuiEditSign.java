@@ -1,10 +1,7 @@
 package net.minecraft.src;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,44 +23,45 @@ import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-import com.wikispaces.mcditty.MCDitty;
-import com.wikispaces.mcditty.MCDittyRightClickCheckThread;
-import com.wikispaces.mcditty.MCDittySignsFilenameFilter;
-import com.wikispaces.mcditty.MidiFileFilter;
-import com.wikispaces.mcditty.Point3D;
-import com.wikispaces.mcditty.config.MCDittyConfig;
-import com.wikispaces.mcditty.gui.GuiEditSignNoteHelpParserListener;
-import com.wikispaces.mcditty.gui.GuiMCDitty;
-import com.wikispaces.mcditty.gui.GuiMCDittyFileSaver;
-import com.wikispaces.mcditty.gui.GuiMCDittyFileSaverListener;
-import com.wikispaces.mcditty.gui.GuiMCDittyFileSelector;
-import com.wikispaces.mcditty.gui.GuiMCDittyFileSelectorListener;
-import com.wikispaces.mcditty.gui.GuiMCDittySignEditorGuide;
-import com.wikispaces.mcditty.gui.GuiScrollingTextPanel;
-import com.wikispaces.mcditty.gui.MCDittyVersionReadoutGuiElement;
-import com.wikispaces.mcditty.resources.MCDittyResourceManager;
-import com.wikispaces.mcditty.sfx.SFXManager;
-import com.wikispaces.mcditty.signs.Comment;
-import com.wikispaces.mcditty.signs.ParsedSign;
-import com.wikispaces.mcditty.signs.SignParser;
-import com.wikispaces.mcditty.signs.keywords.ExplicitGotoKeyword;
-import com.wikispaces.mcditty.signs.keywords.GotoKeyword;
-import com.wikispaces.mcditty.signs.keywords.LyricKeyword;
-import com.wikispaces.mcditty.signs.keywords.ParsedKeyword;
-import com.wikispaces.mcditty.signs.keywords.PlayMidiKeyword;
-import com.wikispaces.mcditty.signs.keywords.ProxPadKeyword;
-import com.wikispaces.mcditty.signs.keywords.SFXInstKeyword;
-import com.wikispaces.mcditty.signs.keywords.SFXKeyword;
+import com.minetunes.MidiFileFilter;
+import com.minetunes.Minetunes;
+import com.minetunes.Point3D;
+import com.minetunes.RightClickCheckThread;
+import com.minetunes.SignFilenameFilter;
+import com.minetunes.config.MinetunesConfig;
+import com.minetunes.gui.FileSaverGui;
+import com.minetunes.gui.FileSaverGuiListener;
+import com.minetunes.gui.FileSelectorGui;
+import com.minetunes.gui.FileSelectorGuiListener;
+import com.minetunes.gui.GuiScrollingTextPanel;
+import com.minetunes.gui.MinetunesGui;
+import com.minetunes.gui.MinetunesVersionGuiElement;
+import com.minetunes.gui.signEditor.GuiEditSignNoteHelpParserListener;
+import com.minetunes.gui.signEditor.SignEditorGuideGui;
+import com.minetunes.resources.ResourceManager;
+import com.minetunes.sfx.SFXManager;
+import com.minetunes.signs.Comment;
+import com.minetunes.signs.ParsedSign;
+import com.minetunes.signs.SignParser;
+import com.minetunes.signs.TileEntitySignMinetunes;
+import com.minetunes.signs.keywords.ExplicitGotoKeyword;
+import com.minetunes.signs.keywords.GotoKeyword;
+import com.minetunes.signs.keywords.LyricKeyword;
+import com.minetunes.signs.keywords.ParsedKeyword;
+import com.minetunes.signs.keywords.PlayMidiKeyword;
+import com.minetunes.signs.keywords.ProxPadKeyword;
+import com.minetunes.signs.keywords.SFXInstKeyword;
+import com.minetunes.signs.keywords.SFXKeyword;
 
-public class GuiEditSign extends GuiScreen implements
-		GuiMCDittyFileSaverListener, GuiMCDittyFileSelectorListener {
+public class GuiEditSign extends GuiScreen implements FileSaverGuiListener,
+		FileSelectorGuiListener {
 	/**
 	 * This String is just a local copy of the characters allowed in text
 	 * rendering of minecraft.
 	 */
 	private static final String allowedCharacters;
 
-	public static final int SIGN_EDITOR_MODE_MCDITTY = 24601;
+	public static final int SIGN_EDITOR_MODE_MINETUNES = 24601;
 	public static final int SIGN_EDITOR_MODE_NORMAL = 0;
 	public static final int SIGN_EDITOR_MODE_INVISIBLE = 1;
 
@@ -73,7 +71,7 @@ public class GuiEditSign extends GuiScreen implements
 	private static final int HELP_STATE_HIDDEN = 3;
 
 	/** Reference to the sign object. */
-	private TileEntitySign entitySign;
+	private TileEntitySignMinetunes entitySign;
 
 	/** Counts the number of screen updates. */
 	private int updateCounter;
@@ -95,30 +93,30 @@ public class GuiEditSign extends GuiScreen implements
 
 	/**
 	 * 
-	 * This file is part of MCDitty.
+	 * This file is part of MineTunes.
 	 * 
-	 * MCDitty is free software: you can redistribute it and/or modify it under
-	 * the terms of the GNU Lesser General Public License as published by the
-	 * Free Software Foundation, either version 3 of the License, or (at your
-	 * option) any later version.
+	 * MineTunes is free software: you can redistribute it and/or modify it
+	 * under the terms of the GNU Lesser General Public License as published by
+	 * the Free Software Foundation, either version 3 of the License, or (at
+	 * your option) any later version.
 	 * 
-	 * MCDitty is distributed in the hope that it will be useful, but WITHOUT
+	 * MineTunes is distributed in the hope that it will be useful, but WITHOUT
 	 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 	 * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
 	 * License for more details.
 	 * 
 	 * You should have received a copy of the GNU Lesser General Public License
-	 * along with MCDitty. If not, see <http://www.gnu.org/licenses/>.
+	 * along with MineTunes. If not, see <http://www.gnu.org/licenses/>.
 	 * 
 	 */
 
 	/**
-	 * MCDitty: Current index in the list of saved signs
+	 * MineTunes: Current index in the list of saved signs
 	 */
 	private int bufferPosition = savedSigns.size();
 
 	/**
-	 * MCDitty: Last filename returned by GuiMCDittyFileSaver
+	 * MineTunes: Last filename returned by GuiMineTunesFileSaver
 	 */
 	private String fileSaverFilename;
 
@@ -153,7 +151,7 @@ public class GuiEditSign extends GuiScreen implements
 	private GuiButton lockButton;
 
 	/**
-	 * MCDitty's buffer of saved signs.
+	 * MineTunes's buffer of saved signs.
 	 */
 	private static LinkedList<String[]> savedSigns = new LinkedList<String[]>();
 
@@ -162,10 +160,13 @@ public class GuiEditSign extends GuiScreen implements
 	private static String lockedCode = null;
 
 	public GuiEditSign(TileEntitySign par1TileEntitySign) {
-		// MCDitty: Change screentitle
+		// MineTunes: Change screentitle
 		editLine = 0;
 		editChar = 0;
-		entitySign = par1TileEntitySign;
+		if (!(par1TileEntitySign instanceof TileEntitySignMinetunes)) {
+			par1TileEntitySign = new TileEntitySignMinetunes(par1TileEntitySign);
+		}
+		entitySign = (TileEntitySignMinetunes) par1TileEntitySign;
 		entitySign.setEditable(true);
 		entitySign.alwaysRender = true;
 
@@ -175,7 +176,7 @@ public class GuiEditSign extends GuiScreen implements
 		// // start blank
 		// entitySign.bug1_3InvalidText = false;
 
-		// MCDitty: Add first entry to savedSigns buffer
+		// MineTunes: Add first entry to savedSigns buffer
 		if (bufferInitalized == false) {
 			String[] firstEntry = new String[4];
 			for (int i = 0; i < 4; i++) {
@@ -195,7 +196,7 @@ public class GuiEditSign extends GuiScreen implements
 		// Set the location of the signs directory
 		signsDirLocation = (new File(Minecraft.getMinecraftDir(), "signs"))
 				.getAbsolutePath();
-		// End MCDitty
+		// End MineTunes
 	}
 
 	/**
@@ -206,11 +207,11 @@ public class GuiEditSign extends GuiScreen implements
 			return;
 		}
 
-		if (MCDittyConfig.signEditorMode != SIGN_EDITOR_MODE_INVISIBLE) {
+		if (MinetunesConfig.getInt("signeditor.mode") != SIGN_EDITOR_MODE_INVISIBLE) {
 			drawDefaultBackground();
 			// drawCenteredString(fontRenderer, screenTitle, width / 2, 40,
 			// 0xffffff);
-			// drawString(fontRenderer, "MCDitty Version "
+			// drawString(fontRenderer, "MineTunes Version "
 			// + BlockSign.CURRENT_VERSION, 0, 0, 0x444444);
 
 			drawCenteredString(fontRenderer, "Edit Sign Text", width / 2, 10,
@@ -253,7 +254,7 @@ public class GuiEditSign extends GuiScreen implements
 
 			// Draw colorcode info
 			drawCenteredString(fontRenderer,
-					TileEntitySign
+					TileEntitySignMinetunes
 							.getNameForSignColorCode(entitySign.signColorCode),
 					width - 60, height - 44, 0xffffff);
 
@@ -296,7 +297,7 @@ public class GuiEditSign extends GuiScreen implements
 			// }
 
 			float signTranslateX = width / 2;
-			// if (BlockSign.signEditorMode == SIGN_EDITOR_MODE_MCDITTY) {
+			// if (BlockSign.signEditorMode == SIGN_EDITOR_MODE_MINETUNES) {
 			// // Shove sign off to the left
 			// signTranslateX = 75;
 			// }
@@ -342,7 +343,7 @@ public class GuiEditSign extends GuiScreen implements
 			entitySign.lineBeingEdited = -1;
 			GL11.glPopMatrix();
 
-			if (MCDittyConfig.signEditorMode == SIGN_EDITOR_MODE_MCDITTY) {
+			if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES) {
 				helpTextArea.draw(par1, par2);
 			}
 		}
@@ -355,7 +356,7 @@ public class GuiEditSign extends GuiScreen implements
 	 * Adds the buttons (and other controls) to the screen in question.
 	 */
 	public void initGui() {
-		// MCDitty: Check for ctrl key pressed
+		// MineTunes: Check for ctrl key pressed
 		if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)
 				|| Keyboard.isKeyDown(Keyboard.KEY_RCONTROL)) {
 			// Place blank sign
@@ -365,15 +366,15 @@ public class GuiEditSign extends GuiScreen implements
 
 		controlList.clear();
 		Keyboard.enableRepeatEvents(true);
-		// MCDitty: Changed button label
+		// MineTunes: Changed button label
 		// X is defined in the draw method
 		doneButton = new GuiButton(0, 0,
 				Math.min(height / 4 + 120, height - 40), 120, 20, "Done & Save");
 		controlList.add(doneButton);
 
-		controlList.add(new MCDittyVersionReadoutGuiElement(-100));
+		controlList.add(new MinetunesVersionGuiElement(-100));
 
-		// // MCDitty: Added new buttons
+		// // MineTunes: Added new buttons
 		// controlList.add(new GuiButton(400, 5, height - 150, 80, 20,
 		// "Clear Signs"));
 		// controlList.add(new GuiButton(100, 5, height - 120, 80, 20,
@@ -420,24 +421,24 @@ public class GuiEditSign extends GuiScreen implements
 		// Set the sign to be editable
 		entitySign.setEditable(false);
 
-		// If in mcditty mode, set up mcditty elements
-		if (MCDittyConfig.signEditorMode == SIGN_EDITOR_MODE_MCDITTY) {
-			updateMCDittyElements();
+		// If in MineTunes mode, set up MineTunes elements
+		if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES) {
+			updateMineTunesElements();
 		}
 	}
 
 	private void updateButtons() {
 		// Double color codes for symmetry
-		if (MCDittyConfig.signEditorMode == SIGN_EDITOR_MODE_MCDITTY) {
-			editorModeButton.displayString = "MCDitty Mode";
-		} else if (MCDittyConfig.signEditorMode == SIGN_EDITOR_MODE_NORMAL) {
+		if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES) {
+			editorModeButton.displayString = "MineTunes Mode";
+		} else if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_NORMAL) {
 			editorModeButton.displayString = "Normal Mode";
 		} else {
 			editorModeButton.displayString = "InvisiMode";
 		}
 
 		// Test button
-		if (MCDittyConfig.signEditorMode == SIGN_EDITOR_MODE_MCDITTY) {
+		if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES) {
 			testButton.drawButton = true;
 		} else {
 			testButton.drawButton = false;
@@ -446,7 +447,7 @@ public class GuiEditSign extends GuiScreen implements
 		doneButton.xPosition = width / 2 - 60;
 
 		// Change keyword mode keyword
-		if (MCDittyConfig.signEditorMode == SIGN_EDITOR_MODE_MCDITTY) {
+		if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES) {
 			selectHelpButton.drawButton = true;
 			// Update button text as well
 			if (helpState == HELP_STATE_KEYWORD) {
@@ -464,7 +465,7 @@ public class GuiEditSign extends GuiScreen implements
 
 		// Update number of signs available to recall
 		if (signsHereBefore == null) {
-			signsHereBefore = MCDitty.getUniqueSignsForPos(entitySign.xCoord,
+			signsHereBefore = Minetunes.getUniqueSignsForPos(entitySign.xCoord,
 					entitySign.yCoord, entitySign.zCoord, true);
 		}
 		if (signsHereBefore.length <= 0) {
@@ -481,7 +482,7 @@ public class GuiEditSign extends GuiScreen implements
 		if (lockedCode == null) {
 			lockButton.displayString = "Lock";
 		} else {
-			lockButton.displayString = TileEntitySign
+			lockButton.displayString = TileEntitySignMinetunes
 					.getNameForSignColorCode(lockedCode);
 		}
 	}
@@ -493,7 +494,8 @@ public class GuiEditSign extends GuiScreen implements
 	public void onGuiClosed() {
 		Keyboard.enableRepeatEvents(false);
 
-		// MCDitty: Moved the stuff that sends a MP packet to a method where is
+		// MineTunes: Moved the stuff that sends a MP packet to a method where
+		// is
 		// is not unintentionally fired when views a SignEditor "sub-gui" such
 		// as the guide
 
@@ -526,7 +528,7 @@ public class GuiEditSign extends GuiScreen implements
 		}
 		if (par1GuiButton.id == -100) {
 			exitGUIScreen();
-			mc.displayGuiScreen(new GuiMCDitty());
+			mc.displayGuiScreen(new MinetunesGui());
 		} else if (par1GuiButton.id == 0) {
 			exitGUIScreen();
 		} else if (par1GuiButton.id == 100) {
@@ -536,9 +538,8 @@ public class GuiEditSign extends GuiScreen implements
 			if (!signsDir.exists()) {
 				signsDir.mkdirs();
 			}
-			GuiMCDittyFileSelector fileChooser = new GuiMCDittyFileSelector(
-					this, signsDir, new MCDittySignsFilenameFilter(),
-					"Select Signs File To Import:");
+			FileSelectorGui fileChooser = new FileSelectorGui(this, signsDir,
+					new SignFilenameFilter(), "Select Signs File To Import:");
 			mc.displayGuiScreen(fileChooser);
 		} else if (par1GuiButton.id == 200) {
 			// Export signs to a file
@@ -548,8 +549,8 @@ public class GuiEditSign extends GuiScreen implements
 				signsDir.mkdirs();
 			}
 
-			GuiMCDittyFileSaver fileSaver = new GuiMCDittyFileSaver(this,
-					signsDir, ".txt", "Save Signs:");
+			FileSaverGui fileSaver = new FileSaverGui(this, signsDir, ".txt",
+					"Save Signs:");
 			mc.displayGuiScreen(fileSaver);
 		} else if (par1GuiButton.id == 300) {
 			// Open signs folder
@@ -564,25 +565,27 @@ public class GuiEditSign extends GuiScreen implements
 			bufferPosition = 0;
 		} else if (par1GuiButton.id == 1000) {
 			// Switch gui mode
-			if (MCDittyConfig.signEditorMode == SIGN_EDITOR_MODE_NORMAL) {
-				MCDittyConfig.signEditorMode = SIGN_EDITOR_MODE_MCDITTY;
-				updateMCDittyElements();
-			} else if (MCDittyConfig.signEditorMode == SIGN_EDITOR_MODE_MCDITTY) {
-				MCDittyConfig.signEditorMode = SIGN_EDITOR_MODE_INVISIBLE;
+			if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_NORMAL) {
+				MinetunesConfig.setInt("signeditor.mode",
+						SIGN_EDITOR_MODE_MINETUNES);
+				updateMineTunesElements();
+			} else if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES) {
+				MinetunesConfig.setInt("signeditor.mode",
+						SIGN_EDITOR_MODE_INVISIBLE);
 			} else {
-				MCDittyConfig.signEditorMode = SIGN_EDITOR_MODE_NORMAL;
+				MinetunesConfig.setInt("signeditor.mode",
+						SIGN_EDITOR_MODE_NORMAL);
 			}
 			try {
 				// Save mode change
-				MCDittyConfig.flushAll();
+				MinetunesConfig.flush();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			updateMCDittyElements();
+			updateMineTunesElements();
 		} else if (par1GuiButton.id == 1100) {
 			// Show guide
-			GuiMCDittySignEditorGuide guideGui = new GuiMCDittySignEditorGuide(
-					this);
+			SignEditorGuideGui guideGui = new SignEditorGuideGui(this);
 			mc.displayGuiScreen(guideGui);
 		} else if (par1GuiButton.id == 1200) {
 			// Play the sign
@@ -637,7 +640,7 @@ public class GuiEditSign extends GuiScreen implements
 			}
 
 			// Acknowledge changes
-			updateMCDittyElements();
+			updateMineTunesElements();
 		} else if (par1GuiButton.id == 1400) {
 			// Recall sign button
 			recallSignHereBefore();
@@ -657,7 +660,7 @@ public class GuiEditSign extends GuiScreen implements
 				if (currCode == null) {
 					newCode = "1";
 				} else {
-					newCode = TileEntitySign.nextCodeInCycle(currCode);
+					newCode = TileEntitySignMinetunes.nextCodeInCycle(currCode);
 				}
 
 				// add new code
@@ -684,7 +687,7 @@ public class GuiEditSign extends GuiScreen implements
 				if (currCode == null) {
 					newCode = "1";
 				} else {
-					newCode = TileEntitySign.prevCodeInCycle(currCode);
+					newCode = TileEntitySignMinetunes.prevCodeInCycle(currCode);
 				}
 
 				// add new code
@@ -736,7 +739,7 @@ public class GuiEditSign extends GuiScreen implements
 		}
 	}
 
-	// MCDitty
+	// MineTunes
 	private void exitGUIScreen() {
 		// Strip the sign of color codes
 		for (int i = 0; i < entitySign.signText.length; i++) {
@@ -745,7 +748,7 @@ public class GuiEditSign extends GuiScreen implements
 			entitySign.highlightLine[i] = "";
 		}
 
-		MCDitty.onSignLoaded(entitySign);
+		Minetunes.onSignLoaded(entitySign);
 
 		// entitySign.setEditable(true);
 		entitySign.alwaysRender = false;
@@ -758,7 +761,7 @@ public class GuiEditSign extends GuiScreen implements
 					this.entitySign.signText));
 		}
 
-		// MCDitty: Save sign's text to the buffer
+		// MineTunes: Save sign's text to the buffer
 		addTextToSavedSigns(entitySign.signText);
 
 		entitySign.onInventoryChanged();
@@ -766,7 +769,7 @@ public class GuiEditSign extends GuiScreen implements
 
 		// MC 1.3.1: Prevent clicking done button from activating sign
 		BlockSign.clickHeld = true;
-		MCDittyRightClickCheckThread t = new MCDittyRightClickCheckThread();
+		RightClickCheckThread t = new RightClickCheckThread();
 		t.start();
 	}
 
@@ -1072,14 +1075,15 @@ public class GuiEditSign extends GuiScreen implements
 				}
 			}
 		}
-		
+
 		// Handle autocorrect for SFXInst
-		if (par2 == Keyboard.KEY_T && entitySign.signText[editLine].equalsIgnoreCase("sfxinst")) {
+		if (par2 == Keyboard.KEY_T
+				&& entitySign.signText[editLine].equalsIgnoreCase("sfxinst")) {
 			entitySign.signText[editLine] = "SFXInst2";
 			editChar = entitySign.signText[editLine].length();
 		}
 
-		// MCDitty: Alert someone if they type too far on the current line
+		// MineTunes: Alert someone if they type too far on the current line
 		// TODO: Handle color codes
 		if (allowedCharacters.indexOf(par1) >= 0
 				&& entitySign.signText[editLine].length() >= 15) {
@@ -1087,7 +1091,7 @@ public class GuiEditSign extends GuiScreen implements
 			SFXManager.playEffect("step.wood");
 		}
 
-		// MCDitty: Check for page up and page down keys to scroll saved signs
+		// MineTunes: Check for page up and page down keys to scroll saved signs
 		// into the editor
 		// System.out.println ("KeyTyped: Par2="+par2);
 		if (par2 == 201) {
@@ -1098,7 +1102,7 @@ public class GuiEditSign extends GuiScreen implements
 			scrollSavedBufferUp();
 		}
 
-		// MCDitty
+		// MineTunes
 		if (par2 == Keyboard.KEY_ESCAPE) {
 			exitGUIScreen();
 		}
@@ -1111,8 +1115,8 @@ public class GuiEditSign extends GuiScreen implements
 			editChar = entitySign.getSignTextNoCodes()[editLine].length();
 		}
 
-		if (MCDittyConfig.signEditorMode == SIGN_EDITOR_MODE_MCDITTY) {
-			updateMCDittyElements();
+		if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES) {
+			updateMineTunesElements();
 		}
 	}
 
@@ -1135,7 +1139,7 @@ public class GuiEditSign extends GuiScreen implements
 	}
 
 	private void copyTextToEditor(String[] strings) {
-		entitySign.signText = TileEntitySign.copyOfSignText(strings);
+		entitySign.signText = TileEntitySignMinetunes.copyOfSignText(strings);
 		editChar = entitySign.getSignTextNoCodes()[editLine].length();
 
 		// Add any locked color code
@@ -1146,7 +1150,7 @@ public class GuiEditSign extends GuiScreen implements
 			}
 		}
 
-		updateMCDittyElements();
+		updateMineTunesElements();
 	}
 
 	private TileEntitySign[] signsHereBefore = null;
@@ -1155,7 +1159,7 @@ public class GuiEditSign extends GuiScreen implements
 	private void recallSignHereBefore() {
 		// Load signs here before, if not already done
 		if (signsHereBefore == null) {
-			signsHereBefore = MCDitty.getUniqueSignsForPos(entitySign.xCoord,
+			signsHereBefore = Minetunes.getUniqueSignsForPos(entitySign.xCoord,
 					entitySign.yCoord, entitySign.zCoord, true);
 			backCount = signsHereBefore.length - 1; // Assumes this will be
 													// decremented below
@@ -1181,18 +1185,18 @@ public class GuiEditSign extends GuiScreen implements
 	}
 
 	/**
-	 * Updates all buttons, readouts, and text displays shown in MCDitty mode.
+	 * Updates all buttons, readouts, and text displays shown in MineTunes mode.
 	 * 
 	 * TODO: Note that it now updates EVERY LINE of a sign at once, instead of
 	 * just one.
 	 */
-	private void updateMCDittyElements() {
+	private void updateMineTunesElements() {
 		// The keyword text area should only be invisible if something in here
 		// explicitly chooses to turn it off.
 		helpTextArea.setVisible(true);
 
-		// Update only if in MCDitty mode
-		if (MCDittyConfig.signEditorMode == SIGN_EDITOR_MODE_MCDITTY) {
+		// Update only if in MineTunes mode
+		if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES) {
 			// Parse the current sign.
 			ParsedSign parsedSign = SignParser.parseSign(entitySign
 					.getSignTextNoCodes());
@@ -1239,7 +1243,7 @@ public class GuiEditSign extends GuiScreen implements
 				helpTextArea.setVisible(false);
 			}
 		} else {
-			// If MCDitty mode is off, clear color coding and keyword message
+			// If MineTunes mode is off, clear color coding and keyword message
 			keywordMessage = null;
 			entitySign.clearHighlightedLines();
 		}
@@ -1828,7 +1832,7 @@ public class GuiEditSign extends GuiScreen implements
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			colorCode = "§c";
-			errorMessage = "MCDitty can't make head nor tail of this token.";
+			errorMessage = "MineTunes can't make head nor tail of this token.";
 		} finally {
 			musicStringParser.removeParserListener(parserListener);
 		}
@@ -1876,7 +1880,7 @@ public class GuiEditSign extends GuiScreen implements
 	 * Load and display a generic musicstring help guide (only lists tokens)
 	 */
 	private void showGenericTokenHelp() {
-		helpTextArea.setText(MCDittyResourceManager
+		helpTextArea.setText(ResourceManager
 				.loadCached("help/genericTokenHelp.txt"));
 	}
 
@@ -2193,8 +2197,9 @@ public class GuiEditSign extends GuiScreen implements
 						.setText("§6Put the MIDI to play §6on the next line.");
 			} else {
 				//
-				File[] midiFileList = new File(Minecraft.getMinecraftDir()
-						+ "/MCDitty", "midi").listFiles(new MidiFileFilter());
+				File[] midiFileList = new File(MinetunesConfig
+						.getMinetunesDir().getPath(), "midi")
+						.listFiles(new MidiFileFilter());
 
 				LinkedList<File> matchingMidis = new LinkedList<File>();
 				File exactMatch = null;
@@ -2466,7 +2471,7 @@ public class GuiEditSign extends GuiScreen implements
 
 		if (keyword.getKeyword() != null
 				&& !keyword.getKeyword().equalsIgnoreCase(lastHelpShown)) {
-			String helpText = MCDittyResourceManager.loadCached("help/"
+			String helpText = ResourceManager.loadCached("help/"
 					+ keyword.getKeyword().toLowerCase() + "ShortHelp.txt");
 
 			helpText = "§b" + helpText;
@@ -2506,7 +2511,7 @@ public class GuiEditSign extends GuiScreen implements
 
 	private void showGenericKeywordHelp() {
 		// Set text area to a list of all available keywords
-		helpTextArea.setText(MCDittyResourceManager
+		helpTextArea.setText(ResourceManager
 				.loadCached("help/keywordsHelp.txt"));
 	}
 
@@ -2515,7 +2520,7 @@ public class GuiEditSign extends GuiScreen implements
 	}
 
 	/**
-	 * MCDitty: Add a sign's text to the buffer of saved texts, if it is not
+	 * MineTunes: Add a sign's text to the buffer of saved texts, if it is not
 	 * already there. If it is, move that text to the end of the buffer and
 	 * remove the duplicate from earlier.
 	 */
@@ -2573,7 +2578,7 @@ public class GuiEditSign extends GuiScreen implements
 	}
 
 	/**
-	 * MCDitty: Compares two sign texts for equality.
+	 * MineTunes: Compares two sign texts for equality.
 	 * 
 	 * @param text1
 	 * @param text2

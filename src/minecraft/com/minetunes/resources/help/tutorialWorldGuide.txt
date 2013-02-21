@@ -1,0 +1,5 @@
+MineTunesLand is a small castle with several example ditties.
+
+Once MineTunesLand is downloaded (less than 0.25 MB), it is placed in your /saves/ folder automatically.
+
+You can also re-download MineTunesLand here if it burns down.
