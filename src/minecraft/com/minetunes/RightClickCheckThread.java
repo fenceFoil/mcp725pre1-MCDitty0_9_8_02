@@ -23,9 +23,9 @@
  */
 package com.minetunes;
 
-import net.minecraft.src.BlockSign;
-
 import org.lwjgl.input.Mouse;
+
+import com.minetunes.signs.BlockSignMinetunes;
 
 /**
  * Waits for all mouse buttons to be lifted, then sets a flag in BlockSign.
@@ -44,14 +44,14 @@ public class RightClickCheckThread extends Thread {
 	public void run() {
 		while (true) {
 			if (!Mouse.isButtonDown(0) && !Mouse.isButtonDown(1)) {
-				BlockSign.clickHeld = false;
+				BlockSignMinetunes.clickHeld = false;
 				break;
 			}
 			try {
 				Thread.sleep(5);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-				BlockSign.clickHeld = false;
+				BlockSignMinetunes.clickHeld = false;
 				break;
 			}
 		}

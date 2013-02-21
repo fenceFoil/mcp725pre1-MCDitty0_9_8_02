@@ -1,6 +1,5 @@
 package com.minetunes.gui;
 
-import net.minecraft.src.BlockSign;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
 
@@ -9,9 +8,9 @@ import org.lwjgl.input.Keyboard;
 import com.minetunes.CompareVersion;
 import com.minetunes.Minetunes;
 import com.minetunes.autoUpdate.FileUpdaterListener;
-import com.minetunes.autoUpdate.ModUpdater;
 import com.minetunes.autoUpdate.UpdateEventLevel;
 import com.minetunes.config.MinetunesConfig;
+import com.minetunes.signs.BlockSignMinetunes;
 
 /**
  * Copyright (c) 2012 William Karnavas 
@@ -181,7 +180,7 @@ public class MinetunesUpdateGui extends GuiScreen implements
 		if (newVersion == null) {
 			newVersion = "Could Not Download Version";
 		}
-		BlockSign
+		BlockSignMinetunes
 				.simpleLog("GuiMCDittyUpdates.checkForUpdates: downloaded version number "
 						+ newVersion);
 		if (CompareVersion.isVersionNumber(newVersion)) {

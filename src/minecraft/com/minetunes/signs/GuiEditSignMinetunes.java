@@ -37,7 +37,6 @@ import java.util.Set;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
-import net.minecraft.src.BlockSign;
 import net.minecraft.src.ChatAllowedCharacters;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiEditSign;
@@ -46,7 +45,6 @@ import net.minecraft.src.Packet130UpdateSign;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntityRenderer;
 import net.minecraft.src.TileEntitySign;
-import net.minecraft.src.TileEntitySignRenderer;
 
 import org.jfugue.JFugueException;
 import org.jfugue.ParserListener;
@@ -294,7 +292,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 			// Decide the size to draw the sign at
 			float signScaling = 93.75F; // The default minecraft value
 			signTranslateY = 0f; // Default minecraft value
-			// if (BlockSign.signEditorMode == SIGN_EDITOR_MODE_NORMAL) {
+			// if (BlockSignMinetunes.signEditorMode == SIGN_EDITOR_MODE_NORMAL) {
 			// // Make sign much bigger
 			// signScaling *= 1.34;
 			// signTranslateY = -70f;
@@ -305,7 +303,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 			// }
 
 			float signTranslateX = width / 2;
-			// if (BlockSign.signEditorMode == SIGN_EDITOR_MODE_MINETUNES) {
+			// if (BlockSignMinetunes.signEditorMode == SIGN_EDITOR_MODE_MINETUNES) {
 			// // Shove sign off to the left
 			// signTranslateX = 75;
 			// }
@@ -613,7 +611,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 			LinkedList<Point3D> signsToPlay = new LinkedList<Point3D>();
 			signsToPlay.add(new Point3D(entitySign.xCoord, entitySign.yCoord,
 					entitySign.zCoord));
-			LinkedList<String> testErrors = BlockSign
+			LinkedList<String> testErrors = BlockSignMinetunes
 					.playDittyFromSignsQuietly(mc.theWorld, entitySign.xCoord,
 							entitySign.yCoord, entitySign.zCoord, true,
 							signsToPlay);
@@ -653,7 +651,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 				helpState = HELP_STATE_HIDDEN;
 			} else {
 				// If helpState == HELP_STATE_HIDDEN or if the value is funky
-				// if (BlockSign.debug) {
+				// if (BlockSignMinetunes.debug) {
 				helpState = HELP_STATE_DETECT;
 				// } else {
 				// helpState = HELP_STATE_KEYWORD;
@@ -792,7 +790,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 		mc.displayGuiScreen(null);
 
 		// MC 1.3.1: Prevent clicking done button from activating sign
-		BlockSign.clickHeld = true;
+		BlockSignMinetunes.clickHeld = true;
 		RightClickCheckThread t = new RightClickCheckThread();
 		t.start();
 	}
@@ -1111,7 +1109,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 		// TODO: Handle color codes
 		if (allowedCharacters.indexOf(par1) >= 0
 				&& entitySign.signText[editLine].length() >= 15) {
-			// playTunesThread.play(BlockSign.getEndOfLineTune());
+			// playTunesThread.play(BlockSignMinetunes.getEndOfLineTune());
 			SFXManager.playEffect("step.wood");
 		}
 
@@ -1281,7 +1279,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 	 */
 	private void showCommentHelp(Comment comment) {
 		// Show generic comment help
-		helpTextArea.setText(BlockSign.COMMENT_HIGHLIGHT_CODE + "Comment:§r\n"
+		helpTextArea.setText(BlockSignMinetunes.COMMENT_HIGHLIGHT_CODE + "Comment:§r\n"
 				+ "\n" + "Text that isn't read as music.\n" + "\n"
 				+ "Goto and Patt keywords can jump to signs with comments.");
 		return;
@@ -1939,7 +1937,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 					break;
 				default:
 					keywordMessageColor = 0xffffff;
-					entitySign.highlightLine[i] = BlockSign.KEYWORD_HIGHLIGHT_CODE;
+					entitySign.highlightLine[i] = BlockSignMinetunes.KEYWORD_HIGHLIGHT_CODE;
 					break;
 				}
 
@@ -2013,7 +2011,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 			Point3D startBlock = new Point3D(entitySign.xCoord,
 					entitySign.yCoord, entitySign.zCoord);
 			Point3D pointedAtBlock = startBlock.clone();
-			int currSignFacing = BlockSign.getSignFacing(
+			int currSignFacing = BlockSignMinetunes.getSignFacing(
 					entitySign.getBlockMetadata(), entitySign.getBlockType());
 			for (int i = 0; i < entitySign.signText.length; i++) {
 				// On each line of the sign
@@ -2034,7 +2032,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 						// Adjust next sign position based on the amount to
 						// move and the current sign's facing
-						pointedAtBlock = BlockSign.getCoordsRelativeToSign(
+						pointedAtBlock = BlockSignMinetunes.getCoordsRelativeToSign(
 								pointedAtBlock, currSignFacing, amount, 0, 0);
 					}
 
@@ -2047,7 +2045,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 						// Adjust next sign position based on the amount to
 						// move and the current sign's facing
-						pointedAtBlock = BlockSign.getCoordsRelativeToSign(
+						pointedAtBlock = BlockSignMinetunes.getCoordsRelativeToSign(
 								pointedAtBlock, currSignFacing, 0, 0, amount);
 					}
 
@@ -2060,7 +2058,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 						// Adjust next sign position based on the amount to
 						// move and the current sign's facing
-						pointedAtBlock = BlockSign.getCoordsRelativeToSign(
+						pointedAtBlock = BlockSignMinetunes.getCoordsRelativeToSign(
 								pointedAtBlock, currSignFacing, 0, amount, 0);
 					}
 				}
@@ -2087,7 +2085,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 				} else if (pointedBlock == null) {
 					helpTextArea
 							.setText("§eGotos on sign point at something that isn't a sign.");
-				} else if (BlockSign.getSignBlockType(pointedAtBlock,
+				} else if (BlockSignMinetunes.getSignBlockType(pointedAtBlock,
 						mc.theWorld) != null) {
 					// Get sign's text
 					TileEntity pointedEntity = mc.theWorld.getBlockTileEntity(
@@ -2527,7 +2525,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 	// keywords.push("#");
 	// // Add the keywords to the buffer, formatting them
 	// for (String s : keywords) {
-	// b.append(BlockSign.KEYWORD_HIGHLIGHT_CODE);
+	// b.append(BlockSignMinetunes.KEYWORD_HIGHLIGHT_CODE);
 	// b.append(s);
 	// b.append("§r, ");
 	// }
@@ -2634,7 +2632,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 		if (filename != null) {
 			// Export signs to filename
 			try {
-				BlockSign.exportSignsToFile(savedSigns, new File(filename));
+				BlockSignMinetunes.exportSignsToFile(savedSigns, new File(filename));
 			} catch (IOException e) {
 				e.printStackTrace();
 				// TODO: Tell user something!
@@ -2646,7 +2644,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 	public void fileSelected(File f) {
 		if (f != null) {
 			try {
-				ArrayList<String[]> signsImported = BlockSign
+				ArrayList<String[]> signsImported = BlockSignMinetunes
 						.importSignsFromFile(f);
 				for (String[] sign : signsImported) {
 					addTextToSavedSigns(sign);

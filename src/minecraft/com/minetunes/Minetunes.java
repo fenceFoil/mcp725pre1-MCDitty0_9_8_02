@@ -78,7 +78,6 @@ import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntityNote;
 import net.minecraft.src.TileEntityRenderer;
 import net.minecraft.src.TileEntitySign;
-import net.minecraft.src.TileEntitySignRenderer;
 import net.minecraft.src.Vec3;
 import net.minecraft.src.World;
 import net.minecraft.src.WorldClient;
@@ -129,6 +128,7 @@ import com.minetunes.particle.NoteParticleRequest;
 import com.minetunes.particle.ParticleRequest;
 import com.minetunes.resources.UpdateResourcesThread;
 import com.minetunes.sfx.SFXManager;
+import com.minetunes.signs.BlockSignMinetunes;
 import com.minetunes.signs.Comment;
 import com.minetunes.signs.GuiEditSignMinetunes;
 import com.minetunes.signs.Packet130UpdateSignMinetunes;
@@ -144,7 +144,7 @@ import com.minetunes.signs.keywords.ProxPadKeyword;
  * things as they play during the game loop, handle keyboard and mouse input,
  * and hook into the Minecraft game loop.
  * 
- * TODO: Move many ditty-playing related methods from BlockSign to MineTunes
+ * TODO: Move many ditty-playing related methods from BlockSignMinetunes to MineTunes
  */
 public class Minetunes implements TickListener, NoNewSynthIndicator {
 
@@ -387,6 +387,9 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 
 	}
 
+	/**
+	 * Can be called multiple times; only takes effect on first call
+	 */
 	public static void initMinetunesMod() {
 		if (instance == null) {
 			// Start MCDitty!
@@ -395,7 +398,6 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 
 			// Also begin the tick hook entity checker
 			TickHookEntity.start();
-
 			addTickListenersToHookEntity();
 		}
 	}
@@ -494,13 +496,19 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 							Map registeredTileEntityRenderers = (Map) Finder
 									.getUniqueTypedFieldFromClass(
 											TileEntityRenderer.class,
-											Map.class, TileEntityRenderer.instance);
-							
+											Map.class,
+											TileEntityRenderer.instance);
+
 							if (registeredTileEntityRenderers != null) {
 								TileEntitySignRendererMinetunes r = new TileEntitySignRendererMinetunes();
 								r.setTileEntityRenderer(TileEntityRenderer.instance);
-								registeredTileEntityRenderers.put (TileEntitySignMinetunes.class, r);
+								registeredTileEntityRenderers.put(
+										TileEntitySignMinetunes.class, r);
 							}
+							
+							// Change the tile entity associated with BlockSign
+							Finder.setUniqueTypedFieldFromClass(BlockSign.class, Class.class, Block.signPost, TileEntitySignMinetunes.class);
+							Finder.setUniqueTypedFieldFromClass(BlockSign.class, Class.class, Block.signWall, TileEntitySignMinetunes.class);
 						} catch (IllegalArgumentException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -771,12 +779,12 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 					held = heldStack.itemID;
 				}
 
-				if (BlockSign.getSignBlockType(hoverPoint, minecraft.theWorld) != null) {
+				if (BlockSignMinetunes.getSignBlockType(hoverPoint, minecraft.theWorld) != null) {
 					// A sign has been clicked!
 					// Perform some functions of
-					// BlockSign.blockActivated
-					if (isIDPickaxe(held) && !BlockSign.clickHeld) {
-						BlockSign.clickHeld = true;
+					// BlockSignMinetunes.blockActivated
+					if (isIDPickaxe(held) && !BlockSignMinetunes.clickHeld) {
+						BlockSignMinetunes.clickHeld = true;
 						RightClickCheckThread t = new RightClickCheckThread();
 						t.start();
 
@@ -807,7 +815,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 					} else if (!isIDAxe(held)
 							&& !minecraft.thePlayer.isSneaking()) {
 						// Manually trigger blockActivated
-						((BlockSign) Block.signPost).blockActivated(
+						BlockSignMinetunes.blockActivated(
 								minecraft.theWorld, hoverPoint.x, hoverPoint.y,
 								hoverPoint.z, minecraft.thePlayer);
 					}
@@ -815,8 +823,8 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 					// If not aiming at a sign
 					if ((held == 270 || held == 274 || held == 285
 							|| held == 278 || held == 257)
-							&& !BlockSign.clickHeld) {
-						BlockSign.clickHeld = true;
+							&& !BlockSignMinetunes.clickHeld) {
+						BlockSignMinetunes.clickHeld = true;
 						RightClickCheckThread t = new RightClickCheckThread();
 						t.start();
 
@@ -1180,7 +1188,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 									// Start tune from this proximity sign
 									if (MinetunesConfig
 											.getBoolean("signs.proximityEnabled")) {
-										BlockSign
+										BlockSignMinetunes
 												.playDittyFromSigns(
 														Minecraft
 																.getMinecraft().theWorld,
@@ -1273,7 +1281,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 
 				// We can be pretty sure that x, y, z is a sign.
 				// Get type of sign
-				Block signType = BlockSign.getSignBlockType(
+				Block signType = BlockSignMinetunes.getSignBlockType(
 						new Point3D(bb.getPadX(), bb.getPadY(), bb.getPadZ()),
 						Minecraft.getMinecraft().theWorld);
 				if (signType == null) {
@@ -1282,7 +1290,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 				// System.out.println(": " + signType.blockID);
 
 				// Get sign facing
-				int facing = BlockSign.getSignFacing(
+				int facing = BlockSignMinetunes.getSignFacing(
 						Minecraft.getMinecraft().theWorld.getBlockMetadata(
 								bb.getPadX(), bb.getPadY(), bb.getPadZ()),
 						signType);
@@ -1320,7 +1328,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 
 					double z1 = 0;
 					double z2 = 0;
-					if (facing == BlockSign.FACES_SOUTH) {
+					if (facing == BlockSignMinetunes.FACES_SOUTH) {
 						// width is along x axis
 						x1 = (double) bb.getPadX() + 0.5d - (width / 2d);
 						x2 = (double) bb.getPadX() + 0.5d + (width / 2d);
@@ -1328,7 +1336,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 						// length is along z axis
 						z1 = bb.getPadZ();
 						z2 = z1 + length;
-					} else if (facing == BlockSign.FACES_NORTH) {
+					} else if (facing == BlockSignMinetunes.FACES_NORTH) {
 						// width is along x axis
 						x1 = (double) bb.getPadX() + 0.5d - (width / 2d);
 						x2 = (double) bb.getPadX() + 0.5d + (width / 2d);
@@ -1336,7 +1344,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 						// length is along z axis
 						z1 = bb.getPadZ() + 1;
 						z2 = z1 - length;
-					} else if (facing == BlockSign.FACES_EAST) {
+					} else if (facing == BlockSignMinetunes.FACES_EAST) {
 						// width is along z axis
 						z1 = (double) bb.getPadZ() + 0.5d - (width / 2d);
 						z2 = (double) bb.getPadZ() + 0.5d + (width / 2d);
@@ -1344,7 +1352,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 						// length is along x axis
 						x1 = bb.getPadX();
 						x2 = x1 + length;
-					} else if (facing == BlockSign.FACES_WEST) {
+					} else if (facing == BlockSignMinetunes.FACES_WEST) {
 						// width is along z axis
 						z1 = (double) bb.getPadZ() + 0.5d - (width / 2d);
 						z2 = (double) bb.getPadZ() + 0.5d + (width / 2d);
@@ -1443,7 +1451,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 				int damBlockX = damage.getPartialBlockX();
 				int damBlockY = damage.getPartialBlockY();
 				int damBlockZ = damage.getPartialBlockZ();
-				if (BlockSign.getSignBlockType(new Point3D(damBlockX,
+				if (BlockSignMinetunes.getSignBlockType(new Point3D(damBlockX,
 						damBlockY, damBlockZ), minecraft.theWorld) != null) {
 					TileEntity entity = Minecraft.getMinecraft().theWorld
 							.getBlockTileEntity(damBlockX, damBlockY, damBlockZ);

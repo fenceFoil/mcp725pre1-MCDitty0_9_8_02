@@ -29,8 +29,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.minecraft.src.BlockSign;
-
 import org.jfugue.JFugueException;
 
 import com.minetunes.CueScheduler;
@@ -38,6 +36,7 @@ import com.minetunes.config.MinetunesConfig;
 import com.minetunes.config.NoPlayTokens;
 import com.minetunes.disco.DiscoFloor;
 import com.minetunes.ditty.event.TimedDittyEvent;
+import com.minetunes.signs.BlockSignMinetunes;
 import com.minetunes.signs.SignDitty;
 
 /**
@@ -320,14 +319,14 @@ public class Ditty {
 				// Check tokens for errors
 				if (checkForErrors) {
 					try {
-						BlockSign.musicStringParser.parseTokenStrict(token);
+						BlockSignMinetunes.musicStringParser.parseTokenStrict(token);
 					} catch (JFugueException e) {
 						// Token is not a valid token
 						addErrorMessage("§b" + token + "§c: " + e.getMessage());
 						incrementBadTokens();
 						errorFree = false;
 						if (MinetunesConfig.DEBUG) {
-							BlockSign
+							BlockSignMinetunes
 									.simpleLog("addMusicStringTokens: Bad token found ("
 											+ token + "):");
 							e.printStackTrace();
@@ -339,7 +338,7 @@ public class Ditty {
 						incrementBadTokens();
 						errorFree = false;
 						if (MinetunesConfig.DEBUG) {
-							BlockSign
+							BlockSignMinetunes
 									.simpleLog("addMusicStringTokens: Really bad token found ("
 											+ token + "):");
 							e.printStackTrace();

@@ -27,8 +27,6 @@ package com.minetunes.dittyXML;
 import java.io.File;
 import java.util.LinkedList;
 
-import net.minecraft.src.BlockSign;
-
 import org.jfugue.elements.Note;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -41,6 +39,7 @@ import com.minetunes.ditty.Ditty;
 import com.minetunes.ditty.event.SFXInstrumentEvent;
 import com.minetunes.ditty.event.SFXInstrumentOffEvent;
 import com.minetunes.sfx.SFXManager;
+import com.minetunes.signs.BlockSignMinetunes;
 
 /**
  * Accepts a list of DittyXML container elements, and creates a Ditty from them.
@@ -322,12 +321,12 @@ public class DittyXMLParser {
 					// Reset element
 					// Add reset token to musicstring
 					ditty.addMusicStringTokens(musicStringBuffer,
-							BlockSign.getResetToken(ditty), false);
+							BlockSignMinetunes.getResetToken(ditty), false);
 				} else if (currNodeName.equals("syncVoices")) {
 					// SyncVoices element
 					// Add token to musicstring
 					ditty.addMusicStringTokens(musicStringBuffer,
-							BlockSign.SYNC_VOICES_TOKEN, false);
+							BlockSignMinetunes.SYNC_VOICES_TOKEN, false);
 				} else if (currNodeName.equals("syncWith")) {
 					// SyncWith element
 					// Add syncwith token to musicstring
@@ -347,11 +346,11 @@ public class DittyXMLParser {
 					// Finally, add token
 					if (layer != -1000) {
 						ditty.addMusicStringTokens(musicStringBuffer,
-								BlockSign.SYNC_WITH_TOKEN + "V" + voice + "L"
+								BlockSignMinetunes.SYNC_WITH_TOKEN + "V" + voice + "L"
 										+ layer, false);
 					} else {
 						ditty.addMusicStringTokens(musicStringBuffer,
-								BlockSign.SYNC_WITH_TOKEN + "V" + voice + "Lu",
+								BlockSignMinetunes.SYNC_WITH_TOKEN + "V" + voice + "Lu",
 								false);
 					}
 				} else if (currNodeName.equals("volume")) {
@@ -370,7 +369,7 @@ public class DittyXMLParser {
 
 					// Finally, add token
 					ditty.addMusicStringTokens(musicStringBuffer,
-							BlockSign.getAdjustedVolumeToken(percent, ditty),
+							BlockSignMinetunes.getAdjustedVolumeToken(percent, ditty),
 							false);
 				} else if (currNodeName.equals("repeat")) {
 					// Repeat element
@@ -564,7 +563,7 @@ public class DittyXMLParser {
 							sfxNameIncomplete, sfxNumber, tuning, -1, ditty
 									.getDittyID(), 0));
 					ditty.addMusicStringTokens(musicStringBuffer,
-							BlockSign.TIMED_EVENT_TOKEN + eventID, false);
+							BlockSignMinetunes.TIMED_EVENT_TOKEN + eventID, false);
 				} else if (currNodeName.equals("sfxInstOff")) {
 					int instrument = 0;
 
@@ -594,7 +593,7 @@ public class DittyXMLParser {
 							.addDittyEvent(new SFXInstrumentOffEvent(
 									instrument, -1, ditty.getDittyID()));
 					ditty.addMusicStringTokens(musicStringBuffer,
-							BlockSign.TIMED_EVENT_TOKEN + eventID, false);
+							BlockSignMinetunes.TIMED_EVENT_TOKEN + eventID, false);
 				}
 			}
 		}
@@ -649,7 +648,7 @@ public class DittyXMLParser {
 	// }
 	// } else if (nodeName.equalsIgnoreCase("reset")) {
 	// // Add reset token to musicString
-	// musicStringBuffer.append(BlockSign.getResetToken(ditty));
+	// musicStringBuffer.append(BlockSignMinetunes.getResetToken(ditty));
 	// }
 	// }
 	// }

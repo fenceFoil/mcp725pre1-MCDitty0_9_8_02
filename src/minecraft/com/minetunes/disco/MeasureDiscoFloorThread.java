@@ -27,12 +27,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-import com.minetunes.Point3D;
-
 import net.minecraft.src.Block;
-import net.minecraft.src.BlockSign;
 import net.minecraft.src.TileEntitySign;
 import net.minecraft.src.World;
+
+import com.minetunes.Point3D;
+import com.minetunes.signs.BlockSignMinetunes;
 
 /**
  * Measures a disco floor's size, scanning for wool blocks connected to the
@@ -67,7 +67,7 @@ public class MeasureDiscoFloorThread extends Thread {
 
 		// Determing where to start measuring from: find the wool block this
 		// sign is mounted on
-		startBlock = BlockSign.getBlockAttachedTo(anchor);
+		startBlock = BlockSignMinetunes.getBlockAttachedTo(anchor);
 
 		// Flood fill wool sheet
 		// TODO: Fill a wool AREA, then remove any blocks that aren't visible

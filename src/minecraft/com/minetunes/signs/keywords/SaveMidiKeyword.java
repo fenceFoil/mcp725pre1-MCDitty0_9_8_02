@@ -23,8 +23,7 @@
  */
 package com.minetunes.signs.keywords;
 
-import net.minecraft.src.BlockSign;
-
+import com.minetunes.signs.BlockSignMinetunes;
 import com.minetunes.signs.ParsedSign;
 
 /**
@@ -62,7 +61,7 @@ public class SaveMidiKeyword extends ParsedKeyword {
 			setGoodKeyword(false);
 			setErrorMessageType(ERROR);
 			setErrorMessage("A MIDI file name should only contain letters and numbers (no spaces)");
-			BlockSign.simpleLog("Bad filename: " + givenFilename);
+			BlockSignMinetunes.simpleLog("Bad filename: " + givenFilename);
 			return;
 		} else if (givenFilename.equals("")) {
 			// Empty filenames are frowned upon

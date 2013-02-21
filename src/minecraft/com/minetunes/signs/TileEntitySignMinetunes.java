@@ -28,7 +28,6 @@ import java.util.LinkedList;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
-import net.minecraft.src.BlockSign;
 import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.TileEntitySign;
 
@@ -192,7 +191,7 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 	public boolean isAnchorBlockOpaque() {
 		if (!opaqueAnchorCalculated) {
 			try {
-				Point3D blockBehindSign = BlockSign.getBlockAttachedTo(this);
+				Point3D blockBehindSign = BlockSignMinetunes.getBlockAttachedTo(this);
 				if (Block.blocksList[Minecraft.getMinecraft().theWorld
 						.getBlockId(blockBehindSign.x, blockBehindSign.y,
 								blockBehindSign.z)].isOpaqueCube()) {

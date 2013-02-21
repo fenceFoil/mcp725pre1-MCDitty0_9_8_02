@@ -43,6 +43,7 @@ import com.minetunes.Point3D;
 import com.minetunes.config.MinetunesConfig;
 import com.minetunes.ditty.event.CueEvent;
 import com.minetunes.particle.ParticleRequest;
+import com.minetunes.signs.BlockSignMinetunes;
 import com.minetunes.signs.SignParser;
 import com.minetunes.signs.TileEntitySignMinetunes;
 import com.minetunes.signs.keywords.NoteblockTriggerKeyword;
@@ -68,8 +69,8 @@ public class BlockNoteMinetunes extends BlockNote {
 
 	public static void removeNormalNoteBlockFromList()
 			throws IllegalArgumentException, IllegalAccessException {
-		Object blockListObj = Finder.getUniqueTypedFieldFromClass(
-				Block.class, Block[].class, null);
+		Object blockListObj = Finder.getUniqueTypedFieldFromClass(Block.class,
+				Block[].class, null);
 		if (blockListObj != null && blockListObj instanceof Block[]) {
 			Block[] blockList = (Block[]) blockListObj;
 			blockList[25] = null;
@@ -192,7 +193,8 @@ public class BlockNoteMinetunes extends BlockNote {
 				Minetunes.showNoteblockTooltip((TileEntityNote) tile);
 
 				if (!isTuning
-						&& !MinetunesConfig.getBoolean("noteblock.signsDisabled")) {
+						&& !MinetunesConfig
+								.getBoolean("noteblock.signsDisabled")) {
 					// And show a lyric too
 					activateAnyAdjacentSigns((TileEntityNote) tile);
 				}
@@ -210,7 +212,7 @@ public class BlockNoteMinetunes extends BlockNote {
 			if (adjust != 0) {
 				noteType = noteType + "_" + adjust + "o";
 			}
-			
+
 			world.playSoundEffect((double) x + 0.5D, (double) y + 0.5D,
 					(double) z + 0.5D, "note." + noteType, 3.0F,
 					pitchMultiplier);
@@ -240,8 +242,8 @@ public class BlockNoteMinetunes extends BlockNote {
 		int lastNull = 0;
 		for (int i = 0; i < nearby.size(); i++) {
 			// If point has no sign, ignore it
-			Block blockType = BlockSign.getSignBlockType(nearby.get(i),
-					tile.getWorldObj());
+			Block blockType = BlockSignMinetunes.getSignBlockType(
+					nearby.get(i), tile.getWorldObj());
 			if (blockType == null || blockType == Block.signPost) {
 				// Not a sign, or definitely not attached to noteblock
 				nearby.set(i, null);
@@ -258,9 +260,9 @@ public class BlockNoteMinetunes extends BlockNote {
 					continue;
 				}
 
-				if (!BlockSign.getBlockAttachedTo((TileEntitySign) signTile)
-						.equals(new Point3D(tile.xCoord, tile.yCoord,
-								tile.zCoord))) {
+				if (!BlockSignMinetunes.getBlockAttachedTo(
+						(TileEntitySign) signTile).equals(
+						new Point3D(tile.xCoord, tile.yCoord, tile.zCoord))) {
 					// Sign isn't attached to noteblock. Ignore.
 					nearby.set(i, null);
 					lastNull = i;
@@ -307,17 +309,18 @@ public class BlockNoteMinetunes extends BlockNote {
 
 			if (SignParser.parseKeyword(tile.getSignTextNoCodes()[0]) instanceof NoteblockTriggerKeyword) {
 				// Start ditty
-				BlockSign.playDittyFromSigns(noteTile.getWorldObj(),
+				BlockSignMinetunes.playDittyFromSigns(noteTile.getWorldObj(),
 						signPoint.x, signPoint.y, signPoint.z, true);
 			} else {
 				// Read lyric
-				lyricBuffer.add(BlockSign.readLyricFromSign(0,
+				lyricBuffer.add(BlockSignMinetunes.readLyricFromSign(0,
 						tile.getSignTextNoCodes(), ""));
 			}
 		}
 
 		for (int i = 0; i < 8; i++) {
-			Minetunes.requestParticle(new ParticleRequest(signPoint, "snowshovel"));
+			Minetunes.requestParticle(new ParticleRequest(signPoint,
+					"snowshovel"));
 		}
 	}
 
@@ -422,10 +425,11 @@ public class BlockNoteMinetunes extends BlockNote {
 	}
 
 	private static int getBlockOctaveAdjust(int x, int y, int z) {
-		if (Minecraft.getMinecraft() == null || Minecraft.getMinecraft().theWorld == null) {
+		if (Minecraft.getMinecraft() == null
+				|| Minecraft.getMinecraft().theWorld == null) {
 			return 0;
 		}
-		
+
 		int blockID = Minecraft.getMinecraft().theWorld.getBlockId(x, y, z);
 		// System.out.println (blockID);
 		if (blockID == Block.netherrack.blockID) {
@@ -448,6 +452,6 @@ public class BlockNoteMinetunes extends BlockNote {
 	@Override
 	public int getBlockTextureFromSide(int par1) {
 		return super.getBlockTextureFromSide(par1);
-	}	
+	}
 
 }

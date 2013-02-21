@@ -30,8 +30,6 @@ import java.util.TreeSet;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 
-import net.minecraft.src.BlockSign;
-
 import org.jfugue.elements.ChannelPressure;
 import org.jfugue.elements.Controller;
 import org.jfugue.elements.Instrument;
@@ -49,9 +47,9 @@ import org.jfugue.elements.Time;
 import org.jfugue.elements.Voice;
 
 import com.minetunes.config.MinetunesConfig;
+import com.minetunes.ditty.DittyEventReadListener;
 import com.minetunes.ditty.InstrumentEventReadListener;
 import com.minetunes.ditty.LyricEventReadListener;
-import com.minetunes.ditty.DittyEventReadListener;
 import com.minetunes.ditty.ParticleWorthyNoteReadListener;
 import com.minetunes.ditty.TempoEventReadListener;
 import com.minetunes.jfugue.rendererEffect.AccelerateEffect;
@@ -62,6 +60,7 @@ import com.minetunes.jfugue.rendererEffect.StaccatoEffect;
 import com.minetunes.jfugue.rendererEffect.TempoEffect;
 import com.minetunes.jfugue.rendererEffect.TimedJFugueElement;
 import com.minetunes.jfugue.rendererEffect.TransposeEffect;
+import com.minetunes.signs.BlockSignMinetunes;
 
 /**
  * This class takes a Pattern, and turns it into wonderful music.
@@ -246,7 +245,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 
 	public void voiceEvent(Voice voice) {
 		// MCDitty: End current sign
-		mcDittyEvent(new MCDittyEvent(BlockSign.SIGN_END_TOKEN + currentSignID));
+		mcDittyEvent(new MCDittyEvent(BlockSignMinetunes.SIGN_END_TOKEN + currentSignID));
 
 		// Original code (the only line left!)
 		this.eventManager.setCurrentTrack(voice.getVoice());
@@ -255,7 +254,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 		currentTrack = voice.getVoice();
 
 		// Reset current sign location
-		mcDittyEvent(new MCDittyEvent(BlockSign.SIGN_START_TOKEN
+		mcDittyEvent(new MCDittyEvent(BlockSignMinetunes.SIGN_START_TOKEN
 				+ currentSignID));
 	}
 
@@ -341,7 +340,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 
 	public void layerEvent(Layer layer) {
 		// MCDitty: End current sign
-		mcDittyEvent(new MCDittyEvent(BlockSign.SIGN_END_TOKEN + currentSignID));
+		mcDittyEvent(new MCDittyEvent(BlockSignMinetunes.SIGN_END_TOKEN + currentSignID));
 
 		this.eventManager.setCurrentLayer(layer.getLayer());
 
@@ -349,7 +348,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 		currentLayer = layer.getLayer();
 
 		// Reset current sign location
-		mcDittyEvent(new MCDittyEvent(BlockSign.SIGN_START_TOKEN
+		mcDittyEvent(new MCDittyEvent(BlockSignMinetunes.SIGN_START_TOKEN
 				+ currentSignID));
 	}
 
@@ -553,12 +552,12 @@ public final class MidiRenderer extends ParserListenerAdapter {
 
 		// Actually do something
 		String token = event.getToken();
-		if (token.equalsIgnoreCase(BlockSign.SYNC_VOICES_TOKEN)) {
+		if (token.equalsIgnoreCase(BlockSignMinetunes.SYNC_VOICES_TOKEN)) {
 			eventManager.alignChannelTimes();
 		} else if (token.toLowerCase().startsWith(
-				BlockSign.SYNC_WITH_TOKEN.toLowerCase())) {
+				BlockSignMinetunes.SYNC_WITH_TOKEN.toLowerCase())) {
 			// Parse token
-			String arguments = token.substring(BlockSign.SYNC_WITH_TOKEN
+			String arguments = token.substring(BlockSignMinetunes.SYNC_WITH_TOKEN
 					.length());
 
 			// Get voice
@@ -594,21 +593,21 @@ public final class MidiRenderer extends ParserListenerAdapter {
 			}
 			eventManager.syncCurrVoiceAndLayerWith(voice, layer);
 		} else if (token.toLowerCase().startsWith(
-				BlockSign.SIGN_START_TOKEN.toLowerCase())) {
+				BlockSignMinetunes.SIGN_START_TOKEN.toLowerCase())) {
 			// Note current sign id
 			currentSignID = Integer.parseInt(token.substring(2));
-		} else if (BlockSign.isNoteEffectToken(token)) {
+		} else if (BlockSignMinetunes.isNoteEffectToken(token)) {
 			// Get useful info from token
-			boolean isOffToken = BlockSign.getNoteEffectTokenOff(token);
-			String type = BlockSign.getNoteEffectTokenType(token).toLowerCase();
-			String[] args = BlockSign.getNoteEffectTokenArgs(token);
+			boolean isOffToken = BlockSignMinetunes.getNoteEffectTokenOff(token);
+			String type = BlockSignMinetunes.getNoteEffectTokenType(token).toLowerCase();
+			String[] args = BlockSignMinetunes.getNoteEffectTokenArgs(token);
 
 			// Execute according to type
 
 			// Effect to add
 			RendererEffect effect = null;
 
-			if (type.equals(BlockSign.NOTE_EFFECT_STACCATO)) {
+			if (type.equals(BlockSignMinetunes.NOTE_EFFECT_STACCATO)) {
 				if (isOffToken) {
 					// Turn off all staccato effects for curr track
 					removeAllEffects(currentTrack, new StaccatoEffect(0d, 0));
@@ -628,7 +627,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 
 					effect = new StaccatoEffect(endTime, eighths);
 				}
-			} else if (type.equals(BlockSign.NOTE_EFFECT_TRANSPOSE)) {
+			} else if (type.equals(BlockSignMinetunes.NOTE_EFFECT_TRANSPOSE)) {
 				if (isOffToken) {
 					// Turn off all transposition on current track
 					removeAllEffects(currentTrack, new TransposeEffect(0d, 0));
@@ -647,7 +646,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 
 					effect = new TransposeEffect(endTime, tones);
 				}
-			} else if (type.equals(BlockSign.NOTE_EFFECT_ACCELERATE)) {
+			} else if (type.equals(BlockSignMinetunes.NOTE_EFFECT_ACCELERATE)) {
 				// Create an acceleration in the current track
 				int bpm = Integer.parseInt(args[0]);
 				double duration = Double.parseDouble(args[1]);
@@ -657,7 +656,7 @@ public final class MidiRenderer extends ParserListenerAdapter {
 				Double endTime = eventManager.getTrackTimerDec() + duration;
 
 				effect = new AccelerateEffect(endTime, bpm, duration);
-			} else if (type.equals(BlockSign.NOTE_EFFECT_OCTAVES)) {
+			} else if (type.equals(BlockSignMinetunes.NOTE_EFFECT_OCTAVES)) {
 				// Read the affected octaves
 				LinkedList<Integer> octaves = new LinkedList<Integer>();
 				for (String s : args) {

@@ -2,7 +2,6 @@ package com.minetunes.signs;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
-import net.minecraft.src.BlockSign;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.MathHelper;
 import net.minecraft.src.ModelSign;
@@ -174,7 +173,7 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 
 			// Eliminate sign texts if they face same way as player
 
-			int signFacing = BlockSign.getSignFacing(signEntity.blockMetadata,
+			int signFacing = BlockSignMinetunes.getSignFacing(signEntity.blockMetadata,
 					signEntity.blockType);
 			if (renderText) {
 				if (signFacing == playerFacingThisTick) {
