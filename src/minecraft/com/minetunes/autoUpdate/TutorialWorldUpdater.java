@@ -33,7 +33,6 @@ import net.minecraft.src.GuiMainMenu;
 import net.minecraft.src.StatList;
 import net.minecraft.src.WorldClient;
 
-import com.minetunes.CompareVersion;
 import com.minetunes.Minetunes;
 import com.minetunes.Point3D;
 import com.minetunes.config.MinetunesConfig;

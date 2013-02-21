@@ -1,4 +1,4 @@
-package com.minetunes;
+package com.minetunes.autoUpdate;
 
 /**
  * Code from:

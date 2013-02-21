@@ -67,6 +67,7 @@ import com.minetunes.ditty.event.SFXEvent;
 import com.minetunes.ditty.event.SFXInstrumentEvent;
 import com.minetunes.ditty.event.SFXInstrumentOffEvent;
 import com.minetunes.ditty.event.VolumeEvent;
+import com.minetunes.gui.signEditor.GuiEditSignMinetunes;
 import com.minetunes.particle.ParticleRequest;
 import com.minetunes.signs.keywords.AccelerateKeyword;
 import com.minetunes.signs.keywords.DiscoKeyword;

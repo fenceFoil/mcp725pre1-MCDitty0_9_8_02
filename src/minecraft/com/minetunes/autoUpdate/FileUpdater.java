@@ -25,7 +25,11 @@ package com.minetunes.autoUpdate;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -130,7 +134,7 @@ public class FileUpdater {
 		if (latestURL != null) {
 			fireFileUpdaterEvent(UpdateEventLevel.INFO, "Download",
 					"Downloading...");
-			ResourceManager.downloadFile(latestURL, destFile.getPath());
+			FileUpdater.downloadFile(latestURL, destFile.getPath());
 			fireFileUpdaterEvent(UpdateEventLevel.INFO, "Download",
 					"Downloaded successfully.");
 		} else {
@@ -174,6 +178,26 @@ public class FileUpdater {
 			String event) {
 		for (FileUpdaterListener l : listeners) {
 			l.onUpdaterEvent(level, stage, event);
+		}
+	}
+
+	public static File downloadFile(String url, String destFilename) {
+		// Download file
+		try {
+			URL versionDownloadURL = new URL(url);
+			File destFile = new File(destFilename);
+			ReadableByteChannel downloadByteChannel = Channels
+					.newChannel(versionDownloadURL.openStream());
+			FileOutputStream newVersionZipFileOutputStream = new FileOutputStream(
+					destFile);
+			newVersionZipFileOutputStream.getChannel().transferFrom(
+					downloadByteChannel, 0, Long.MAX_VALUE);
+			downloadByteChannel.close();
+			newVersionZipFileOutputStream.close();
+			return destFile;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 

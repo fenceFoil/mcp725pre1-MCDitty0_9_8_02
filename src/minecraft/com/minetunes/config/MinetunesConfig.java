@@ -35,8 +35,8 @@ import net.minecraft.client.Minecraft;
 
 import com.minetunes.CachedCustomSoundfont;
 import com.minetunes.Color4f;
-import com.minetunes.CompareVersion;
 import com.minetunes.Minetunes;
+import com.minetunes.autoUpdate.CompareVersion;
 import com.minetunes.config.legacy.MCDittyConfigConverter;
 import com.minetunes.signs.TileEntitySignRendererMinetunes;
 

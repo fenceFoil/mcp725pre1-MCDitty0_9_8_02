@@ -1,15 +1,18 @@
 package com.minetunes.gui;
 
+import java.io.File;
+
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
 
 import org.lwjgl.input.Keyboard;
 
-import com.minetunes.CompareVersion;
 import com.minetunes.Minetunes;
+import com.minetunes.autoUpdate.CompareVersion;
 import com.minetunes.autoUpdate.FileUpdaterListener;
 import com.minetunes.autoUpdate.UpdateEventLevel;
 import com.minetunes.config.MinetunesConfig;
+import com.minetunes.resources.ResourceManager;
 import com.minetunes.signs.BlockSignMinetunes;
 
 /**
@@ -149,8 +152,14 @@ public class MinetunesUpdateGui extends GuiScreen implements
 				public void run() {
 					Minetunes.autoUpdater.addFileUpdaterListener(thisGui);
 
-					boolean result = Minetunes.autoUpdater
-							.autoUpdate(MinetunesConfig.MC_CURRENT_VERSION);
+					boolean result = Minetunes.autoUpdater.autoUpdate(
+							MinetunesConfig.MC_CURRENT_VERSION,
+							new File(MinetunesConfig.getMinetunesDir(),
+									"versions"),
+							new File(MinetunesConfig.getMinetunesDir(),
+									"jarSwapper.jar"),
+							ResourceManager
+									.getResource("autoUpdate/swapperJar/AutoUpdateJarSwapper.jar"));
 
 					if (result) {
 						Minetunes

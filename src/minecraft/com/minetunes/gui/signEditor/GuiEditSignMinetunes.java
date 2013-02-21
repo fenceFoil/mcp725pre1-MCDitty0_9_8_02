@@ -24,7 +24,7 @@
  * along with MineTunes. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
-package com.minetunes.signs;
+package com.minetunes.gui.signEditor;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,10 +71,14 @@ import com.minetunes.gui.FileSelectorGuiListener;
 import com.minetunes.gui.GuiScrollingTextPanel;
 import com.minetunes.gui.MinetunesGui;
 import com.minetunes.gui.MinetunesVersionGuiElement;
-import com.minetunes.gui.signEditor.GuiEditSignNoteHelpParserListener;
-import com.minetunes.gui.signEditor.SignEditorGuideGui;
 import com.minetunes.resources.ResourceManager;
 import com.minetunes.sfx.SFXManager;
+import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.Comment;
+import com.minetunes.signs.ParsedSign;
+import com.minetunes.signs.SignParser;
+import com.minetunes.signs.TileEntitySignMinetunes;
+import com.minetunes.signs.TileEntitySignRendererMinetunes;
 import com.minetunes.signs.keywords.ExplicitGotoKeyword;
 import com.minetunes.signs.keywords.GotoKeyword;
 import com.minetunes.signs.keywords.LyricKeyword;

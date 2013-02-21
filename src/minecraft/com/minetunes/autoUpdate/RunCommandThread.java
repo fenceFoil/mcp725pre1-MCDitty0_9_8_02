@@ -36,7 +36,7 @@ public class RunCommandThread extends Thread {
 
 	public RunCommandThread(String cmd) {
 		this.cmd = cmd;
-		setName("MineTunes Shutdown Command Runner");
+		setName("Shutdown Command Runner");
 	}
 
 	@Override

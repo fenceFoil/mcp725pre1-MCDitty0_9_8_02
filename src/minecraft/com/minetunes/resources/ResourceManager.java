@@ -32,9 +32,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
@@ -175,26 +173,6 @@ public class ResourceManager {
 			if (destination != null) {
 				destination.close();
 			}
-		}
-	}
-
-	public static File downloadFile(String url, String destFilename) {
-		// Download file
-		try {
-			URL versionDownloadURL = new URL(url);
-			File destFile = new File(destFilename);
-			ReadableByteChannel downloadByteChannel = Channels
-					.newChannel(versionDownloadURL.openStream());
-			FileOutputStream newVersionZipFileOutputStream = new FileOutputStream(
-					destFile);
-			newVersionZipFileOutputStream.getChannel().transferFrom(
-					downloadByteChannel, 0, Long.MAX_VALUE);
-			downloadByteChannel.close();
-			newVersionZipFileOutputStream.close();
-			return destFile;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
 		}
 	}
 

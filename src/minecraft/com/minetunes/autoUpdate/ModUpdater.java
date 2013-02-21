@@ -37,16 +37,9 @@ import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.BlockSign;
-
-import com.minetunes.CompareVersion;
-import com.minetunes.config.MinetunesConfig;
-import com.minetunes.resources.ResourceManager;
 
 /**
  * @author William
@@ -156,7 +149,7 @@ public class ModUpdater extends FileUpdater {
 	 * @param messagePrefix
 	 * @return
 	 */
-	public boolean autoUpdate(String mcVer) {
+	public boolean autoUpdate(String mcVer, File zipDir, File jarSwapperDir, InputStream jarSwapperInputStream) {
 		if (alreadyRun) {
 			fireFileUpdaterEvent(UpdateEventLevel.WARN, "",
 					"Can't auto-update twice! Restart Minecraft before trying again.");
@@ -199,8 +192,7 @@ public class ModUpdater extends FileUpdater {
 		// Download new version of MineTunes!
 
 		// Create folder to download into
-		File downloadDir = new File(MinetunesConfig.getMinetunesDir().getPath()
-				+ "Versions" + File.separator);
+		File downloadDir = zipDir;
 		if (!downloadDir.exists()) {
 			downloadDir.mkdirs();
 		}
@@ -213,7 +205,7 @@ public class ModUpdater extends FileUpdater {
 				"Saving as " + modZipFile.getPath());
 
 		// Do the download
-		ResourceManager.downloadFile(foundVersionURL, modZipFile.getPath());
+		FileUpdater.downloadFile(foundVersionURL, modZipFile.getPath());
 		fireFileUpdaterEvent(UpdateEventLevel.INFO, "Downloading",
 				"Downloaded to " + modZipFile.getPath());
 
@@ -360,12 +352,10 @@ public class ModUpdater extends FileUpdater {
 		// Extract renaming script to file
 		fireFileUpdaterEvent(UpdateEventLevel.INFO, "Swapper",
 				"Extracting jar swapper...");
-		File jarSwapperFile = new File(MinetunesConfig.getMinetunesDir()
-				.getPath() + "JarSwapper.jar");
+		File jarSwapperFile = new File(jarSwapperDir + File.separator + "jarSwapper.jar");
 		try {
 			ReadableByteChannel jarSwapperChannel = Channels
-					.newChannel(ResourceManager
-							.getResource("autoUpdate/swapperJar/AutoUpdateJarSwapper.jar"));
+					.newChannel(jarSwapperInputStream);
 			FileOutputStream jarSwapperFileOutputStream = new FileOutputStream(
 					jarSwapperFile);
 			// Do the transfer

@@ -28,8 +28,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
-import com.minetunes.CompareVersion;
 import com.minetunes.Minetunes;
+import com.minetunes.autoUpdate.CompareVersion;
+import com.minetunes.autoUpdate.FileUpdater;
 import com.minetunes.config.MinetunesConfig;
 
 /**
@@ -130,7 +131,7 @@ public class UpdateResourcesThread extends Thread {
 		if (!resourcesDir.exists()) {
 			resourcesDir.mkdirs();
 		}
-		File zipFile = ResourceManager.downloadFile(downloadURL,
+		File zipFile = FileUpdater.downloadFile(downloadURL,
 				resourcesDir.getPath() + File.separator + "resourcesVer"
 						+ resourcesVersion + ".zip");
 		if (zipFile == null) {
