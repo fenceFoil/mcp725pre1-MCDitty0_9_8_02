@@ -26,6 +26,7 @@ package com.minetunes.noteblocks;
 import net.minecraft.src.Entity;
 import net.minecraft.src.EntityNoteFX;
 import net.minecraft.src.FontRenderer;
+import net.minecraft.src.MathHelper;
 import net.minecraft.src.Render;
 import net.minecraft.src.Tessellator;
 
@@ -71,9 +72,9 @@ public class RenderNoteBlockTooltip extends Render {
 			var15.startDrawingQuads();
 			int var17 = fontRenderer.getStringWidth(labelText) / 2;
 			double xVel = (double) (entity.getNoteTile().note) / 24d;
-			float r = EntityNoteFX.getRedForNote(xVel);
-			float g = EntityNoteFX.getGreenForNote(xVel);
-			float b = EntityNoteFX.getBlueForNote(xVel);
+			float r = getRedForNote(xVel);
+			float g = getGreenForNote(xVel);
+			float b = getBlueForNote(xVel);
 			var15.setColorRGBA_F(r, g, b, 0.75F * entity.getOpacity());
 			var15.addVertex((double) (-var17 - 1), (double) (-1), 0.0D);
 			var15.addVertex((double) (-var17 - 1), (double) (8), 0.0D);
@@ -98,6 +99,20 @@ public class RenderNoteBlockTooltip extends Render {
 			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 			GL11.glPopMatrix();
 		}
+	}
+	
+	public static float getBlueForNote(double xVel) {
+		return MathHelper.sin(((float) xVel + 0.6666667F) * (float) Math.PI
+				* 2.0F) * 0.65F + 0.35F;
+	}
+
+	public static float getGreenForNote(double xVel) {
+		return MathHelper.sin(((float) xVel + 0.33333334F) * (float) Math.PI
+				* 2.0F) * 0.65F + 0.35F;
+	}
+
+	public static float getRedForNote(double xVel) {
+		return MathHelper.sin(((float) xVel + 0.0F) * (float) Math.PI * 2.0F) * 0.65F + 0.35F;
 	}
 
 }
