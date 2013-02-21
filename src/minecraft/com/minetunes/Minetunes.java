@@ -76,6 +76,7 @@ import net.minecraft.src.RenderManager;
 import net.minecraft.src.ScaledResolution;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntityNote;
+import net.minecraft.src.TileEntityRenderer;
 import net.minecraft.src.TileEntitySign;
 import net.minecraft.src.TileEntitySignRenderer;
 import net.minecraft.src.Vec3;
@@ -134,6 +135,7 @@ import com.minetunes.signs.Packet130UpdateSignMinetunes;
 import com.minetunes.signs.SignLine;
 import com.minetunes.signs.SignParser;
 import com.minetunes.signs.TileEntitySignMinetunes;
+import com.minetunes.signs.TileEntitySignRendererMinetunes;
 import com.minetunes.signs.keywords.ParsedKeyword;
 import com.minetunes.signs.keywords.ProxPadKeyword;
 
@@ -390,10 +392,10 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 			// Start MCDitty!
 			instance = new Minetunes();
 			instance.load();
-			
+
 			// Also begin the tick hook entity checker
 			TickHookEntity.start();
-			
+
 			addTickListenersToHookEntity();
 		}
 	}
@@ -439,7 +441,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 
 		// Init the Sign Renderer Trig Tables
 		startTime = System.currentTimeMillis();
-		TileEntitySignRenderer.createTrigTables();
+		TileEntitySignRendererMinetunes.createTrigTables();
 		long trigLoadTime = System.currentTimeMillis() - startTime;
 
 		// Start the entity checker update thread
@@ -454,7 +456,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					
+
 					Minecraft m = Minecraft.getMinecraft();
 
 					// Also register all entity renderers
@@ -486,11 +488,26 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 								}
 
 							}
+
+							// While we're here
+							// Register all tile entity renderers
+							Map registeredTileEntityRenderers = (Map) Finder
+									.getUniqueTypedFieldFromClass(
+											TileEntityRenderer.class,
+											Map.class, TileEntityRenderer.instance);
+							
+							if (registeredTileEntityRenderers != null) {
+								TileEntitySignRendererMinetunes r = new TileEntitySignRendererMinetunes();
+								r.setTileEntityRenderer(TileEntityRenderer.instance);
+								registeredTileEntityRenderers.put (TileEntitySignMinetunes.class, r);
+							}
 						} catch (IllegalArgumentException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						} catch (IllegalAccessException e) {
 							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (Exception e) {
 							e.printStackTrace();
 						}
 					}
@@ -2221,12 +2238,12 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	 * @param hookEntity2
 	 */
 	private static void addTickListenersToHookEntity() {
-	
+
 		// Add MineTunes and the fireworks exploder
 		TickHookEntity.addTickListener(instance);
 		TickHookEntity.addTickListener(fireworkExploder);
 		TickHookEntity.addTickListener(blockTuneManager);
-	
+
 		// TEMP TODO: Added bugfix
 		// Apply bugfix for empty jukeboxes ejecting null itemstack if loaded
 		// from save file and broken

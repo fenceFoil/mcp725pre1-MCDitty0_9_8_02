@@ -673,7 +673,8 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 			// Clear old code
 			String currCode = entitySign.signColorCode;
-			TileEntitySignRenderer.removeSignColorCodes(entitySign.signText);
+			TileEntitySignRendererMinetunes
+					.removeSignColorCodes(entitySign.signText);
 
 			if (entitySign.signText[2].length() <= 13) {
 				String newCode = "f";
@@ -700,7 +701,8 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 			// Clear old code
 			String currCode = entitySign.signColorCode;
-			TileEntitySignRenderer.removeSignColorCodes(entitySign.signText);
+			TileEntitySignRendererMinetunes
+					.removeSignColorCodes(entitySign.signText);
 
 			if (entitySign.signText[2].length() <= 13) {
 				String newCode = "f";
@@ -732,7 +734,8 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 			updateButtons();
 		} else if (par1GuiButton.id == 2300) {
 			// Clear color
-			TileEntitySignRenderer.removeSignColorCodes(entitySign.signText);
+			TileEntitySignRendererMinetunes
+					.removeSignColorCodes(entitySign.signText);
 			entitySign.updateEntity();
 		}
 	}
@@ -1165,7 +1168,8 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 		// Add any locked color code
 		if (lockedCode != null) {
-			TileEntitySignRenderer.removeSignColorCodes(entitySign.signText);
+			TileEntitySignRendererMinetunes
+					.removeSignColorCodes(entitySign.signText);
 			if (entitySign.signText[2].length() <= 13) {
 				entitySign.signText[2] += "%" + lockedCode;
 			}

@@ -23,16 +23,15 @@
  */
 package com.minetunes.gui;
 
-import java.awt.image.TileObserver;
 import java.io.IOException;
 
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
-import net.minecraft.src.TileEntitySignRenderer;
 
 import org.lwjgl.input.Keyboard;
 
 import com.minetunes.config.MinetunesConfig;
+import com.minetunes.signs.TileEntitySignRendererMinetunes;
 
 /**
  * 
@@ -91,12 +90,12 @@ public class GraphicsGui extends GuiScreen {
 				"Doesn't render text on hidden sides of signs or wall signs on other sides of walls.",
 				width / 2, 80, 0xffffff);
 
-		if (TileEntitySignRenderer.areSignsCurrentlyBeingRendered()) {
+		if (TileEntitySignRendererMinetunes.areSignsCurrentlyBeingRendered()) {
 			drawCenteredString(fontRenderer, "Frame Counter: "
-					+ TileEntitySignRenderer.fpsCounter, width / 2, 130,
+					+ TileEntitySignRendererMinetunes.fpsCounter, width / 2, 130,
 					0xaaaaff);
 			drawCenteredString(fontRenderer, "FPS: "
-					+ TileEntitySignRenderer.currentFPS, width / 2, 145,
+					+ TileEntitySignRendererMinetunes.currentFPS, width / 2, 145,
 					0xaaaaff);
 		} else {
 //			drawCenteredString(fontRenderer, "FPS: No signs nearby, or game is paused.", width / 2, 145,

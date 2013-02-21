@@ -23,27 +23,22 @@
  */
 package com.minetunes.config;
 
-import java.awt.image.TileObserver;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.security.acl.LastOwnerException;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
+
+import net.minecraft.client.Minecraft;
 
 import com.minetunes.CachedCustomSoundfont;
 import com.minetunes.Color4f;
 import com.minetunes.CompareVersion;
 import com.minetunes.Minetunes;
 import com.minetunes.config.legacy.MCDittyConfigConverter;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.src.GuiEditSign;
-import net.minecraft.src.TileEntitySignRenderer;
-import net.minecraft.src.World;
+import com.minetunes.signs.TileEntitySignRendererMinetunes;
 
 /**
  * Represents the values stored in the MineTunes config file and other
@@ -298,8 +293,8 @@ public class MinetunesConfig {
 
 		// Push this value to the sign renderer (extreme speed needed there,
 		// can't use getInt every sign render!)
-		TileEntitySignRenderer.blinkTimeMS = getInt("signs.errorBlinkMS");
-		TileEntitySignRenderer.blinkSignsRed = getBoolean("signs.errorBlinkRed");
+		TileEntitySignRendererMinetunes.blinkTimeMS = getInt("signs.errorBlinkMS");
+		TileEntitySignRendererMinetunes.blinkSignsRed = getBoolean("signs.errorBlinkRed");
 
 		// Another one that meddles with the sign renderer
 		setFullRenderingEnabled(getBoolean("signs.fullRender"));
@@ -337,7 +332,7 @@ public class MinetunesConfig {
 		MinetunesConfig.fullSignRenderingEnabled = fullRenderingEnabled;
 
 		// Also set the renderer's copy
-		TileEntitySignRenderer.fullRenderingEnabled = fullRenderingEnabled;
+		TileEntitySignRendererMinetunes.fullRenderingEnabled = fullRenderingEnabled;
 	}
 
 	/**

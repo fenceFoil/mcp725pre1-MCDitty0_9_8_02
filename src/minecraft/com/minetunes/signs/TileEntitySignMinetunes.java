@@ -26,15 +26,14 @@ package com.minetunes.signs;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import com.minetunes.Minetunes;
-import com.minetunes.Point3D;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
 import net.minecraft.src.BlockSign;
 import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.TileEntitySign;
-import net.minecraft.src.TileEntitySignRenderer;
+
+import com.minetunes.Minetunes;
+import com.minetunes.Point3D;
 
 /**
  * Contains additional data for rendering particular signs
@@ -165,7 +164,7 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 		if (signText[2].length() >= 2
 				&& signText[2].toCharArray()[signText[2].length() - 2] == '%') {
 			if (signColorCode == null) {
-				signColorCode = TileEntitySignRenderer
+				signColorCode = TileEntitySignRendererMinetunes
 						.getSignColorCode(signText);
 			}
 		} else {
@@ -219,12 +218,12 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 	 * @return
 	 */
 	public String[] getSignTextNoCodes() {
-		signColorCode = TileEntitySignRenderer.getSignColorCode(signText);
+		signColorCode = TileEntitySignRendererMinetunes.getSignColorCode(signText);
 		if (signColorCode != null) {
 			// Save code
 			// Return a stripped copy of sign text
 			String[] s = copySignText();
-			TileEntitySignRenderer.removeSignColorCodes(s);
+			TileEntitySignRendererMinetunes.removeSignColorCodes(s);
 			return s;
 		} else {
 			return signText;
