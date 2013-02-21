@@ -46,12 +46,23 @@ public class TickHookEntity extends Entity {
 	 */
 	public TickHookEntity(World par1World) {
 		super(par1World);
+		
+		// Follow player
+		EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
+		posX = player.posX;
+		posY = player.posY + 25;
+		posZ = player.posZ;
+		
 		ignoreFrustumCheck = true;
 	}
 
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
+		
+		if (isDead) {
+			return;
+		}
 
 		// Call the hook method in MineTunes
 		fireTickEvent();

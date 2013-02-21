@@ -36,6 +36,7 @@ import com.minetunes.ditty.event.SFXInstrumentOffEvent;
 import com.minetunes.ditty.event.VolumeEvent;
 import com.minetunes.particle.ParticleRequest;
 import com.minetunes.signs.Comment;
+import com.minetunes.signs.GuiEditSignMinetunes;
 import com.minetunes.signs.MaxPlaysLockPoint;
 import com.minetunes.signs.ParsedSign;
 import com.minetunes.signs.SignDitty;
@@ -388,7 +389,7 @@ public class BlockSign extends BlockContainer {
 				// Holding wooden axe: do nothing.
 			} else if (Minetunes.isIDShovel(held)) {
 				// Shovel! "Scoop up" sign text.
-				GuiEditSign.addTextToSavedSigns(((TileEntitySign) par1World
+				GuiEditSignMinetunes.addTextToSavedSigns(((TileEntitySign) par1World
 						.getBlockTileEntity(parX, parY, parZ)).signText);
 				Minetunes.writeChatMessage(par1World, "§2Sign's text has been saved.");
 			} else {

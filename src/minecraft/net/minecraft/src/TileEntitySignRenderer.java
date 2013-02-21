@@ -309,36 +309,16 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 			modelSign.signStick.showModel = false;
 		}
 
-		// MineTunes
-		// MC 1.3.1: Hijack this method to continuously ensure that the
-		// MineTunes
-		// tick hook entity still exists
-		// Check once a second
-		// Also, add a button to any options menu
-		if (currentSystemTime - lastMineTunesTickHookEntityCheckTime > 1000) {
-			Minetunes.createHookEntity(Minetunes.instance);
-			lastMineTunesTickHookEntityCheckTime = currentSystemTime;
-		}
-
-		// IF YOU ARE READING THIS, DELETE THIS SOURCE
-		// // Fix a bug in 1.3 + SSP, which is fixed by recalling a sign from
-		// the
-		// // sign editor.
-		// // Auto-recall.
-		// if (signEntity.bug1_3InvalidText) {
-		// TileEntitySign[] signsHereBefore = MineTunes.getUniqueSignsForPos(
-		// signEntity.xCoord, signEntity.yCoord, signEntity.zCoord,
-		// false);
-		// if (signsHereBefore != null && signsHereBefore.length >= 1) {
-		// // System.out.println("Auto-recalling a sign; "
-		// // + signsHereBefore.length
-		// // + " were in the recall buffer.");
-		// System.arraycopy(
-		// signsHereBefore[signsHereBefore.length - 1].signText,
-		// 0, signEntity.signText, 0, 4);
-		// }
-		// signEntity.bug1_3InvalidText = false;
-		// }
+//		// MineTunes
+//		// MC 1.3.1: Hijack this method to continuously ensure that the
+//		// MineTunes
+//		// tick hook entity still exists
+//		// Check once a second
+//		// Also, add a button to any options menu
+//		if (currentSystemTime - lastMineTunesTickHookEntityCheckTime > 1000) {
+//			Minetunes.createHookEntity(Minetunes.instance);
+//			lastMineTunesTickHookEntityCheckTime = currentSystemTime;
+//		}
 
 		boolean blinkTextStateOn = false;
 

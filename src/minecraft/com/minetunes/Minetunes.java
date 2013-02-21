@@ -63,6 +63,7 @@ import net.minecraft.src.EntityFX;
 import net.minecraft.src.EntityFireworkRocket;
 import net.minecraft.src.EntityHeartFX;
 import net.minecraft.src.EntityPlayerSP;
+import net.minecraft.src.GuiEditSign;
 import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiScreenBook;
@@ -72,6 +73,7 @@ import net.minecraft.src.NBTTagCompound;
 import net.minecraft.src.Packet;
 import net.minecraft.src.RenderGlobal;
 import net.minecraft.src.RenderManager;
+import net.minecraft.src.ScaledResolution;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntityNote;
 import net.minecraft.src.TileEntitySign;
@@ -96,7 +98,6 @@ import com.minetunes.config.MinetunesConfig;
 import com.minetunes.disco.DiscoFloor;
 import com.minetunes.disco.DiscoFloorDoneListener;
 import com.minetunes.disco.MeasureDiscoFloorThread;
-import com.minetunes.ditty.DittyPlayerThread;
 import com.minetunes.ditty.MIDISynthPool;
 import com.minetunes.ditty.NoNewSynthIndicator;
 import com.minetunes.ditty.event.CreateBotEvent;
@@ -114,8 +115,8 @@ import com.minetunes.ditty.event.VolumeEvent;
 import com.minetunes.gui.BookExportButton;
 import com.minetunes.gui.BookImportButton;
 import com.minetunes.gui.ChangelogGui;
-import com.minetunes.gui.MinetunesMenuButton;
 import com.minetunes.gui.GuiMinetimesGraphicsMenuButton;
+import com.minetunes.gui.MinetunesMenuButton;
 import com.minetunes.keyboard.KeypressProcessor;
 import com.minetunes.noteblocks.BlockNoteMinetunes;
 import com.minetunes.noteblocks.EntityNoteBlockTooltip;
@@ -128,6 +129,7 @@ import com.minetunes.particle.ParticleRequest;
 import com.minetunes.resources.UpdateResourcesThread;
 import com.minetunes.sfx.SFXManager;
 import com.minetunes.signs.Comment;
+import com.minetunes.signs.GuiEditSignMinetunes;
 import com.minetunes.signs.Packet130UpdateSignMinetunes;
 import com.minetunes.signs.SignLine;
 import com.minetunes.signs.SignParser;
@@ -444,8 +446,9 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 					if (m == null) {
 						// System.out.println("mc is null");
 					} else {
-						mcditty.createHookEntity(mcditty);
+						Minetunes.instance.createHookEntity(Minetunes.instance);
 					}
+
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -620,6 +623,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	public boolean onTick(float partialTick, Minecraft minecraft) {
 		// Do in any tick, not just in game (see below section)
 		addButtonsToGuis();
+		swapSignGui();
 
 		// Get the current gui
 		GuiScreen currGui = minecraft.currentScreen;
@@ -676,6 +680,42 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 		// Finish and return
 		lastTickGui = currGui;
 		return true;
+	}
+
+	/**
+	 * If the current gui shown is a vanilla sign editor and not a Minetunes
+	 * sign editor, gingerly swap out the two. Gingerly because if you use the
+	 * normal method of switching guis with a sign editor open, the editor sends
+	 * its "modified sign" packet, and you can't save the sign text you change
+	 * in the Minetunes editor anymore (sign update packets are one-shot deals).
+	 */
+	private void swapSignGui() {
+		try {
+			if (Minecraft.getMinecraft().currentScreen instanceof GuiEditSign
+					&& !(Minecraft.getMinecraft().currentScreen instanceof GuiEditSignMinetunes)) {
+				GuiEditSign vanillaSignGui = (GuiEditSign) Minecraft
+						.getMinecraft().currentScreen;
+				Minecraft.getMinecraft().currentScreen = new GuiEditSignMinetunes(
+						(TileEntitySign) Finder.getUniqueTypedFieldFromClass(
+								GuiEditSign.class, TileEntitySign.class,
+								vanillaSignGui));
+				ScaledResolution var2 = new ScaledResolution(
+						Minecraft.getMinecraft().gameSettings,
+						Minecraft.getMinecraft().displayWidth,
+						Minecraft.getMinecraft().displayHeight);
+				int var3 = var2.getScaledWidth();
+				int var4 = var2.getScaledHeight();
+				Minecraft.getMinecraft().currentScreen.setWorldAndResolution(
+						Minecraft.getMinecraft(), var3, var4);
+				Minecraft.getMinecraft().skipRenderWorld = false;
+			}
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void handleMouseInput(Minecraft minecraft) {
@@ -1440,42 +1480,27 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	}
 
 	/**
-	 * Tries to create a new entity to hook into Minecraft ticks with.
+	 * Tries to create a new entity to hook into Minecraft ticks with. Refreshes
+	 * each time to ensure that switching to a new world does not remove our
+	 * hook.
 	 */
 	public static void createHookEntity(Minetunes mcditty) {
 		try {
 			if (hookEntity != null) {
-				// Check that it's still in the world
-				if (Minecraft.getMinecraft().theWorld != null) {
-					if (!Minecraft.getMinecraft().theWorld.loadedEntityList
-							.contains(hookEntity)) {
-						// Add to world
-						hookEntity = new TickHookEntity(
-								Minecraft.getMinecraft().theWorld);
-						Minecraft.getMinecraft().theWorld.addEntityToWorld(
-								12345678, hookEntity);
-						// System.out.println("Adding MineTunes tick hook entity");
-					} else {
-						// System.out.println
-						// ("Tick hook entity already added!");
-					}
-				}
-				return;
+				hookEntity.setDead();
+			}
+
+			hookEntity = new TickHookEntity(Minecraft.getMinecraft().theWorld);
+			Minecraft mc1 = Minecraft.getMinecraft();
+			if (mc1 != null && mc1.theWorld != null) {
+				mc1.theWorld.addEntityToWorld(12345678, hookEntity);
 			} else {
-				hookEntity = new TickHookEntity(
-						Minecraft.getMinecraft().theWorld);
-				Minecraft mc1 = Minecraft.getMinecraft();
-				if (mc1 != null && mc1.theWorld != null) {
-					mc1.theWorld.addEntityToWorld(12345678, hookEntity);
-				} else {
-					// Failed
-					hookEntity = null;
-				}
+				// Failed
+				hookEntity = null;
 			}
 
 			// If possible, add the MineTunes as a tickListener
 			if (hookEntity != null) {
-
 				addTickListenersToHookEntity(hookEntity);
 			}
 		} catch (Exception e) {
