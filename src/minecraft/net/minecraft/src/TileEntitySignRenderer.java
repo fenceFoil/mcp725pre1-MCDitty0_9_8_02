@@ -9,6 +9,7 @@ import org.lwjgl.opengl.GL11;
 import com.minetunes.Finder;
 import com.minetunes.Minetunes;
 import com.minetunes.Point3D;
+import com.minetunes.TickHookEntity;
 import com.minetunes.config.MinetunesConfig;
 import com.minetunes.signs.TileEntitySignMinetunes;
 
@@ -50,9 +51,6 @@ public class TileEntitySignRenderer extends TileEntitySpecialRenderer {
 
 	public TileEntitySignRenderer() {
 		modelSign = new ModelSign();
-
-		// MineTunes: try to create update tick hook entity
-		Minetunes.createHookEntity(Minetunes.instance);
 	}
 
 	public static long lastMineTunesTickHookEntityCheckTime = System

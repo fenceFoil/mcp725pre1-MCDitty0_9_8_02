@@ -252,11 +252,6 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	private static LinkedList<TileEntitySign> pickedSigns = new LinkedList<TileEntitySign>();
 
 	/**
-	 * The current entity used to get a hook into the main game loop's ticks.
-	 */
-	private static TickHookEntity hookEntity;
-
-	/**
 	 * The guiscreen open last tick.
 	 */
 	private static GuiScreen lastTickGui = null;
@@ -301,9 +296,9 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	private static final GuiMinetimesGraphicsMenuButton GUI_MCDITTY_VIDEO_BUTTON = new GuiMinetimesGraphicsMenuButton(
 			null);
 
-	private static FireworkExploder fireworkExploder = new FireworkExploder();
+	static FireworkExploder fireworkExploder = new FireworkExploder();
 
-	private static BlockTuneManager blockTuneManager = new BlockTuneManager();
+	static BlockTuneManager blockTuneManager = new BlockTuneManager();
 
 	public static TutorialWorldUpdater tutorialUpdater = new TutorialWorldUpdater(
 			MINETUNES_VERSIONS_URL);
@@ -390,11 +385,24 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 
 	}
 
+	public static void initMinetunesMod() {
+		if (instance == null) {
+			// Start MCDitty!
+			instance = new Minetunes();
+			instance.load();
+			
+			// Also begin the tick hook entity checker
+			TickHookEntity.start();
+			
+			addTickListenersToHookEntity();
+		}
+	}
+
 	/**
 	 * Runs all the most costly parts of loading MineTunes. Called as early in
 	 * the game's loading as possible.
 	 */
-	public void load() {
+	public static void load() {
 		// Enable calling onTickInGame each tick
 		// TODO: REENABLE WHEN MODLOADER COMES BACK!!! REMOVED 1.3.1
 		// ModLoader.setInGameHook(this, true, true);
@@ -434,27 +442,20 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 		TileEntitySignRenderer.createTrigTables();
 		long trigLoadTime = System.currentTimeMillis() - startTime;
 
-		final Minetunes mcditty = this;
-
 		// Start the entity checker update thread
 		Thread t = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				while (true) {
-					Minecraft m = Minecraft.getMinecraft();
-					if (m == null) {
-						// System.out.println("mc is null");
-					} else {
-						Minetunes.instance.createHookEntity(Minetunes.instance);
-					}
-
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+					
+					Minecraft m = Minecraft.getMinecraft();
 
 					// Also register all entity renderers
 					if (m != null && m.theWorld != null) {
@@ -497,7 +498,7 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 			}
 
 		});
-		t.setName("MineTunes Tick Hook Checker");
+		t.setName("MineTunes Entity Render Map Checker");
 		t.start();
 
 		// Load the config file
@@ -1480,51 +1481,6 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	}
 
 	/**
-	 * Tries to create a new entity to hook into Minecraft ticks with. Refreshes
-	 * each time to ensure that switching to a new world does not remove our
-	 * hook.
-	 */
-	public static void createHookEntity(Minetunes mcditty) {
-		try {
-			if (hookEntity != null) {
-				hookEntity.setDead();
-			}
-
-			hookEntity = new TickHookEntity(Minecraft.getMinecraft().theWorld);
-			Minecraft mc1 = Minecraft.getMinecraft();
-			if (mc1 != null && mc1.theWorld != null) {
-				mc1.theWorld.addEntityToWorld(12345678, hookEntity);
-			} else {
-				// Failed
-				hookEntity = null;
-			}
-
-			// If possible, add the MineTunes as a tickListener
-			if (hookEntity != null) {
-				addTickListenersToHookEntity(hookEntity);
-			}
-		} catch (Exception e) {
-			// Failed
-			hookEntity = null;
-		}
-	}
-
-	/**
-	 * @param hookEntity2
-	 */
-	private static void addTickListenersToHookEntity(TickHookEntity hookEntity2) {
-		// Add MineTunes and the fireworks exploder
-		hookEntity2.addTickListener(Minetunes.instance);
-		hookEntity2.addTickListener(fireworkExploder);
-		hookEntity2.addTickListener(blockTuneManager);
-
-		// TEMP TODO: Added bugfix
-		// Apply bugfix for empty jukeboxes ejecting null itemstack if loaded
-		// from save file and broken
-		hookEntity2.addTickListener(new NullItemEntityRemover());
-	}
-
-	/**
 	 * Discouraged outside of MineTunes: should be internal-only. Use
 	 * addDittyEventToQueue instead.
 	 * 
@@ -2262,6 +2218,22 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	}
 
 	/**
+	 * @param hookEntity2
+	 */
+	private static void addTickListenersToHookEntity() {
+	
+		// Add MineTunes and the fireworks exploder
+		TickHookEntity.addTickListener(instance);
+		TickHookEntity.addTickListener(fireworkExploder);
+		TickHookEntity.addTickListener(blockTuneManager);
+	
+		// TEMP TODO: Added bugfix
+		// Apply bugfix for empty jukeboxes ejecting null itemstack if loaded
+		// from save file and broken
+		TickHookEntity.addTickListener(new NullItemEntityRemover());
+	}
+
+	/**
 	 * Instructs all playing mcditty songs to mute themselves.
 	 * 
 	 * @param
@@ -2277,14 +2249,6 @@ public class Minetunes implements TickListener, NoNewSynthIndicator {
 	public static void showTextAsLyricNow(String text) {
 		CueEvent lyric = new CueEvent(text);
 		addLyricToQueue(lyric);
-	}
-
-	public static void initMinetunesMod() {
-		if (instance == null) {
-			// Start MCDitty!
-			instance = new Minetunes();
-			instance.load();
-		}
 	}
 
 	/**
