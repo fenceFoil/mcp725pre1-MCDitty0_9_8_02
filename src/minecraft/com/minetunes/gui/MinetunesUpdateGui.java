@@ -145,6 +145,11 @@ public class MinetunesUpdateGui extends GuiScreen implements
 		} else if (guibutton.id == 600) {
 			// Auto-update
 			mc.displayGuiScreen(null);
+			if (Minetunes.forgeMode) {
+				// Can't auto update yet :(
+				Minetunes.showTextAsLyricNow("Sorry! The Forge version of MineTunes cannot Auto-Update yet.");
+			}
+			
 			final MinetunesUpdateGui thisGui = this;
 			Thread t = new Thread(new Runnable() {
 

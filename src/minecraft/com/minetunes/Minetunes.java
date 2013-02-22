@@ -151,6 +151,12 @@ import com.minetunes.signs.keywords.ProxPadKeyword;
 public class Minetunes {
 
 	/**
+	 * Whether this mod has been started with MinecraftForge... or whatever the
+	 * kids are calling it these days. False indicates not started with forge.
+	 */
+	public static boolean forgeMode = false;
+
+	/**
 	 * A Properties text file on the internet with the versions of various
 	 * MCDitty files and other info
 	 */
@@ -2251,7 +2257,7 @@ public class Minetunes {
 
 			@Override
 			public boolean onTick(float partialTick, Minecraft minecraft) {
-				return onTick(partialTick, minecraft);
+				return Minetunes.onTick(partialTick, minecraft);
 			}
 		});
 		TickHookEntity.addTickListener(fireworkExploder);
