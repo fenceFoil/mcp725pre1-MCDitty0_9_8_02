@@ -92,14 +92,18 @@ public class GraphicsGui extends GuiScreen {
 
 		if (TileEntitySignRendererMinetunes.areSignsCurrentlyBeingRendered()) {
 			drawCenteredString(fontRenderer, "Frame Counter: "
-					+ TileEntitySignRendererMinetunes.fpsCounter, width / 2, 130,
-					0xaaaaff);
+					+ TileEntitySignRendererMinetunes.fpsCounter, width / 2,
+					130, 0xaaaaff);
 			drawCenteredString(fontRenderer, "FPS: "
-					+ TileEntitySignRendererMinetunes.currentFPS, width / 2, 145,
-					0xaaaaff);
+					+ TileEntitySignRendererMinetunes.currentFPS, width / 2,
+					145, 0xaaaaff);
+			drawCenteredString(fontRenderer, "Sign Count: "
+					+ TileEntitySignRendererMinetunes.renderCountLastTick,
+					width / 2, 160, 0xaaaaff);
 		} else {
-//			drawCenteredString(fontRenderer, "FPS: No signs nearby, or game is paused.", width / 2, 145,
-//					0xffaaaa);
+			// drawCenteredString(fontRenderer,
+			// "FPS: No signs nearby, or game is paused.", width / 2, 145,
+			// 0xffaaaa);
 		}
 
 		if (MinetunesConfig.isFullRenderingEnabled()) {
