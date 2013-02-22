@@ -43,7 +43,8 @@ public class NullItemEntityRemover implements TickListener {
 	 */
 	@Override
 	public boolean onTick(float partialTick, Minecraft minecraft) {
-		for (Object o : minecraft.theWorld.loadedEntityList) {
+		for (int i = 0; i < minecraft.theWorld.loadedEntityList.size(); i++) {
+			Object o = minecraft.theWorld.loadedEntityList.get(i);
 			if (o instanceof EntityItem && !(o instanceof EntityItemDisplay)) {
 				EntityItem e = (EntityItem) o;
 				if (e.func_92059_d().itemID == 0) {
@@ -59,7 +60,8 @@ public class NullItemEntityRemover implements TickListener {
 				&& minecraft.getIntegratedServer().worldServers != null) {
 			int serverNum = 0;
 			for (WorldServer server : minecraft.getIntegratedServer().worldServers) {
-				for (Object o : server.loadedEntityList) {
+				for (int i = 0; i < server.loadedEntityList.size(); i++) {
+					Object o = server.loadedEntityList.get(i);
 					if (o instanceof EntityItem) {
 						EntityItem e = (EntityItem) o;
 						if (e.func_92059_d().itemID == 0) {
