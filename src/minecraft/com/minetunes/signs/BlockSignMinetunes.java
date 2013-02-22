@@ -525,7 +525,7 @@ public class BlockSignMinetunes {
 			}
 
 			// Add lines to blink
-			if (MinetunesConfig.getBoolean("signs.highlightErrorLines")) {
+			if (MinetunesConfig.getBoolean("signs.showErrors")) {
 				for (SignLine signLine : dittyProperties
 						.getHighlightedErrorLines()) {
 					highlightSignErrorLine(world, signLine);

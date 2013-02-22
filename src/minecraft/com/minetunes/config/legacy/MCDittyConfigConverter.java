@@ -150,16 +150,16 @@ public class MCDittyConfigConverter {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					} else if (lineIn.startsWith("ShowErrorsOnSigns=")) {
-						lineIn = lineIn.replace("ShowErrorsOnSigns=", "");
-						try {
-							MinetunesConfig.setBoolean(
-									"signs.highlightErrorLines",
-									Boolean.parseBoolean(lineIn));
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+//					} else if (lineIn.startsWith("ShowErrorsOnSigns=")) {
+//						lineIn = lineIn.replace("ShowErrorsOnSigns=", "");
+//						try {
+//							MinetunesConfig.setBoolean(
+//									"signs.highlightErrorLines",
+//									Boolean.parseBoolean(lineIn));
+//						} catch (Exception e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
 					} else if (lineIn.startsWith("BlinkSignsEnabled=")) {
 						lineIn = lineIn.replace("BlinkSignsEnabled=", "");
 						try {

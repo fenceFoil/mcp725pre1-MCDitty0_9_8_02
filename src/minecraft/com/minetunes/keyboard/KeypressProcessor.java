@@ -173,8 +173,6 @@ public class KeypressProcessor {
 			// Toggle showing errors and blinking signs
 			MinetunesConfig.setBoolean("signs.showErrors",
 					!MinetunesConfig.getBoolean("signs.showErrors"));
-			MinetunesConfig.setBoolean("signs.highlightErrorLines",
-					MinetunesConfig.getBoolean("signs.showErrors"));
 			try {
 				MinetunesConfig.flush();
 			} catch (IOException e) {
@@ -184,8 +182,8 @@ public class KeypressProcessor {
 			Minetunes
 					.writeChatMessage(
 							Minecraft.getMinecraft().theWorld,
-							(MinetunesConfig.getBoolean("signs.showErrors")) ? "MineTunes Errors: Off"
-									: "MineTunes Errors: On");
+							(MinetunesConfig.getBoolean("signs.showErrors")) ? "MineTunes Errors: On"
+									: "MineTunes Errors: Off");
 		} else if (action.equalsIgnoreCase("playBook")) {
 			// Play currently held book
 			BookPlayer.playHeldBook(Minecraft.getMinecraft().thePlayer);

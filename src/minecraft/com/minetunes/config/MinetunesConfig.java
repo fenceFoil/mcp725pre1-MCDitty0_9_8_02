@@ -119,7 +119,7 @@ public class MinetunesConfig {
 				CURRENT_VERSION);
 		defaultProperties.setProperty("signeditor.keywordAreaVisible", "true");
 		defaultProperties.setProperty("signs.playingColor.sliderPos", "0.45");
-		defaultProperties.setProperty("signs.highlightErrorLines", "true");
+		//defaultProperties.setProperty("signs.highlightErrorLines", "true");
 		defaultProperties.setProperty("mod.lastVersionRun", "0");
 	}
 
@@ -251,6 +251,17 @@ public class MinetunesConfig {
 			// Flush properties
 			flushProperties();
 		}
+
+		// Flush some settings to their respective fields (placed in other
+		// classes for accessing speed over using a properties key)
+		
+		// Push this value to the sign renderer (extreme speed needed there,
+		// can't use getInt every sign render!)
+		TileEntitySignRendererMinetunes.blinkTimeMS = getInt("signs.errorBlinkMS");
+		TileEntitySignRendererMinetunes.blinkSignsRed = getBoolean("signs.errorBlinkRed");
+
+		// Another one that meddles with the sign renderer
+		setFullRenderingEnabled(getBoolean("signs.fullRender"));
 	}
 
 	/**
