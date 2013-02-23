@@ -2,6 +2,7 @@ package com.minetunes.gui;
 
 import java.io.File;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
 
@@ -10,6 +11,7 @@ import org.lwjgl.input.Keyboard;
 import com.minetunes.Minetunes;
 import com.minetunes.autoUpdate.CompareVersion;
 import com.minetunes.autoUpdate.FileUpdaterListener;
+import com.minetunes.autoUpdate.ModUpdater;
 import com.minetunes.autoUpdate.UpdateEventLevel;
 import com.minetunes.config.MinetunesConfig;
 import com.minetunes.resources.ResourceManager;
@@ -145,46 +147,89 @@ public class MinetunesUpdateGui extends GuiScreen implements
 		} else if (guibutton.id == 600) {
 			// Auto-update
 			mc.displayGuiScreen(null);
+
 			if (Minetunes.forgeMode) {
-				// Can't auto update yet :(
-				Minetunes.showTextAsLyricNow("Sorry! The Forge version of MineTunes cannot Auto-Update yet.");
-			}
-			
-			final MinetunesUpdateGui thisGui = this;
-			Thread t = new Thread(new Runnable() {
-
-				@Override
-				public void run() {
-					Minetunes.autoUpdater.addFileUpdaterListener(thisGui);
-
-					boolean result = Minetunes.autoUpdater.autoUpdate(
-							MinetunesConfig.MC_CURRENT_VERSION,
-							new File(MinetunesConfig.getMinetunesDir(),
-									"versions"),
-							new File(MinetunesConfig.getMinetunesDir(),
-									"jarSwapper.jar"),
-							ResourceManager
-									.getResource("autoUpdate/swapperJar/AutoUpdateJarSwapper.jar"));
-
-					if (result) {
-						Minetunes
-								.showTextAsLyricNow("* * * * * * * * * * * * * * * *");
-						Minetunes
-								.showTextAsLyricNow("* §bA backup of the old minecraft.jar was saved.");
-						Minetunes
-								.showTextAsLyricNow("* §dNew version of MineTunes was downloaded to /.minecraft/MineTunes/Versions/");
-						Minetunes.showTextAsLyricNow("* §aUpdate successful! Next time you start Minecraft, MineTunes will be updated to version "
-								+ Minetunes.autoUpdater
+				ModUpdater autoUpdater = Minetunes.autoUpdater;
+				onUpdaterEvent(
+						UpdateEventLevel.INFO,
+						"Init",
+						"Downloading version "
+								+ autoUpdater
 										.getLatestVersion(MinetunesConfig.MC_CURRENT_VERSION));
-					} else {
-						Minetunes
-								.showTextAsLyricNow("<MineTunes> §cDid not auto-update.");
+
+				File modsFolder = new File(Minecraft.getMinecraftDir(), "mods");
+				File destFile = new File(modsFolder, "MineTunes-"
+						+ autoUpdater.getLatestVersion(MinetunesConfig.MC_CURRENT_VERSION).replace('.', '_')
+						+ "-MC"
+						+ MinetunesConfig.MC_CURRENT_VERSION.replace('.', '_')
+						+ ".zip");
+				autoUpdater.addFileUpdaterListener(this);
+				autoUpdater.downloadToFile(destFile,
+						MinetunesConfig.MC_CURRENT_VERSION);
+
+				// Check for successful download, and remove spare files if it
+				// was
+				File[] modsFiles = modsFolder.listFiles();
+				boolean successfulUpdate = false;
+				for (File f:modsFiles) {
+					if (f.equals(destFile)) {
+						successfulUpdate = true;
+						break;
 					}
 				}
+				
+				// Respond to whether update was successful
+				if (successfulUpdate) {
+					// Remove spare files
+					for (File f:modsFiles) {
+						if (!f.equals(destFile) && f.getName().toLowerCase().contains("minetunes")) {
+							f.delete();
+							onUpdaterEvent(UpdateEventLevel.INFO, "Cleanup", "Removed old MineTunes ("+f.getName()+")");
+						}
+					}
+					Minetunes.showTextAsLyricNow("§aUpdate successful! Next time you start Minecraft, MineTunes will be updated to version "
+							+ Minetunes.autoUpdater
+									.getLatestVersion(MinetunesConfig.MC_CURRENT_VERSION));
+				} else {
+					// Oh well.
+					Minetunes.showTextAsLyricNow("§cCould not update MineTunes. Sorry!");
+				}
+			} else {
+				final MinetunesUpdateGui thisGui = this;
+				Thread t = new Thread(new Runnable() {
 
-			});
-			t.setName("MineTunes Update Gui AutoUpdater");
-			t.start();
+					@Override
+					public void run() {
+						Minetunes.autoUpdater.addFileUpdaterListener(thisGui);
+
+						boolean result = Minetunes.autoUpdater.autoUpdate(
+								MinetunesConfig.MC_CURRENT_VERSION,
+								new File(MinetunesConfig.getMinetunesDir(),
+										"versions"),
+								MinetunesConfig.getMinetunesDir(),
+								ResourceManager
+										.getResource("autoUpdate/swapperJar/AutoUpdateJarSwapper.jar"));
+
+						if (result) {
+							Minetunes
+									.showTextAsLyricNow("* * * * * * * * * * * * * * * * * * * * * *");
+							Minetunes
+									.showTextAsLyricNow("§bA backup of the old minecraft.jar was saved.");
+							Minetunes
+									.showTextAsLyricNow("§dNew version of MineTunes was downloaded to /.minecraft/MineTunes/Versions/");
+							Minetunes.showTextAsLyricNow("§aUpdate successful! Next time you start Minecraft, MineTunes will be updated to version "
+									+ Minetunes.autoUpdater
+											.getLatestVersion(MinetunesConfig.MC_CURRENT_VERSION));
+						} else {
+							Minetunes
+									.showTextAsLyricNow("<MineTunes> §cDid not auto-update.");
+						}
+					}
+
+				});
+				t.setName("MineTunes Update Gui AutoUpdater");
+				t.start();
+			}
 		}
 	}
 
@@ -198,8 +243,7 @@ public class MinetunesUpdateGui extends GuiScreen implements
 				.simpleLog("GuiMCDittyUpdates.checkForUpdates: downloaded version number "
 						+ newVersion);
 		if (CompareVersion.isVersionNumber(newVersion)) {
-			if (CompareVersion.compareVersions(MinetunesConfig.CURRENT_VERSION,
-					newVersion) == CompareVersion.LESSER) {
+			if (CompareVersion.isVersionNewerThanCurrent(newVersion)) {
 				// MineTunes is outdated
 				isUpToDateString = OUTDATED_DETAIL + newVersion;
 				isUpToDateColor = OUTDATED_COLOR;
@@ -306,6 +350,9 @@ public class MinetunesUpdateGui extends GuiScreen implements
 	@Override
 	public void onUpdaterEvent(UpdateEventLevel level, String stage,
 			String event) {
-		Minetunes.showTextAsLyricNow("<MineTunes> §7" + event);
+		if (level == UpdateEventLevel.ERROR || level == UpdateEventLevel.WARN
+				|| level == UpdateEventLevel.INFO) {
+			Minetunes.showTextAsLyricNow("<MineTunes> §7" + event);
+		}
 	}
 }
