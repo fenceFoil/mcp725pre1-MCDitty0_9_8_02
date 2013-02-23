@@ -322,11 +322,11 @@ public class ModUpdater extends FileUpdater {
 				// + ((e instanceof JarEntry) ? "JAR" : "ZIP") + ": "
 				// + e.getName());
 
-				if (i % updatedMinecraftEntries.size() / 20 == 0) {
-					int percent = (int) ((double) i
-							/ (double) updatedMinecraftEntries.size() * 100d);
+				if (i % (updatedMinecraftEntries.size() / 10) == 1) {
+					int percent = (int) (((double) i
+							/ (double) updatedMinecraftEntries.size()) * 100d);
 					fireFileUpdaterEvent(UpdateEventLevel.INFO, "Mixing",
-							"Writing: " + percent + "%");
+							"Writing: " + percent + "%%");
 				}
 			}
 			newMinecraftJarOut.flush();
