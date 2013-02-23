@@ -86,8 +86,7 @@ public class TutorialWorldUpdater extends FileUpdater {
 		}
 
 		// Create new folder to download into
-		File downloadDir = new File(Minecraft.getMinecraft().getMinecraftDir()
-				+ File.separator + "MCDitty/ExampleWorld/");
+		File downloadDir = new File(MinetunesConfig.getMinetunesDir(), "exampleWorld");
 		if (!downloadDir.exists()) {
 			downloadDir.mkdirs();
 		}
