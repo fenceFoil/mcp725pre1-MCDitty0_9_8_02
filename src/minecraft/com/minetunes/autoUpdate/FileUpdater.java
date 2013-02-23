@@ -128,12 +128,10 @@ public class FileUpdater {
 	}
 
 	public void downloadToFile(File destFile, String mcVersion) {
-		fireFileUpdaterEvent(UpdateEventLevel.INFO, "Download", "Updating "
+		fireFileUpdaterEvent(UpdateEventLevel.INFO, "Download", "Downloading "
 				+ destFile.getName());
 		String latestURL = getLatestURL(mcVersion);
 		if (latestURL != null) {
-			fireFileUpdaterEvent(UpdateEventLevel.INFO, "Download",
-					"Downloading...");
 			FileUpdater.downloadFile(latestURL, destFile.getPath());
 			fireFileUpdaterEvent(UpdateEventLevel.INFO, "Download",
 					"Downloaded successfully.");
