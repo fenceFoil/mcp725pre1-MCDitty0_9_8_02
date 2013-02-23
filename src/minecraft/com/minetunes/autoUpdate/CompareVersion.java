@@ -1,5 +1,7 @@
 package com.minetunes.autoUpdate;
 
+import com.minetunes.config.MinetunesConfig;
+
 /**
  * Code from:
  * http://ramakrsna.wordpress.com/2008/07/05/comparing-version-numbers/
@@ -57,5 +59,23 @@ public class CompareVersion {
 	public static boolean isVersionNumber(String part) {
 		return part
 				.matches("^(?:(\\d+)\\.)?(?:(\\d+)\\.)?(?:(\\d+)\\.)?(\\*|\\d+)$");
+	}
+	
+	public static boolean isVersionNewerThanCurrent (String version) {
+		int result = compareVersions(version, MinetunesConfig.CURRENT_VERSION);
+		if (result == GREATER) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static boolean isVersionOlderThanCurrent (String version) {
+		int result = compareVersions(version, MinetunesConfig.CURRENT_VERSION);
+		if (result == LESSER) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
