@@ -27,6 +27,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.GuiButton;
 
+import com.minetunes.Minetunes;
 import com.minetunes.config.MinetunesConfig;
 
 /**
@@ -65,16 +66,18 @@ public class MinetunesVersionGuiElement extends GuiButton {
 		}
 
 		string = "MineTunes Version " + MinetunesConfig.CURRENT_VERSION;
-		int stringColor = 0x444444;
+		int stringColor = 0x444488;
 
 		if (outdated) {
 			string += " (Outdated)";
+		} else if (Minetunes.forgeMode) {
+			string += " [Forge]";
 		}
 		if (mx >= 0 && mx <= fontRenderer.getStringWidth(string) && my >= 0
 				&& my <= 10) {
 			// Hovering
 			string = "§n" + string;
-			stringColor = 0xbbbbbb;
+			stringColor = 0xaa99ff;
 		}
 
 		fontRenderer.drawStringWithShadow(string, 0, 0, stringColor);
