@@ -583,8 +583,7 @@ public class Minetunes {
 				// greater
 				// than the last time we checked
 				if (foundVersion != null
-						&& CompareVersion.compareVersions(foundVersion,
-								MinetunesConfig.CURRENT_VERSION) == CompareVersion.GREATER
+						&& CompareVersion.isVersionNewerThanCurrent(foundVersion)
 						&& !MinetunesConfig.getString(
 								"updates.lastVersionFound")
 								.equals(foundVersion)) {
