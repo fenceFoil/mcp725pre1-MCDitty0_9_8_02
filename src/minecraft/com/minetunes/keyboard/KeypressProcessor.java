@@ -62,7 +62,7 @@ public class KeypressProcessor {
 		DEFAULT_BINDINGS.add(muteBinding);
 
 		KeyBinding menuBinding = new KeyBinding("MineTunes Menu", "menu",
-				Keyboard.KEY_D, KeyBinding.CTRL_KEYS);
+				Keyboard.KEY_I, KeyBinding.CTRL_KEYS);
 		DEFAULT_BINDINGS.add(menuBinding);
 
 		KeyBinding showErrorsBinding = new KeyBinding("Hide SignTune Errors",
