@@ -172,7 +172,7 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 		if (isFace(false)) {
 			if (Minetunes.rand.nextInt(100000) == 0) {
 				worldObj.spawnParticle("heart", xCoord+0.5, yCoord+0.5, zCoord+0.5, 0, 0.1, 0);
-			} else if (Minetunes.rand.nextInt(10) == 0) {
+			} else if (Minetunes.rand.nextInt(5) == 0) {
 				worldObj.spawnParticle("smoke", xCoord+0.5, yCoord, zCoord+0.5, 0, 0.02, 0);
 			}
 		}

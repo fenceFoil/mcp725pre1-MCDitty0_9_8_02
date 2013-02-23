@@ -308,7 +308,7 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 			float f1 = (float) (signEntity.getBlockMetadata() * 360) / 16F;
 
 			// Handle faces' rotations
-			if (signEntity.isFace(false)) {
+			if (signEntity.isFace(false) && !(signEntity.lineBeingEdited >= 0)) {
 
 				double var1 = (double) signEntity.xCoord + 0.5
 						- mc.thePlayer.posX;
