@@ -252,7 +252,7 @@ public class Minetunes {
 	/**
 	 * General-purpose random generator, cached.
 	 */
-	private static Random rand = new Random();
+	public static Random rand = new Random();
 
 	/**
 	 * Currently picked signs (as in picked with a pickaxe).

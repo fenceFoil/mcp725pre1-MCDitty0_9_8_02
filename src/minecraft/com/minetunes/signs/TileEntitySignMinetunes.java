@@ -26,6 +26,8 @@ package com.minetunes.signs;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
 import net.minecraft.src.NBTTagCompound;
@@ -61,8 +63,6 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 	private float[] highlightColor = { -1, -1, -1, -1 };
 	public int charBeingEdited = 0;
 	public boolean alwaysRender = false;
-	private LinkedList<String[]> pastTexts = null;
-	private String[] lastSignText = { "", "", "", "" };
 	private boolean opaqueAnchorCalculated = false;
 	private boolean isAnchorOpaque = false;
 	private static HashMap<String, String> names = new HashMap<String, String>();
@@ -163,11 +163,18 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 		if (signText[2].length() >= 2
 				&& signText[2].toCharArray()[signText[2].length() - 2] == '%') {
 			if (signColorCode == null) {
-				signColorCode = TileEntitySignRendererMinetunes
-						.getSignColorCode(signText);
+				signColorCode = getSignColorCode(signText);
 			}
 		} else {
 			signColorCode = null;
+		}
+		
+		if (isFace(false)) {
+			if (Minetunes.rand.nextInt(100000) == 0) {
+				worldObj.spawnParticle("heart", xCoord+0.5, yCoord+0.5, zCoord+0.5, 0, 0.1, 0);
+			} else if (Minetunes.rand.nextInt(10) == 0) {
+				worldObj.spawnParticle("smoke", xCoord+0.5, yCoord, zCoord+0.5, 0, 0.02, 0);
+			}
 		}
 	}
 
@@ -191,7 +198,8 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 	public boolean isAnchorBlockOpaque() {
 		if (!opaqueAnchorCalculated) {
 			try {
-				Point3D blockBehindSign = BlockSignMinetunes.getBlockAttachedTo(this);
+				Point3D blockBehindSign = BlockSignMinetunes
+						.getBlockAttachedTo(this);
 				if (Block.blocksList[Minecraft.getMinecraft().theWorld
 						.getBlockId(blockBehindSign.x, blockBehindSign.y,
 								blockBehindSign.z)].isOpaqueCube()) {
@@ -217,12 +225,12 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 	 * @return
 	 */
 	public String[] getSignTextNoCodes() {
-		signColorCode = TileEntitySignRendererMinetunes.getSignColorCode(signText);
+		signColorCode = getSignColorCode(signText);
 		if (signColorCode != null) {
 			// Save code
 			// Return a stripped copy of sign text
 			String[] s = copySignText();
-			TileEntitySignRendererMinetunes.removeSignColorCodes(s);
+			removeSignColorCodes(s);
 			return s;
 		} else {
 			return signText;
@@ -296,6 +304,104 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 
 		// Check for any proxpads
 		Minetunes.onSignLoaded(this);
+	}
+
+	private Boolean isFace = null;
+
+	/**
+	 * Checks to see whether this sign is a face. Criteria: 1) Must have two
+	 * eyes on lines 0 or 1 of the sign, defined by parenthesis.
+	 * 
+	 * @return
+	 */
+	public boolean isFace(boolean forceRecheck) {
+		if (isFace == null || forceRecheck) {
+			boolean found = false;
+			for (int i = 0; i < 1; i++) {
+				if (getSignTextNoCodes()[i].matches("(.*\\(..?\\).*){2}")) {
+					found = true;
+				}
+			}
+			isFace = found;
+
+			// Always render faces. Always. Even in the dark, right... behind...
+			// your... BACK!
+			if (isFace && !alwaysRender) {
+				alwaysRender = true;
+			}
+		}
+
+		return isFace;
+	}
+
+	/**
+	 * Checks the last line of a sign for a sign color code
+	 * (%[\\dabcdefABCDEFlnoLNOkmrKMR]) (note: currently lnoLNOkmrKMR are not
+	 * considered) at the end of the 3rd line
+	 * 
+	 * @return null or a string of the code's character if it was found (the
+	 *         character after the "^")
+	 */
+	public static String getSignColorCode(String[] signText) {
+		if (signText.length < 3) {
+			return null;
+		}
+
+		// String thirdLine = signText[2];
+
+		if (signText[2] == null || signText[2].length() < 2) {
+			return null;
+		}
+
+		String code = signText[2].substring(signText[2].length() - 2);
+		if (code.matches("%[\\dabcdefABCDEF]")) {
+			// Code present!
+			// System.out.println (code.substring(1));
+			// new Exception().printStackTrace();
+			return code.substring(1);
+		} else {
+			return null;
+		}
+	}
+
+	public static void setColorFromColorCode(String codeCharacter,
+			boolean darker) {
+		int colorCodeIndex = "0123456789abcdefklmnor".indexOf(codeCharacter
+				.toLowerCase().charAt(0));
+
+		if (colorCodeIndex < 0 || colorCodeIndex >= 16) {
+			return;
+		}
+
+		if (colorCodeIndex < 16) {
+			if (colorCodeIndex < 0 || colorCodeIndex > 15) {
+				colorCodeIndex = 15;
+			}
+
+			if (darker) {
+				colorCodeIndex += 16;
+			}
+
+			int color = TileEntitySignRendererMinetunes.colorCode[colorCodeIndex];
+			// this.textColor = var6;
+			GL11.glColor4f((float) (color >> 16) / 255.0F,
+					(float) (color >> 8 & 255) / 255.0F,
+					(float) (color & 255) / 255.0F, 1.0f);
+		}
+	}
+
+	/**
+	 * 
+	 * @param signText
+	 * @return true if there were codes
+	 */
+	public static boolean removeSignColorCodes(String[] signText) {
+		if (getSignColorCode(signText) != null) {
+			signText[2] = signText[2].substring(0, signText[2].length() - 2);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }

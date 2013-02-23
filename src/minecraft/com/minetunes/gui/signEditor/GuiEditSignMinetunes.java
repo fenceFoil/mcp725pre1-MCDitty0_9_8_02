@@ -296,7 +296,8 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 			// Decide the size to draw the sign at
 			float signScaling = 93.75F; // The default minecraft value
 			signTranslateY = 0f; // Default minecraft value
-			// if (BlockSignMinetunes.signEditorMode == SIGN_EDITOR_MODE_NORMAL) {
+			// if (BlockSignMinetunes.signEditorMode == SIGN_EDITOR_MODE_NORMAL)
+			// {
 			// // Make sign much bigger
 			// signScaling *= 1.34;
 			// signTranslateY = -70f;
@@ -307,7 +308,8 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 			// }
 
 			float signTranslateX = width / 2;
-			// if (BlockSignMinetunes.signEditorMode == SIGN_EDITOR_MODE_MINETUNES) {
+			// if (BlockSignMinetunes.signEditorMode ==
+			// SIGN_EDITOR_MODE_MINETUNES) {
 			// // Shove sign off to the left
 			// signTranslateX = 75;
 			// }
@@ -358,6 +360,11 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 			}
 		}
 		updateButtons();
+		
+		if (entitySign.isFace(true)) {
+			keywordMessage = "Dude, that is creepy.";
+			keywordMessageColor = 0xffffff;
+		}
 
 		// super.drawScreen(par1, par2, par3);
 		// This now calls GuiSign.drawScreen, drawing both vanilla and the
@@ -366,12 +373,6 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 		for (int var4 = 0; var4 < this.controlList.size(); ++var4) {
 			GuiButton var5 = (GuiButton) this.controlList.get(var4);
 			var5.drawButton(this.mc, par1, par2);
-		}
-
-		for (Object o : controlList) {
-			if (o instanceof GuiButton) {
-				((GuiButton) o).drawButton(mc, par1, par2);
-			}
 		}
 	}
 
@@ -523,6 +524,9 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 		// as the guide
 
 		entitySign.setEditable(true);
+		
+		// Update face state
+		entitySign.isFace(true);
 	}
 
 	/**
@@ -675,8 +679,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 			// Clear old code
 			String currCode = entitySign.signColorCode;
-			TileEntitySignRendererMinetunes
-					.removeSignColorCodes(entitySign.signText);
+			TileEntitySignMinetunes.removeSignColorCodes(entitySign.signText);
 
 			if (entitySign.signText[2].length() <= 13) {
 				String newCode = "f";
@@ -703,8 +706,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 			// Clear old code
 			String currCode = entitySign.signColorCode;
-			TileEntitySignRendererMinetunes
-					.removeSignColorCodes(entitySign.signText);
+			TileEntitySignMinetunes.removeSignColorCodes(entitySign.signText);
 
 			if (entitySign.signText[2].length() <= 13) {
 				String newCode = "f";
@@ -736,8 +738,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 			updateButtons();
 		} else if (par1GuiButton.id == 2300) {
 			// Clear color
-			TileEntitySignRendererMinetunes
-					.removeSignColorCodes(entitySign.signText);
+			TileEntitySignMinetunes.removeSignColorCodes(entitySign.signText);
 			entitySign.updateEntity();
 		}
 	}
@@ -1170,8 +1171,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 		// Add any locked color code
 		if (lockedCode != null) {
-			TileEntitySignRendererMinetunes
-					.removeSignColorCodes(entitySign.signText);
+			TileEntitySignMinetunes.removeSignColorCodes(entitySign.signText);
 			if (entitySign.signText[2].length() <= 13) {
 				entitySign.signText[2] += "%" + lockedCode;
 			}
@@ -1283,8 +1283,9 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 	 */
 	private void showCommentHelp(Comment comment) {
 		// Show generic comment help
-		helpTextArea.setText(BlockSignMinetunes.COMMENT_HIGHLIGHT_CODE + "Comment:§r\n"
-				+ "\n" + "Text that isn't read as music.\n" + "\n"
+		helpTextArea.setText(BlockSignMinetunes.COMMENT_HIGHLIGHT_CODE
+				+ "Comment:§r\n" + "\n" + "Text that isn't read as music.\n"
+				+ "\n"
 				+ "Goto and Patt keywords can jump to signs with comments.");
 		return;
 	}
@@ -2036,8 +2037,9 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 						// Adjust next sign position based on the amount to
 						// move and the current sign's facing
-						pointedAtBlock = BlockSignMinetunes.getCoordsRelativeToSign(
-								pointedAtBlock, currSignFacing, amount, 0, 0);
+						pointedAtBlock = BlockSignMinetunes
+								.getCoordsRelativeToSign(pointedAtBlock,
+										currSignFacing, amount, 0, 0);
 					}
 
 					if (g.getKeyword().equalsIgnoreCase("in")
@@ -2049,8 +2051,9 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 						// Adjust next sign position based on the amount to
 						// move and the current sign's facing
-						pointedAtBlock = BlockSignMinetunes.getCoordsRelativeToSign(
-								pointedAtBlock, currSignFacing, 0, 0, amount);
+						pointedAtBlock = BlockSignMinetunes
+								.getCoordsRelativeToSign(pointedAtBlock,
+										currSignFacing, 0, 0, amount);
 					}
 
 					if (g.getKeyword().equalsIgnoreCase("up")
@@ -2062,8 +2065,9 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 
 						// Adjust next sign position based on the amount to
 						// move and the current sign's facing
-						pointedAtBlock = BlockSignMinetunes.getCoordsRelativeToSign(
-								pointedAtBlock, currSignFacing, 0, amount, 0);
+						pointedAtBlock = BlockSignMinetunes
+								.getCoordsRelativeToSign(pointedAtBlock,
+										currSignFacing, 0, amount, 0);
 					}
 				}
 			}
@@ -2636,7 +2640,8 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 		if (filename != null) {
 			// Export signs to filename
 			try {
-				BlockSignMinetunes.exportSignsToFile(savedSigns, new File(filename));
+				BlockSignMinetunes.exportSignsToFile(savedSigns, new File(
+						filename));
 			} catch (IOException e) {
 				e.printStackTrace();
 				// TODO: Tell user something!

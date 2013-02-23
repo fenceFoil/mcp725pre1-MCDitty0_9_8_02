@@ -44,8 +44,34 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 
 	/** The ModelSign instance used by the TileEntitySignRenderer */
 	private ModelSign modelSign;
+	/**
+	 * Recreate the FontRenderer colorcode colors, but muted
+	 */
+	static int[] colorCode = new int[32];
 
 	private static long lastMenuButtonCheckTime = 0;
+
+	static {
+		for (int var9 = 0; var9 < 32; ++var9) {
+			int var10 = (var9 >> 3 & 1) * 85;
+			int var11 = (var9 >> 2 & 1) * 170 + var10;
+			int var12 = (var9 >> 1 & 1) * 170 + var10;
+			int var13 = (var9 >> 0 & 1) * 170 + var10;
+
+			if (var9 == 6) {
+				var11 += 85;
+			}
+
+			if (var9 >= 16) {
+				var11 /= 4;
+				var12 /= 4;
+				var13 /= 4;
+			}
+
+			colorCode[var9] = (var11 & 255) << 16 | (var12 & 255) << 8 | var13
+					& 255;
+		}
+	}
 
 	public TileEntitySignRendererMinetunes() {
 		modelSign = new ModelSign();
@@ -173,8 +199,8 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 
 			// Eliminate sign texts if they face same way as player
 
-			int signFacing = BlockSignMinetunes.getSignFacing(signEntity.blockMetadata,
-					signEntity.blockType);
+			int signFacing = BlockSignMinetunes.getSignFacing(
+					signEntity.blockMetadata, signEntity.blockType);
 			if (renderText) {
 				if (signFacing == playerFacingThisTick) {
 					renderText = false;
@@ -280,8 +306,33 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 			GL11.glTranslatef((float) par2 + 0.5F, (float) par4 + 0.75F * f,
 					(float) par6 + 0.5F);
 			float f1 = (float) (signEntity.getBlockMetadata() * 360) / 16F;
+
+			// Handle faces' rotations
+			if (signEntity.isFace(false)) {
+
+				double var1 = (double) signEntity.xCoord + 0.5
+						- mc.thePlayer.posX;
+				double var3 = (double) signEntity.yCoord
+						+ 0.5
+						- (mc.thePlayer.posY + (double) mc.thePlayer
+								.getEyeHeight());
+				double var5 = (double) signEntity.zCoord + 0.5
+						- mc.thePlayer.posZ;
+				double var7 = (double) MathHelper.sqrt_double(var1 * var1
+						+ var5 * var5);
+				float var9 = (float) (Math.atan2(var5, var1) * 180.0D / Math.PI) - 90.0F;
+				f1 = var9 + 180;
+				modelSign.signStick.showModel = false;
+				GL11.glTranslatef(
+						0.0F,
+						-(0.5f + 0.05f * (Math.abs(MathHelper.sin((float) MathHelper
+								.wrapAngleTo180_double((double) currentSystemTime / 3500d))))),
+						0.0f);
+			} else {
+				modelSign.signStick.showModel = true;
+			}
+
 			GL11.glRotatef(-f1, 0.0F, 1.0F, 0.0F);
-			modelSign.signStick.showModel = true;
 		} else {
 			int i = signEntity.getBlockMetadata();
 			float f2 = 0.0F;
@@ -315,7 +366,7 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 					signEntity.getHighlightColor()[3] / 255f);
 		} else if (colorCode != null) {
 			// Tint sign
-			setColorFromColorCode(colorCode, false);
+			TileEntitySignMinetunes.setColorFromColorCode(colorCode, false);
 		} else {
 			// Handle fade on block breaking
 			GL11.glColor4f(blackout, blackout, blackout, 1f);
@@ -377,6 +428,11 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 		GL11.glPopMatrix();
 
 		float f3 = 0.01666667F * f;
+		if (signEntity.isFace(false)) {
+			f3 *= 1f - 0.05 * (Math
+					.abs(MathHelper.sin((float) MathHelper
+							.wrapAngleTo180_double((double) currentSystemTime / 2000d))));
+		}
 		GL11.glTranslatef(0.0F, 0.5F * f, 0.07F * f);
 		GL11.glScalef(f3, -f3, f3);
 		GL11.glNormal3f(0.0F, 0.0F, -1F * f3);
@@ -384,54 +440,61 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 
 		// Render sign text
 		if (renderText) {
-			String[] text = signEntity.getSignTextNoCodes();
-
-			FontRenderer fontrenderer = getFontRenderer();
-			int j = 0;
-
-			for (int currRenderLine = 0; currRenderLine < text.length; currRenderLine++) {
-				String s = text[currRenderLine];
-				String sWithCaret = s;
-				if (currRenderLine == signEntity.lineBeingEdited) {
-					if (signEntity.charBeingEdited >= text[currRenderLine]
-							.length()) {
-						// sWithCaret = (new
-						// StringBuilder()).append(s).append("|").toString();
-					} else {
-						sWithCaret = (new StringBuilder())
-								.append(s.substring(0,
-										signEntity.charBeingEdited))
-								.append("|")
-								.append(s.substring(signEntity.charBeingEdited))
-								.toString();
-					}
-				}
-				if (blinkTextStateOn
-						&& signEntity.errorBlinkLine[currRenderLine]) {
-					sWithCaret = "§c" + sWithCaret;
-				} else if (signEntity.highlightLine[currRenderLine] != null
-						&& signEntity.highlightLine[currRenderLine].length() > 0) {
-					sWithCaret = signEntity.highlightLine[currRenderLine]
-							+ sWithCaret;
-				}
-
-				if (currRenderLine == signEntity.lineBeingEdited) {
-					s = (new StringBuilder()).append("> ").append(sWithCaret)
-							.append(" §r<").toString();
-					fontrenderer.drawString(s, -fontrenderer.getStringWidth(s
-							.replaceAll("§.", "").replaceFirst("|", "")) / 2,
-							currRenderLine * 10 - text.length * 5, j);
-				} else {
-					fontrenderer.drawString(sWithCaret, -fontrenderer
-							.getStringWidth(s.replaceAll("§.", "")) / 2,
-							currRenderLine * 10 - text.length * 5, j);
-				}
-			}
+			renderText(signEntity, blinkTextStateOn);
 		}
 
 		GL11.glDepthMask(true);
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0f);
 		GL11.glPopMatrix();
+	}
+
+	private void renderText(TileEntitySignMinetunes signEntity,
+			boolean blinkTextStateOn) {
+		String[] text = signEntity.getSignTextNoCodes();
+
+		FontRenderer fontrenderer = getFontRenderer();
+		int j = 0;
+
+		for (int currRenderLine = 0; currRenderLine < text.length; currRenderLine++) {
+			String s = text[currRenderLine];
+			String colorCode = signEntity.getSignColorCode(signEntity.signText);
+			if (colorCode != null && colorCode.equals("0")) {
+				s = "§f"+s;
+			}
+			String sWithCaret = s;
+			if (currRenderLine == signEntity.lineBeingEdited) {
+				if (signEntity.charBeingEdited >= text[currRenderLine].length()) {
+					// sWithCaret = (new
+					// StringBuilder()).append(s).append("|").toString();
+				} else {
+					sWithCaret = (new StringBuilder())
+							.append(s.substring(0, signEntity.charBeingEdited))
+							.append("|")
+							.append(s.substring(signEntity.charBeingEdited))
+							.toString();
+				}
+			}
+			if (blinkTextStateOn && signEntity.errorBlinkLine[currRenderLine]) {
+				sWithCaret = "§c" + sWithCaret;
+			} else if (signEntity.highlightLine[currRenderLine] != null
+					&& signEntity.highlightLine[currRenderLine].length() > 0) {
+				sWithCaret = signEntity.highlightLine[currRenderLine]
+						+ sWithCaret;
+			}
+
+			if (currRenderLine == signEntity.lineBeingEdited) {
+				s = (new StringBuilder()).append("> ").append(sWithCaret)
+						.append(" §r<").toString();
+				fontrenderer.drawString(s, -fontrenderer.getStringWidth(s
+						.replaceAll("§.", "").replaceFirst("|", "")) / 2,
+						currRenderLine * 10 - text.length * 5, j);
+			} else {
+				fontrenderer
+						.drawString(sWithCaret, -fontrenderer.getStringWidth(s
+								.replaceAll("§.", "")) / 2, currRenderLine * 10
+								- text.length * 5, j);
+			}
+		}
 	}
 
 	public void renderTileEntityAt(TileEntity par1TileEntity, double par2,
@@ -450,103 +513,6 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 			return false;
 		} else {
 			return true;
-		}
-	}
-
-	/**
-	 * Checks the last line of a sign for a sign color code
-	 * (%[\\dabcdefABCDEFlnoLNOkmrKMR]) (note: currently lnoLNOkmrKMR are not
-	 * considered) at the end of the 3rd line
-	 * 
-	 * @return null or a string of the code's character if it was found (the
-	 *         character after the "^")
-	 */
-	public static String getSignColorCode(String[] signText) {
-		if (signText.length < 3) {
-			return null;
-		}
-	
-		// String thirdLine = signText[2];
-	
-		if (signText[2] == null || signText[2].length() < 2) {
-			return null;
-		}
-	
-		String code = signText[2].substring(signText[2].length() - 2);
-		if (code.matches("%[\\dabcdefABCDEF]")) {
-			// Code present!
-			// System.out.println (code.substring(1));
-			// new Exception().printStackTrace();
-			return code.substring(1);
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Recreate the FontRenderer colorcode colors, but muted
-	 */
-	private static int[] colorCode = new int[32];
-
-	static {
-		for (int var9 = 0; var9 < 32; ++var9) {
-			int var10 = (var9 >> 3 & 1) * 85;
-			int var11 = (var9 >> 2 & 1) * 170 + var10;
-			int var12 = (var9 >> 1 & 1) * 170 + var10;
-			int var13 = (var9 >> 0 & 1) * 170 + var10;
-	
-			if (var9 == 6) {
-				var11 += 85;
-			}
-	
-			if (var9 >= 16) {
-				var11 /= 4;
-				var12 /= 4;
-				var13 /= 4;
-			}
-	
-			colorCode[var9] = (var11 & 255) << 16 | (var12 & 255) << 8 | var13
-					& 255;
-		}
-	}
-
-	public static void setColorFromColorCode(String codeCharacter,
-			boolean darker) {
-		int colorCodeIndex = "0123456789abcdefklmnor".indexOf(codeCharacter
-				.toLowerCase().charAt(0));
-	
-		if (colorCodeIndex < 0 || colorCodeIndex >= 16) {
-			return;
-		}
-	
-		if (colorCodeIndex < 16) {
-			if (colorCodeIndex < 0 || colorCodeIndex > 15) {
-				colorCodeIndex = 15;
-			}
-	
-			if (darker) {
-				colorCodeIndex += 16;
-			}
-	
-			int color = colorCode[colorCodeIndex];
-			// this.textColor = var6;
-			GL11.glColor4f((float) (color >> 16) / 255.0F,
-					(float) (color >> 8 & 255) / 255.0F,
-					(float) (color & 255) / 255.0F, 1.0f);
-		}
-	}
-
-	/**
-	 * 
-	 * @param signText
-	 * @return true if there were codes
-	 */
-	public static boolean removeSignColorCodes(String[] signText) {
-		if (getSignColorCode(signText) != null) {
-			signText[2] = signText[2].substring(0, signText[2].length() - 2);
-			return true;
-		} else {
-			return false;
 		}
 	}
 
