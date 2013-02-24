@@ -76,13 +76,9 @@ public class SettingsGui extends GuiScreen {
 		// }
 
 		if (MinetunesConfig.getBoolean("signs.showErrors")) {
-			if (MinetunesConfig.getBoolean("signs.firstErrorOnly")) {
-				onlyFirstErrorButton.displayString = "§aSign Errors On";
-			} else {
-				onlyFirstErrorButton.displayString = "§cAll Sign Errors";
-			}
+			onlyFirstErrorButton.displayString = "§aShow SignTune Errors";
 		} else {
-			onlyFirstErrorButton.displayString = "§cSign Errors Off";
+			onlyFirstErrorButton.displayString = "§cHide SignTune Errors";
 		}
 
 		signBlinkMSButton.displayString = "Blink Errors: §a"
@@ -447,20 +443,9 @@ public class SettingsGui extends GuiScreen {
 			// BlockSign.emitOnlyOneParticle = !BlockSign.emitOnlyOneParticle;
 			// writeConfigFile();
 		} else if (guibutton.id == 400) {
-			// Only first error shown
-			if (MinetunesConfig.getBoolean("signs.showErrors") == false) {
-				MinetunesConfig.setBoolean("signs.showErrors", true);
-				MinetunesConfig.setBoolean("signs.firstErrorOnly", true);
-			} else {
-				if (MinetunesConfig.getBoolean("signs.firstErrorOnly")) {
-					MinetunesConfig.setBoolean("signs.firstErrorOnly", false);
-				} else {
-					MinetunesConfig.setBoolean("signs.showErrors", false);
-					MinetunesConfig.setBoolean("signs.firstErrorOnly", true);
-				}
-			}
-			// System.out.println(BlockSign.showErrors + ":"
-			// + BlockSign.onlyFirstErrorShown);
+			// Toggle errors shown
+			MinetunesConfig.setBoolean("signs.showErrors",
+					!MinetunesConfig.getBoolean("signs.showErrors"));
 			flushConfigFile();
 		} else if (guibutton.id == 500) {
 			// Save midis

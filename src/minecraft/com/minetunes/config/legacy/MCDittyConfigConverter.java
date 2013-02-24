@@ -169,15 +169,15 @@ public class MCDittyConfigConverter {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					} else if (lineIn.startsWith("OnlyFirstErrorShown=")) {
-						lineIn = lineIn.replace("OnlyFirstErrorShown=", "");
-						try {
-							MinetunesConfig.setBoolean("signs.firstErrorOnly",
-									Boolean.parseBoolean(lineIn));
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+//					} else if (lineIn.startsWith("OnlyFirstErrorShown=")) {
+//						lineIn = lineIn.replace("OnlyFirstErrorShown=", "");
+//						try {
+//							MinetunesConfig.setBoolean("signs.firstErrorOnly",
+//									Boolean.parseBoolean(lineIn));
+//						} catch (Exception e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
 					} else if (lineIn.startsWith("showErrors=")) {
 						lineIn = lineIn.replace("showErrors=", "");
 						try {

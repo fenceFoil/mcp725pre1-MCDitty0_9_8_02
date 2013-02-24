@@ -497,8 +497,8 @@ public class BlockSignMinetunes {
 				LinkedList<String> chatMessageBuffer = dittyProperties
 						.getErrorMessages();
 
-				if (MinetunesConfig.getBoolean("signs.firstErrorOnly")
-						&& chatMessageBuffer.size() > 0) {
+				// Removed setting "firstErrorOnly"
+				if (chatMessageBuffer.size() > 0) {
 					// If we only show the first, discard the rest and create a
 					// new
 					// buffer with just the first in it

@@ -364,7 +364,9 @@ public class BookPlayer {
 				// one if that option is enabled
 				LinkedList<String> chatMessageBuffer = ditty.getErrorMessages();
 
-				if (MinetunesConfig.getBoolean("signs.firstErrorOnly")
+				// NOTE: Removed setting to show all errors at once.
+				if (//MinetunesConfig.getBoolean("signs.firstErrorOnly")
+						true
 						&& chatMessageBuffer.size() > 0) {
 					// If we only show the first, discard the rest and create a
 					// new

@@ -327,7 +327,7 @@ public class BlockTune implements BlockTuneAccess {
 		}
 
 		// Update text on adjacent sign
-		if (getNumAdjacent(world, Block.signWall.blockID, nodePoint) > 0) {
+		if (Point3D.getNumAdjacent(world, Block.signWall.blockID, nodePoint) > 0) {
 			TileEntitySign tileEntitySign = getAdjacentSignTileEntity(nodePoint);
 			if (tileEntitySign != null) {
 				if (updateCount % 200 == 0) {
@@ -394,7 +394,7 @@ public class BlockTune implements BlockTuneAccess {
 	}
 
 	private TileEntitySign getAdjacentSignTileEntity(Point3D point) {
-		for (Point3D p : getAdjacentBlocks(point)) {
+		for (Point3D p : Point3D.getAdjacentBlocks(point)) {
 			TileEntity t = world.getBlockTileEntity(p.x, p.y, p.z);
 			if (t != null && t instanceof TileEntitySign) {
 				return (TileEntitySign) t;
@@ -442,64 +442,6 @@ public class BlockTune implements BlockTuneAccess {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Returns the 6 points directly adjacent to a block in 3D-space. If a block
-	 * is at y=0 or y=255, the returned list of points will only be 5 elements
-	 * long.
-	 * 
-	 * @param point
-	 *            if null, method returns null
-	 * @return a 5 or 6 element array of Point3D
-	 */
-	public static Point3D[] getAdjacentBlocks(Point3D point) {
-		if (point == null) {
-			return null;
-		}
-
-		LinkedList<Point3D> returns = new LinkedList<Point3D>();
-
-		// Find the x/z adjacent blocks
-		returns.add(new Point3D(point.x, point.y, point.z - 1));
-		returns.add(new Point3D(point.x, point.y, point.z + 1));
-		returns.add(new Point3D(point.x - 1, point.y, point.z));
-		returns.add(new Point3D(point.x + 1, point.y, point.z));
-
-		// Find the y adjacent blocks
-		if (point.y > 0) {
-			returns.add(new Point3D(point.x, point.y - 1, point.z));
-		}
-
-		if (point.y < 255) {
-			returns.add(new Point3D(point.x, point.y + 1, point.z));
-		}
-
-		return returns.toArray(new Point3D[returns.size()]);
-	}
-
-	/**
-	 * Returns the 4 points directly adjacent to a block in 2D space, on the x
-	 * and z coordinates.
-	 * 
-	 * @param point
-	 *            if null, method returns null
-	 * @return a 4 element array of Point3D
-	 */
-	public static Point3D[] getAdjacentBlocksXZ(Point3D point) {
-		if (point == null) {
-			return null;
-		}
-
-		LinkedList<Point3D> returns = new LinkedList<Point3D>();
-
-		// Find the x/z adjacent blocks
-		returns.add(new Point3D(point.x, point.y, point.z - 1));
-		returns.add(new Point3D(point.x, point.y, point.z + 1));
-		returns.add(new Point3D(point.x - 1, point.y, point.z));
-		returns.add(new Point3D(point.x + 1, point.y, point.z));
-
-		return returns.toArray(new Point3D[returns.size()]);
 	}
 
 	public Point3D getNodePoint() {
@@ -578,7 +520,7 @@ public class BlockTune implements BlockTuneAccess {
 	 * @return
 	 */
 	private boolean isAdjacentSwitchOn(World world, Point3D block) {
-		for (Point3D p : getAdjacentBlocks(block)) {
+		for (Point3D p : Point3D.getAdjacentBlocks(block)) {
 			if (world.getBlockId(p.x, p.y, p.z) == Block.lever.blockID) {
 				if ((world.getBlockMetadata(p.x, p.y, p.z) & 0x8) == 0x8) {
 					// Lever is on
@@ -600,7 +542,7 @@ public class BlockTune implements BlockTuneAccess {
 	}
 
 	private boolean checkExistingStructure(World world) {
-		if (getNumAdjacent(world, Block.lever.blockID, nodePoint) < 1) {
+		if (Point3D.getNumAdjacent(world, Block.lever.blockID, nodePoint) < 1) {
 			return false;
 		}
 
@@ -679,7 +621,7 @@ public class BlockTune implements BlockTuneAccess {
 			Point3D nodePoint) {
 		// Check that the basic components are attached before verifying the
 		// corners
-		int leversFound = getNumAdjacent(world, Block.lever.blockID, nodePoint);
+		int leversFound = Point3D.getNumAdjacent(world, Block.lever.blockID, nodePoint);
 		if (leversFound <= 0) {
 			return false;
 		}
@@ -691,18 +633,6 @@ public class BlockTune implements BlockTuneAccess {
 					nodePoint.z, 0, 0, 0);
 		}
 		return perimeterValid;
-	}
-
-	private static int getNumAdjacent(World world, int blockID,
-			Point3D blockPoint) {
-		int found = 0;
-		for (Point3D p : getAdjacentBlocks(blockPoint)) {
-			int id = world.getBlockId(p.x, p.y, p.z);
-			if (id == blockID) {
-				found++;
-			}
-		}
-		return found;
 	}
 
 	/**
