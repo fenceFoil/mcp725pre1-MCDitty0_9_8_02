@@ -308,20 +308,20 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 			float f1 = (float) (signEntity.getBlockMetadata() * 360) / 16F;
 
 			// Handle faces' rotations
-			if (signEntity.isFace(false) && !(signEntity.lineBeingEdited >= 0)) {
+			if (signEntity.isFace(false)) {
 
 				double var1 = (double) signEntity.xCoord + 0.5
 						- mc.thePlayer.posX;
-				double var3 = (double) signEntity.yCoord
-						+ 0.5
-						- (mc.thePlayer.posY + (double) mc.thePlayer
-								.getEyeHeight());
+				// double var3 = (double) signEntity.yCoord
+				// + 0.5
+				// - (mc.thePlayer.posY + (double) mc.thePlayer
+				// .getEyeHeight());
 				double var5 = (double) signEntity.zCoord + 0.5
 						- mc.thePlayer.posZ;
 				double var7 = (double) MathHelper.sqrt_double(var1 * var1
 						+ var5 * var5);
-				float var9 = (float) (Math.atan2(var5, var1) * 180.0D / Math.PI) - 90.0F;
-				f1 = var9 + 180;
+				float facingOppositeAsPlayer = (float) (Math.atan2(var5, var1) * 180.0D / Math.PI) - 90.0F;
+				f1 = facingOppositeAsPlayer + 180;
 				modelSign.signStick.showModel = false;
 				GL11.glTranslatef(
 						0.0F,
@@ -419,7 +419,11 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 			// Not blinking. Act normal!
 		}
 
-		bindTextureByName("/item/sign.png");
+		if (signEntity.isFace(false)) {
+			bindTextureByName("/com/minetunes/resources/textures/skinSign1.png");
+		} else {
+			bindTextureByName("/item/sign.png");
+		}
 		GL11.glPushMatrix();
 		GL11.glScalef(f, -f, -f);
 		if (renderSign) {
@@ -459,7 +463,7 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 			String s = text[currRenderLine];
 			String colorCode = signEntity.getSignColorCode(signEntity.signText);
 			if (colorCode != null && colorCode.equals("0")) {
-				s = "§f"+s;
+				s = "§f" + s;
 			}
 			String sWithCaret = s;
 			if (currRenderLine == signEntity.lineBeingEdited) {

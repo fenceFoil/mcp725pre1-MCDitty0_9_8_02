@@ -42,6 +42,7 @@ import com.minetunes.Point3D;
  */
 public class TileEntitySignMinetunes extends TileEntitySign {
 
+	private static final String FACE_EYES_REGEX = "(.*[\\({\\[]..?[\\)}\\]].*){2}";
 	public boolean startBlinking = false;
 	public boolean blinking = false;
 	public long blinkingEndTime = 0;
@@ -153,6 +154,11 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 		this.highlightColor = highlightColor;
 	}
 
+	// If not true, will blank out eyes line
+	private boolean faceBlinking = true;
+	private long changeFaceBlinkTime = 0;
+	private String faceNormalEyes = "";
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -168,12 +174,57 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 		} else {
 			signColorCode = null;
 		}
-		
+
 		if (isFace(false)) {
+			// Emit particles
 			if (Minetunes.rand.nextInt(100000) == 0) {
-				worldObj.spawnParticle("heart", xCoord+0.5, yCoord+0.5, zCoord+0.5, 0, 0.1, 0);
-			} else if (Minetunes.rand.nextInt(5) == 0) {
-				worldObj.spawnParticle("smoke", xCoord+0.5, yCoord, zCoord+0.5, 0, 0.02, 0);
+				worldObj.spawnParticle("heart", xCoord + 0.5, yCoord + 0.5,
+						zCoord + 0.5, 0, 0.1, 0);
+			} else if (blockType == Block.signPost
+					&& Minetunes.rand.nextInt(50) == 0) {
+				worldObj.spawnParticle("smoke", xCoord + 0.5, yCoord,
+						zCoord + 0.5, 0, 0.02, 0);
+			}
+
+			// Blink eyes
+			if (System.currentTimeMillis() > changeFaceBlinkTime) {
+				int eyesLine = 0;
+				if (signText[1].matches(FACE_EYES_REGEX)) {
+					eyesLine = 1;
+				}
+
+				faceBlinking = !faceBlinking;
+				if (faceBlinking) {
+					signText[eyesLine] = faceNormalEyes;
+					changeFaceBlinkTime = System.currentTimeMillis()
+							+ (Minetunes.rand.nextInt(10000)) + 500;
+				} else {
+					faceNormalEyes = signText[eyesLine];
+					signText[eyesLine] = signText[eyesLine].replaceAll(
+							"[\\({\\[]..?[\\)}\\]]", "(-)");
+					changeFaceBlinkTime = System.currentTimeMillis()
+							+ (Minetunes.rand.nextInt(500)) + 50;
+				}
+			}
+
+			// Wiggle arms
+			if (worldObj.isRemote) {
+				if (Minetunes.rand.nextInt(500) == 0) {
+					Point3D anchor = BlockSignMinetunes
+							.getBlockAttachedTo(this);
+					for (Point3D p : Point3D.getAdjacentBlocks(anchor)) {
+						if (worldObj.getBlockId(p.x, p.y, p.z) == Block.lever.blockID) {
+							// Wiggle lever
+							int metadata = worldObj.getBlockMetadata(p.x, p.y, p.z);
+							if (metadata >= 8) {
+								metadata -= 8; 
+							} else if (metadata < 8) {
+								metadata += 8;
+							}
+							worldObj.setBlockMetadata(p.x, p.y, p.z, metadata);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -317,8 +368,8 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 	public boolean isFace(boolean forceRecheck) {
 		if (isFace == null || forceRecheck) {
 			boolean found = false;
-			for (int i = 0; i < 1; i++) {
-				if (getSignTextNoCodes()[i].matches("(.*\\(..?\\).*){2}")) {
+			for (int i = 0; i <= 1; i++) {
+				if (getSignTextNoCodes()[i].matches(FACE_EYES_REGEX)) {
 					found = true;
 				}
 			}

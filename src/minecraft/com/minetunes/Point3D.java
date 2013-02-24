@@ -25,7 +25,10 @@
 
 package com.minetunes;
 
+import java.util.LinkedList;
+
 import net.minecraft.src.TileEntity;
+import net.minecraft.src.World;
 
 public class Point3D {
 
@@ -106,6 +109,76 @@ public class Point3D {
 
 	public String toString() {
 		return "Point3D:" + x + ":" + y + ":" + z;
+	}
+
+	/**
+	 * Returns the 6 points directly adjacent to a block in 3D-space. If a block
+	 * is at y=0 or y=255, the returned list of points will only be 5 elements
+	 * long.
+	 * 
+	 * @param point
+	 *            if null, method returns null
+	 * @return a 5 or 6 element array of Point3D
+	 */
+	public static Point3D[] getAdjacentBlocks(Point3D point) {
+		if (point == null) {
+			return null;
+		}
+	
+		LinkedList<Point3D> returns = new LinkedList<Point3D>();
+	
+		// Find the x/z adjacent blocks
+		returns.add(new Point3D(point.x, point.y, point.z - 1));
+		returns.add(new Point3D(point.x, point.y, point.z + 1));
+		returns.add(new Point3D(point.x - 1, point.y, point.z));
+		returns.add(new Point3D(point.x + 1, point.y, point.z));
+	
+		// Find the y adjacent blocks
+		if (point.y > 0) {
+			returns.add(new Point3D(point.x, point.y - 1, point.z));
+		}
+	
+		if (point.y < 255) {
+			returns.add(new Point3D(point.x, point.y + 1, point.z));
+		}
+	
+		return returns.toArray(new Point3D[returns.size()]);
+	}
+
+	/**
+	 * Returns the 4 points directly adjacent to a block in 2D space, on the x
+	 * and z coordinates.
+	 * 
+	 * @param point
+	 *            if null, method returns null
+	 * @return a 4 element array of Point3D
+	 */
+	public static Point3D[] getAdjacentBlocksXZ(Point3D point) {
+		if (point == null) {
+			return null;
+		}
+	
+		LinkedList<Point3D> returns = new LinkedList<Point3D>();
+	
+		// Find the x/z adjacent blocks
+		returns.add(new Point3D(point.x, point.y, point.z - 1));
+		returns.add(new Point3D(point.x, point.y, point.z + 1));
+		returns.add(new Point3D(point.x - 1, point.y, point.z));
+		returns.add(new Point3D(point.x + 1, point.y, point.z));
+	
+		return returns.toArray(new Point3D[returns.size()]);
+	}
+
+	public static int getNumAdjacent(World world, int blockID,
+			Point3D blockPoint) {
+		int found = 0;
+		for (Point3D p : getAdjacentBlocks(blockPoint)) {
+			int id = world.getBlockId(p.x, p.y, p.z);
+			if (id == blockID) {
+				found++;
+			}
+		}
+		return found;
 	}
 
 	/**
