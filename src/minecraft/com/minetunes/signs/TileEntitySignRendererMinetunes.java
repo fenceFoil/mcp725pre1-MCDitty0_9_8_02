@@ -325,7 +325,7 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 				modelSign.signStick.showModel = false;
 				GL11.glTranslatef(
 						0.0F,
-						-(0.5f + 0.05f * (Math.abs(MathHelper.sin((float) MathHelper
+						-(0.35f + 0.08f * (Math.abs(MathHelper.sin((float) MathHelper
 								.wrapAngleTo180_double((double) currentSystemTime / 3500d))))),
 						0.0f);
 			} else {
