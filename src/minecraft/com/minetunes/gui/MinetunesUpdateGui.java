@@ -148,7 +148,24 @@ public class MinetunesUpdateGui extends GuiScreen implements
 			// Auto-update
 			mc.displayGuiScreen(null);
 
-			if (Minetunes.forgeMode) {
+			boolean isInstalledFromModsFolder = false;
+			File modsFolder2 = new File(Minecraft.getMinecraftDir(), "mods");
+			File[] modsInFolder = modsFolder2.listFiles();
+			if (modsFolder2 != null) {
+				for (File f : modsInFolder) {
+					if (f.getName().toLowerCase().contains("minetunes")) {
+						isInstalledFromModsFolder = true;
+						break;
+					}
+				}
+			}
+
+			if (isInstalledFromModsFolder) {
+				onUpdaterEvent(UpdateEventLevel.INFO, "Setup",
+						"Downloading new version into mods folder.");
+			}
+
+			if (Minetunes.forgeMode && isInstalledFromModsFolder) {
 				ModUpdater autoUpdater = Minetunes.autoUpdater;
 				onUpdaterEvent(
 						UpdateEventLevel.INFO,
@@ -159,8 +176,9 @@ public class MinetunesUpdateGui extends GuiScreen implements
 
 				File modsFolder = new File(Minecraft.getMinecraftDir(), "mods");
 				File destFile = new File(modsFolder, "MineTunes-"
-						+ autoUpdater.getLatestVersion(MinetunesConfig.MC_CURRENT_VERSION).replace('.', '_')
-						+ "-MC"
+						+ autoUpdater.getLatestVersion(
+								MinetunesConfig.MC_CURRENT_VERSION).replace(
+								'.', '_') + "-MC"
 						+ MinetunesConfig.MC_CURRENT_VERSION.replace('.', '_')
 						+ ".zip");
 				autoUpdater.addFileUpdaterListener(this);
@@ -171,28 +189,34 @@ public class MinetunesUpdateGui extends GuiScreen implements
 				// was
 				File[] modsFiles = modsFolder.listFiles();
 				boolean successfulUpdate = false;
-				for (File f:modsFiles) {
+				for (File f : modsFiles) {
 					if (f.equals(destFile)) {
 						successfulUpdate = true;
 						break;
 					}
 				}
-				
+
 				// Respond to whether update was successful
 				if (successfulUpdate) {
 					// Remove spare files
-					for (File f:modsFiles) {
-						if (!f.equals(destFile) && f.getName().toLowerCase().contains("minetunes")) {
+					for (File f : modsFiles) {
+						if (!f.equals(destFile)
+								&& f.getName().toLowerCase()
+										.contains("minetunes")) {
 							f.delete();
-							onUpdaterEvent(UpdateEventLevel.INFO, "Cleanup", "Removed old MineTunes ("+f.getName()+")");
+							onUpdaterEvent(UpdateEventLevel.INFO, "Cleanup",
+									"Removed old MineTunes (" + f.getName()
+											+ ")");
 						}
 					}
-					Minetunes.showTextAsLyricNow("§aUpdate successful! Next time you start Minecraft, MineTunes will be updated to version "
-							+ Minetunes.autoUpdater
-									.getLatestVersion(MinetunesConfig.MC_CURRENT_VERSION));
+					Minetunes
+							.showTextAsLyricNow("§aUpdate successful! Next time you start Minecraft, MineTunes will be updated to version "
+									+ Minetunes.autoUpdater
+											.getLatestVersion(MinetunesConfig.MC_CURRENT_VERSION));
 				} else {
 					// Oh well.
-					Minetunes.showTextAsLyricNow("§cCould not update MineTunes. Sorry!");
+					Minetunes
+							.showTextAsLyricNow("§cCould not update MineTunes. Sorry!");
 				}
 			} else {
 				final MinetunesUpdateGui thisGui = this;
