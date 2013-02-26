@@ -50,7 +50,7 @@ public class MinetunesConfig {
 	/**
 	 * Current MineTunes version.
 	 */
-	public static final String CURRENT_VERSION = "0.9.10.05";
+	public static final String CURRENT_VERSION = "0.9.10.06";
 	/**
 	 * Minecraft version that the mod is designed for.
 	 */
@@ -121,6 +121,7 @@ public class MinetunesConfig {
 		defaultProperties.setProperty("signs.playingColor.sliderPos", "0.45");
 		//defaultProperties.setProperty("signs.highlightErrorLines", "true");
 		defaultProperties.setProperty("mod.lastVersionRun", "0");
+		defaultProperties.setProperty("tutorial.lastDownload", "0");
 	}
 
 	/**
