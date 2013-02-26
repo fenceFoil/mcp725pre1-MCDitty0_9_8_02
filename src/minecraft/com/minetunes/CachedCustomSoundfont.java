@@ -87,6 +87,12 @@ public class CachedCustomSoundfont {
 	}
 
 	public void loadFromConfigString(String configString) throws IOException {
+		// Handle null string
+		if (configString == null) {
+			unload();
+			return;
+		}
+		
 		// Check if there is really a change
 		if (configString.equals(filename)) {
 			// No change
