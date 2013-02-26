@@ -1928,6 +1928,9 @@ public class Minetunes {
 		synchronized (signIndex) {
 			signIndex.add(entitySign);
 		}
+		
+		// Check for faces
+		entitySign.isFace(true);
 	}
 
 	/**
