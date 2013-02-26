@@ -50,21 +50,10 @@ public class MinetunesGui extends GuiScreen {
 	public MinetunesGui() {
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.GuiScreen#drawScreen(int, int, float)
-	 */
 	@Override
 	public void drawScreen(int par1, int par2, float par3) {
 		drawDefaultBackground();
 
-		// // Print version
-		// drawString(fontRenderer,
-		// "MineTunes Version " + BlockSign.CURRENT_VERSION, 0, 0, 0x444444);
-
-		// Draw label at top of screen
-		// drawRect(width / 2 - 60, 20, width / 2 + 60, 70, 0xaaaaaa88);
 
 		int bgTextureNumber = Minecraft.getMinecraft().renderEngine
 				.getTexture("/com/minetunes/resources/textures/signBG2.png");
@@ -94,11 +83,6 @@ public class MinetunesGui extends GuiScreen {
 		super.drawScreen(par1, par2, par3);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.GuiScreen#keyTyped(char, int)
-	 */
 	@Override
 	protected void keyTyped(char par1, int par2) {
 		if (par2 == Keyboard.KEY_ESCAPE) {
@@ -106,34 +90,18 @@ public class MinetunesGui extends GuiScreen {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.GuiScreen#mouseClicked(int, int, int) x, y, button
-	 */
 	@Override
 	protected void mouseClicked(int x, int y, int button) {
 
 		super.mouseClicked(x, y, button);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.GuiScreen#mouseMovedOrUp(int, int, int)
-	 */
 	@Override
 	protected void mouseMovedOrUp(int par1, int par2, int par3) {
 		// TODO Auto-generated method stub
 		super.mouseMovedOrUp(par1, par2, par3);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.minecraft.src.GuiScreen#actionPerformed(net.minecraft.src.GuiButton)
-	 */
 	@Override
 	protected void actionPerformed(GuiButton guibutton) {
 		if (guibutton.id == 100) {
@@ -175,36 +143,6 @@ public class MinetunesGui extends GuiScreen {
 		}
 	}
 
-	// New method uses code from MC 1.3.2's texture pack folder opener
-	// private void openMidiFolderOld() {
-	// // (Code from GuiTexturePacks)
-	// String fileLocation = (new File(Minecraft.getMinecraftDir()
-	// + "/MCDitty", "midi")).getAbsolutePath();
-	// new File(Minecraft.getMinecraftDir() + "/MCDitty", "midi").mkdirs();
-	//
-	// // (Code from GuiTexturePacks)
-	// boolean useSys = false;
-	// try {
-	// Class class1 = Class.forName("java.awt.Desktop");
-	// Object obj = class1.getMethod("getDesktop", new Class[0]).invoke(
-	// null, new Object[0]);
-	// class1.getMethod("browse", new Class[] { java.net.URI.class })
-	// .invoke(obj,
-	// new Object[] { (new File(Minecraft
-	// .getMinecraftDir().toString() + "/MCDitty",
-	// "midi")).toURI() });
-	// } catch (Throwable throwable) {
-	// throwable.printStackTrace();
-	// useSys = true;
-	// }
-	//
-	// if (useSys) {
-	// System.out.println("Opening via Sys class!");
-	// Sys.openURL((new StringBuilder()).append("file://")
-	// .append(fileLocation).toString());
-	// }
-	// }
-
 	private void openMidiFolder() {
 		String fileLocation = (new File(MinetunesConfig.getMinetunesDir()
 				.getPath(), "midi")).getAbsolutePath();
@@ -241,8 +179,7 @@ public class MinetunesGui extends GuiScreen {
 					(Object) null, new Object[0]);
 			var3.getMethod("browse", new Class[] { URI.class }).invoke(
 					var4,
-					new Object[] { (new File(Minecraft.getMinecraftDir()
-							.toString() + "/MCDitty", "midi")).toURI() });
+					new File(MinetunesConfig.getMinetunesDir(), "midi").toURI());
 		} catch (Throwable var5) {
 			var5.printStackTrace();
 			useSys = true;
@@ -255,11 +192,6 @@ public class MinetunesGui extends GuiScreen {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.GuiScreen#initGui()
-	 */
 	@Override
 	public void initGui() {
 		// Add buttons
@@ -305,9 +237,6 @@ public class MinetunesGui extends GuiScreen {
 		t.setName("MineTunes Menu Update Checker");
 		t.start();
 
-		// Win achievement for opening the main menu
-		// mc.field_71439_g.addStat(MineTunes.menuAchievement, 1);
-
 		// Check config file to see that it's up to date
 		MinetunesConfig.loadAndUpdateSettings();
 	}
@@ -316,22 +245,11 @@ public class MinetunesGui extends GuiScreen {
 		outdated = checkForUpdates;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.GuiScreen#onGuiClosed()
-	 */
 	@Override
 	public void onGuiClosed() {
-		// TODO Auto-generated method stub
 		super.onGuiClosed();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.GuiScreen#doesGuiPauseGame()
-	 */
 	@Override
 	public boolean doesGuiPauseGame() {
 		return true;
