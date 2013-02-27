@@ -1,12 +1,12 @@
 §bKeywords:
-§aSign Flow:
+§aFlow:
 Patt, Pattern, GoTo, #, End, EndLine, Left, Right, Up, Down, In, Out
 §aMusic:
 Repeat, Volume, Staccato, StaccatoOff, Tran, TranOff, Octaves, OctavesOff, Accel
 §aSync:
 Reset, SyncVoices, SyncWith
 §aTriggers:
-Area, Proximity, [Ditty]
+Area, Proximity, [SignTune]
 §aDitty:
 OneAtATime, IsDitty, SaveMIDI, Mute, PlayLast, MaxPlays
 §aEffects:
@@ -17,4 +17,4 @@ OneLine
 Disco, NewBot
 
 §bNew:
-SFXInst2, Patt, [Ditty], PlayLast, MaxPlays, Firework
+PlayLast, MaxPlays, Firework, [SignTune] 

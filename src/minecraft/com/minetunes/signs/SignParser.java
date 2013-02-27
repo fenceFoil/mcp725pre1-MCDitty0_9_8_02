@@ -78,7 +78,7 @@ public class SignParser {
 			"emitter", "sfxinst2", "sfxinst", "sfxinstoff", "newbot",
 			"staccato", "staccatooff", "tran", "tranoff", "octaves",
 			"octavesoff", "prelyric", "accel", "patt", "[ditty]", "ditty",
-			"maxplays", "playlast", "flare", "firework" };
+			"maxplays", "playlast", "flare", "firework", "[signtune]" };
 
 	/**
 	 * Prevent people from instantiating this class of static methods
@@ -244,12 +244,13 @@ public class SignParser {
 			return AccelerateKeyword.parse(rawLine);
 		} else if (keyword.equals("patt")) {
 			return PattKeyword.parse(rawLine);
-		} else if (keyword.equals("ditty") || keyword.equals("[ditty]")) {
+		} else if (keyword.equals("ditty") || keyword.equals("[ditty]")
+				|| keyword.equals("[signtune]")) {
 			return new NoteblockTriggerKeyword(rawLine);
 		} else if (keyword.equals("maxplays")) {
 			return MaxPlaysKeyword.parse(rawLine);
-//		} else if (keyword.equals("flare")) {
-//			return FlareKeyword.parse(rawLine);
+			// } else if (keyword.equals("flare")) {
+			// return FlareKeyword.parse(rawLine);
 		} else if (keyword.equals("firework")) {
 			return FireworkKeyword.parse(rawLine);
 		} else {

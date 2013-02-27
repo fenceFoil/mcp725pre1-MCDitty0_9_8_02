@@ -195,8 +195,8 @@ public class BlockSignMinetunes {
 				held = heldStack.itemID;
 				// System.out.println (held);
 			}
-			if ((held == 271) || MinetunesConfig.getMinetunesOff()) {
-				// Holding wooden axe: do nothing.
+			if ((held == 271) || MinetunesConfig.getMinetunesOff() || MinetunesConfig.getBoolean("signs.disabled")) {
+				// Holding wooden axe or signs disabled: do nothing.
 			} else if (Minetunes.isIDShovel(held)) {
 				// Shovel! "Scoop up" sign text.
 				GuiEditSignMinetunes
@@ -317,9 +317,6 @@ public class BlockSignMinetunes {
 		// }
 
 		long startTime = System.nanoTime();
-
-		// Update config file
-		MinetunesConfig.loadAndUpdateSettings();
 
 		// TODO: If signs have been picked and there isn't a whitelist given,
 		// set the whitelist to all picked signs
@@ -1509,7 +1506,7 @@ public class BlockSignMinetunes {
 						ditty.addMusicStringTokens(readMusicString, token,
 								false);
 					} else if (keyword.equals("ditty")
-							|| keyword.equals("[ditty]")) {
+							|| keyword.equals("[ditty]") || keyword.equals("[signtune]")) {
 						// Do nothing here
 					} else if (keyword.equals("maxplays")) {
 						// Add maxplay lock point
