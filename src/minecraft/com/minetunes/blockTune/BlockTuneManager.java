@@ -33,6 +33,7 @@ import aurelienribon.tweenengine.TweenManager;
 
 import com.minetunes.Point3D;
 import com.minetunes.TickListener;
+import com.minetunes.config.MinetunesConfig;
 
 /**
  * TODO: Add auto-time-limiter that stops scanning for stuff if it takes too
@@ -44,15 +45,26 @@ import com.minetunes.TickListener;
 public class BlockTuneManager implements TickListener {
 
 	private LinkedList<BlockTune> trackedNodes = new LinkedList<BlockTune>();
-	
+
 	public static TweenManager manager = new TweenManager();
 
 	int tickCounter = 0;
-	
+
 	private long lastUpdateMillis = System.currentTimeMillis();
 
 	@Override
 	public boolean onTick(float partialTick, Minecraft minecraft) {
+		// If disabled, clear any block tunes and don't do anything else
+		if (MinetunesConfig.getBoolean("blockTunes.disabled")) {
+			if (trackedNodes.size() > 0) {
+				for (BlockTune t : trackedNodes) {
+					t.setRemoved();
+				}
+				trackedNodes.clear();
+			}
+			return true;
+		}
+
 		if (tickCounter % 5 == 0) {
 			Minecraft.getMinecraft().mcProfiler.startSection("scan");
 			scanForNodes(minecraft.theWorld);
@@ -70,7 +82,7 @@ public class BlockTuneManager implements TickListener {
 			}
 		}
 		trackedNodes.removeAll(removedNodes);
-		
+
 		long nowMillis = System.currentTimeMillis();
 		manager.update(nowMillis - lastUpdateMillis);
 		lastUpdateMillis = nowMillis;
@@ -84,7 +96,7 @@ public class BlockTuneManager implements TickListener {
 	 */
 	private void scanForNodes(WorldClient world) {
 		List l = world.loadedTileEntityList;
-		for (int i=0;i<l.size();i++) {
+		for (int i = 0; i < l.size(); i++) {
 			Object o = l.get(i);
 			if (o instanceof TileEntityRecordPlayer) {
 				TileEntityRecordPlayer tile = (TileEntityRecordPlayer) o;

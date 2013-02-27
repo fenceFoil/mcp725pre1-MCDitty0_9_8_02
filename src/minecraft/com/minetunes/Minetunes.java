@@ -63,6 +63,7 @@ import net.minecraft.src.EntityFX;
 import net.minecraft.src.EntityFireworkRocket;
 import net.minecraft.src.EntityHeartFX;
 import net.minecraft.src.EntityPlayerSP;
+import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiEditSign;
 import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;
@@ -85,6 +86,8 @@ import net.minecraft.src.WorldClient;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.xml.sax.SAXException;
+
+import aurelienribon.tweenengine.Tween;
 
 import com.minetunes.autoUpdate.CompareVersion;
 import com.minetunes.autoUpdate.ModUpdater;
@@ -116,6 +119,7 @@ import com.minetunes.ditty.event.VolumeEvent;
 import com.minetunes.gui.BookExportButton;
 import com.minetunes.gui.BookImportButton;
 import com.minetunes.gui.ChangelogGui;
+import com.minetunes.gui.GuiButtonTweenAccessor;
 import com.minetunes.gui.GuiMinetimesGraphicsMenuButton;
 import com.minetunes.gui.MinetunesMenuButton;
 import com.minetunes.gui.signEditor.GuiEditSignMinetunes;
@@ -149,6 +153,11 @@ import com.minetunes.signs.keywords.ProxPadKeyword;
  * MineTunes
  */
 public class Minetunes {
+	
+	static {
+		// Register tweens
+		Tween.registerAccessor(GuiButton.class, new GuiButtonTweenAccessor());
+	}
 
 	/**
 	 * Whether this mod has been started with MinecraftForge... or whatever the

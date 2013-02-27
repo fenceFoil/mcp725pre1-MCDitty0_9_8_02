@@ -49,13 +49,28 @@ public class FileUpdater {
 	private HashSet<FileUpdaterListener> listeners = new HashSet<FileUpdaterListener>();
 	private String versionInfoURL;
 	private Properties versionInfos = null;
-	private String fileTitle = "";
+	protected String fileTitle = "";
 
 	/**
 	 * If another instance of FileUpdater is created with the same URL, it uses
 	 * a cached Properties from this map instead of downloading it again
 	 */
-	private HashMap<String, Properties> cachedProperties = new HashMap<String, Properties>();
+	private static HashMap<String, Properties> cachedProperties = new HashMap<String, Properties>();
+
+	/**
+	 * Clears the cache of downloaded file update properties, to be re-updated
+	 * next check
+	 */
+	public static void clearStaticCache() {
+		cachedProperties.clear();
+	}
+	
+	/**
+	 * Clears this instance's cached properties
+	 */
+	public void clearCache() {
+		versionInfos = null;
+	}
 
 	/**
 	 * @param versionInfo

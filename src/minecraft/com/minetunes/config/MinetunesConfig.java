@@ -50,12 +50,12 @@ public class MinetunesConfig {
 	/**
 	 * Current MineTunes version.
 	 */
-	public static final String CURRENT_VERSION = "0.9.10.06";
+	public static final String CURRENT_VERSION = "0.9.10.07";
 	/**
 	 * Minecraft version that the mod is designed for.
 	 */
 	public static final String MC_CURRENT_VERSION = "1.4.6";
-	private static final String[] UPDATE_MESSAGE = { "§aNews:§r MCDitty has been renamed MineTunes!" };
+	private static final String[] UPDATE_MESSAGE = { "§aNew:§r Upgraded MineTunes menu -- now with help!" };
 	/**
 	 * Disable to stop costly printlns from being called
 	 */
@@ -115,6 +115,8 @@ public class MinetunesConfig {
 		defaultProperties.setProperty("signs.playingColor", new Color4f(0,
 				0xff, 0xff, 0xff).toString());
 		defaultProperties.setProperty("signs.proximityEnabled", "true");
+		defaultProperties.setProperty("signs.disabled", "false");
+		defaultProperties.setProperty("blockTunes.disabled", "false");
 		defaultProperties.setProperty("updates.lastVersionFound",
 				CURRENT_VERSION);
 		defaultProperties.setProperty("signeditor.keywordAreaVisible", "true");
@@ -490,6 +492,17 @@ public class MinetunesConfig {
 			return 0;
 		}
 		return keyValue;
+	}
+	
+	/**
+	 * Toggles the boolean value of the given key.
+	 * @param key
+	 * @return the new value
+	 */
+	public static boolean toggleBoolean (String key) {
+		boolean currValue = getBoolean(key);
+		setBoolean(key, !currValue);
+		return !currValue;
 	}
 
 }

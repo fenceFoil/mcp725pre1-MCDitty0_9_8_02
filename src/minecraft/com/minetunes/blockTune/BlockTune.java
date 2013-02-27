@@ -1160,4 +1160,8 @@ public class BlockTune implements BlockTuneAccess {
 	public Scale getScale() {
 		return scale;
 	}
+	
+	public void setRemoved() {
+		prepareForRemoval();
+	}
 }
