@@ -54,7 +54,7 @@ public class UpdateResourcesThread extends Thread {
 				.downloadProperties("http://dl.dropbox.com/s/ag91p4f653q4asl/ResourcesVersions.txt");
 		if (prop == null) {
 			System.err
-					.println("MineTunes: Unable to download MCDitty_Resources.txt");
+					.println("MineTunes: Unable to download ResourcesVersions.txt");
 			fail();
 			return;
 		}
