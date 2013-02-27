@@ -65,7 +65,7 @@ public class MinetunesVersionGuiElement extends GuiButton {
 			t.start();
 		}
 
-		string = "MineTunes Version " + MinetunesConfig.CURRENT_VERSION;
+		string = "MineTunes " + MinetunesConfig.CURRENT_VERSION;
 		int stringColor = 0x444488;
 
 		if (outdated) {
