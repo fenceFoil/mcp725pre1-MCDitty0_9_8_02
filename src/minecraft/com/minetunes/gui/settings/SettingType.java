@@ -23,12 +23,14 @@
  */
 package com.minetunes.gui.settings;
 
+import com.minetunes.config.MidiVolumeMode;
+
 /**
  * @author William
  * 
  */
 public enum SettingType {
-	BOOLEAN, BOOLEAN_YES_NO, BOOLEAN_ON_OFF, BOOLEAN_ENABLED_DISABLED, INTEGER_SHORT_TIME, COLOR;
+	BOOLEAN, BOOLEAN_YES_NO, BOOLEAN_ON_OFF, BOOLEAN_ENABLED_DISABLED, INTEGER_SHORT_TIME, COLOR, MIDI_VOLUME, NO_PLAY_TOKENS;
 
 	public static String getButtonLabel(SettingType t, Object value,
 			boolean inverted) {
@@ -45,36 +47,36 @@ public enum SettingType {
 		case BOOLEAN:
 			if (value instanceof Boolean) {
 				if (b) {
-					return "True";
+					return "§aTrue";
 				} else {
-					return "False";
+					return "§cFalse";
 				}
 			}
 			break;
 		case BOOLEAN_ENABLED_DISABLED:
 			if (value instanceof Boolean) {
 				if (b) {
-					return "Enabled";
+					return "§aEnabled";
 				} else {
-					return "Disabled";
+					return "§cDisabled";
 				}
 			}
 			break;
 		case BOOLEAN_ON_OFF:
 			if (value instanceof Boolean) {
 				if (b) {
-					return "On";
+					return "§aOn";
 				} else {
-					return "Off";
+					return "§cOff";
 				}
 			}
 			break;
 		case BOOLEAN_YES_NO:
 			if (value instanceof Boolean) {
 				if (b) {
-					return "Yes";
+					return "§aYes";
 				} else {
-					return "No";
+					return "§cNo";
 				}
 			}
 			break;
@@ -82,9 +84,25 @@ public enum SettingType {
 			break;
 		case INTEGER_SHORT_TIME:
 			if (value instanceof Integer) {
-				return Integer.toString((Integer) value);
+				return Integer.toString(((Integer) value) / 1000);
 			}
 			break;
+		case MIDI_VOLUME:
+			if (value instanceof MidiVolumeMode) {
+				switch ((MidiVolumeMode)value) {
+				case MAX:
+					return "100%";
+				case MC_MUSIC:
+					return "Minecraft Music";
+				case MC_SOUND:
+					return "Minecraft Sound";
+				default:
+					return "??";
+				}
+			}
+			break;
+		case NO_PLAY_TOKENS:
+			return "§9§nEdit";
 		default:
 			break;
 
@@ -93,14 +111,14 @@ public enum SettingType {
 	}
 	
 	public static int nextShortTimeIntValue (int value) {
-		if (value < 10) {
-			value += 2;
-		} else if (value < 15) {
-			value += 5;
-		} else if (value < 30) {
-			value += 15;
+		if (value < 10000) {
+			value += 2000;
+		} else if (value < 15000) {
+			value += 5000;
+		} else if (value < 30000) {
+			value += 15000;
 		} else {
-			value = 2;
+			value = 2000;
 		}
 		return value;
 	}

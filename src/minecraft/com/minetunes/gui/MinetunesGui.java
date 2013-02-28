@@ -33,6 +33,7 @@ import java.util.LinkedList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.EnumOS;
 import net.minecraft.src.GuiButton;
+import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.Timer;
 
@@ -50,6 +51,7 @@ import com.minetunes.Minetunes;
 import com.minetunes.autoUpdate.FileUpdater;
 import com.minetunes.config.MinetunesConfig;
 import com.minetunes.gui.help.GuiHelpTopics;
+import com.minetunes.gui.settings.GuiSettings;
 import com.minetunes.resources.UpdateResourcesThread;
 
 public class MinetunesGui extends GuiScreen {
@@ -67,8 +69,10 @@ public class MinetunesGui extends GuiScreen {
 	private GuiButton graphicsButton;
 	private GuiButton soundfontsButton;
 	private GuiButton midiButton;
+	private GuiScreen backScreen;
 
-	public MinetunesGui() {
+	public MinetunesGui(GuiScreen backScreen) {
+		this.backScreen = backScreen;
 	}
 
 	@Override
@@ -76,8 +80,7 @@ public class MinetunesGui extends GuiScreen {
 		updateTweens();
 
 		// draw background
-		drawGradientRect(0, 0, width, height / 2, 0x40111111, 0xa0ffffff);
-		drawGradientRect(0, height / 2, width, height, 0xa0ffffff, 0xff101010);
+		drawMinetunesBackground(width, height);
 
 		// Draw logo
 		int bgTextureNumber = Minecraft.getMinecraft().renderEngine
@@ -101,6 +104,11 @@ public class MinetunesGui extends GuiScreen {
 		super.drawScreen(mx, my, par3);
 	}
 
+	public void drawMinetunesBackground(int width, int height) {
+		drawGradientRect(0, 0, width, height / 2, 0x40111111, 0xa0ffffff);
+		drawGradientRect(0, height / 2, width, height, 0xa0ffffff, 0xff101010);
+	}
+
 	/**
 	 * 
 	 */
@@ -112,7 +120,7 @@ public class MinetunesGui extends GuiScreen {
 							.getLatestVersion(MinetunesConfig.MC_CURRENT_VERSION);
 		}
 
-		tutorialButton.displayString = "MCDittyLand";
+		tutorialButton.displayString = "Mount MineTunes";
 		if (tutorialUpdated) {
 			tutorialButton.displayString = "§aNew: "
 					+ Minetunes.tutorialUpdater
@@ -123,7 +131,7 @@ public class MinetunesGui extends GuiScreen {
 	@Override
 	protected void keyTyped(char par1, int par2) {
 		if (par2 == Keyboard.KEY_ESCAPE) {
-			mc.displayGuiScreen(null);
+			mc.displayGuiScreen(backScreen);
 		}
 
 		// Check for combos
@@ -171,6 +179,8 @@ public class MinetunesGui extends GuiScreen {
 			Minetunes.autoUpdater.clearAlreadyTriedFlag();
 		} else if (typedKeys.toLowerCase().endsWith("graphics")) {
 			mc.displayGuiScreen(new GraphicsGui(this));
+		} else if (typedKeys.toLowerCase().endsWith("oldsettings")) {
+			mc.displayGuiScreen(new OldSettingsGui());
 		}
 	}
 
@@ -203,7 +213,7 @@ public class MinetunesGui extends GuiScreen {
 			mc.displayGuiScreen(new OldSettingsGui());
 		} else if (guibutton.id == 400) {
 			// Exit
-			mc.displayGuiScreen(null);
+			mc.displayGuiScreen(backScreen);
 		} else if (guibutton.id == 500) {
 			// Open midi folder
 			openMidiFolder();
@@ -305,8 +315,10 @@ public class MinetunesGui extends GuiScreen {
 	@Override
 	public void initGui() {
 		// Add buttons
-		// controlList.add(new GuiButton(400, width / 3 * 2 - 55, height - 40,
-		// 110, 20, "§aEXIT"));
+		//if (backScreen instanceof GuiOptions) {
+			controlList.add(new GuiButton(400, 2, 10,
+					80, 20, "§bBack"));
+		//}
 
 		// controlList.add(new GuiButton(300, width / 3 - 55, height - 130, 110,
 		// 20, "Settings"));
@@ -330,8 +342,8 @@ public class MinetunesGui extends GuiScreen {
 				110, 20, "Graphics");
 		controlList.add(graphicsButton);
 		midiButton = new GuiButton(500, width / 6 * 5 - 55, TILE_RETRACT_Y,
-				 110, 20, "MIDI Folder");
-		 controlList.add(midiButton);
+				110, 20, "MIDI Folder");
+		controlList.add(midiButton);
 		soundfontsButton = new GuiButton(900, width / 6 - 55, TILE_RETRACT_Y,
 				110, 20, "SoundFonts");
 		controlList.add(soundfontsButton);
@@ -352,7 +364,7 @@ public class MinetunesGui extends GuiScreen {
 
 		final TuneTileGui noteblockTile = new TuneTileGui(width / 4 - 32,
 				TILE_RETRACT_Y, TuneTileType.NOTEBLOCKS,
-				!MinetunesConfig.getBoolean("noteblock.signsDisabled"), false);
+				!MinetunesConfig.getBoolean("noteblock.signsDisabled"), true);
 		noteblockTile.addActionListener(new ActionListener() {
 
 			@Override
@@ -374,18 +386,21 @@ public class MinetunesGui extends GuiScreen {
 					return;
 				case 2:
 					// Settings pressed
+					mc.displayGuiScreen(new GuiSettings(thisGui,
+							GuiSettings.NOTEBLOCKS_SETTINGS,
+							"Noteblock Settings"));
 					return;
 				}
 			}
 		});
-		Tween.to(noteblockTile, TuneTileGuiTweenAccessor.TWEEN_TYPE_Y, 2000)
-				.target((float) (height / 2 - 32 + 30)).ease(Quart.OUT)
-				.start(tweenManager);
+		// Tween.to(noteblockTile, TuneTileGuiTweenAccessor.TWEEN_TYPE_Y, 2000)
+		// .target((float) (height / 2 - 32 + 30)).ease(Quart.OUT)
+		// .start(tweenManager);
 		tiles.add(noteblockTile);
 
 		final TuneTileGui blockTunesTile = new TuneTileGui(width / 2 - 32,
 				TILE_RETRACT_Y, TuneTileType.BLOCKTUNES,
-				!MinetunesConfig.getBoolean("blockTunes.disabled"), false);
+				!MinetunesConfig.getBoolean("blockTunes.disabled"), true);
 		blockTunesTile.addActionListener(new ActionListener() {
 
 			@Override
@@ -407,13 +422,16 @@ public class MinetunesGui extends GuiScreen {
 					return;
 				case 2:
 					// Settings pressed
+					mc.displayGuiScreen(new GuiSettings(thisGui,
+							GuiSettings.BLOCKTUNES_SETTINGS,
+							"BlockTune Settings"));
 					return;
 				}
 			}
 		});
-		Tween.to(blockTunesTile, TuneTileGuiTweenAccessor.TWEEN_TYPE_Y, 2000)
-				.target((float) (height / 2 - 32 + 0)).ease(Quart.OUT)
-				.start(tweenManager);
+		// Tween.to(blockTunesTile, TuneTileGuiTweenAccessor.TWEEN_TYPE_Y, 2000)
+		// .target((float) (height / 2 - 32 + 0)).ease(Quart.OUT)
+		// .start(tweenManager);
 		tiles.add(blockTunesTile);
 
 		final TuneTileGui signTunesTile = new TuneTileGui(width / 4 * 3 - 32,
@@ -444,14 +462,15 @@ public class MinetunesGui extends GuiScreen {
 					return;
 				case 2:
 					// Settings pressed
-					mc.displayGuiScreen(new OldSettingsGui());
+					mc.displayGuiScreen(new GuiSettings(thisGui,
+							GuiSettings.SIGNTUNES_SETTINGS, "SignTune Settings"));
 					return;
 				}
 			}
 		});
-		Tween.to(signTunesTile, TuneTileGuiTweenAccessor.TWEEN_TYPE_Y, 2000)
-				.target((float) (height / 2 - 32 - 30)).ease(Quart.OUT)
-				.start(tweenManager);
+		// Tween.to(signTunesTile, TuneTileGuiTweenAccessor.TWEEN_TYPE_Y, 2000)
+		// .target((float) (height / 2 - 32 - 30)).ease(Quart.OUT)
+		// .start(tweenManager);
 		tiles.add(signTunesTile);
 
 		tweenTiles(showingTiles);
@@ -488,7 +507,8 @@ public class MinetunesGui extends GuiScreen {
 		buttons[2] = midiButton;
 		for (GuiButton button : buttons) {
 			if (down) {
-				Tween.to(button, GuiButtonTweenAccessor.TWEEN_TYPE_Y, 2000).delay(300)
+				Tween.to(button, GuiButtonTweenAccessor.TWEEN_TYPE_Y, 2000)
+						.delay(300)
 						.target((float) (height / 2 - 32 - 40 + (30 * (3 - currTile))))
 						.ease(Linear.INOUT).start(tweenManager);
 			} else {

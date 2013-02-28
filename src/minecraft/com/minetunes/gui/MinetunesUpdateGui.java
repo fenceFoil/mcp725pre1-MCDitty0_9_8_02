@@ -90,7 +90,7 @@ public class MinetunesUpdateGui extends GuiScreen implements
 	@Override
 	protected void keyTyped(char par1, int par2) {
 		if (par2 == Keyboard.KEY_ESCAPE) {
-			mc.displayGuiScreen(new MinetunesGui());
+			mc.displayGuiScreen(new MinetunesGui(null));
 		}
 	}
 
@@ -143,7 +143,7 @@ public class MinetunesUpdateGui extends GuiScreen implements
 			}
 		} else if (guibutton.id == 500) {
 			// Go back to menu
-			mc.displayGuiScreen(new MinetunesGui());
+			mc.displayGuiScreen(new MinetunesGui(null));
 		} else if (guibutton.id == 600) {
 			// Auto-update
 			mc.displayGuiScreen(null);

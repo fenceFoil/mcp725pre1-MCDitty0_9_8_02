@@ -535,7 +535,7 @@ public class NoteblockTunerGui extends GuiScreen {
 	protected void actionPerformed(GuiButton guibutton) {
 		if (guibutton.id == 0) {
 			// Version
-			Minecraft.getMinecraft().displayGuiScreen(new MinetunesGui());
+			Minecraft.getMinecraft().displayGuiScreen(new MinetunesGui(this));
 		} else if (guibutton.id == 2000) {
 			// Mute
 			MinetunesConfig.setBoolean("noteblockTuner.mute",

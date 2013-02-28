@@ -555,7 +555,7 @@ public class GuiEditSignMinetunes extends GuiEditSign implements
 		}
 		if (par1GuiButton.id == -100) {
 			exitGUIScreen();
-			mc.displayGuiScreen(new MinetunesGui());
+			mc.displayGuiScreen(new MinetunesGui(this));
 		} else if (par1GuiButton.id == 0) {
 			exitGUIScreen();
 		} else if (par1GuiButton.id == 100) {

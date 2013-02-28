@@ -121,7 +121,7 @@ public class MinetunesConfig {
 				CURRENT_VERSION);
 		defaultProperties.setProperty("signeditor.keywordAreaVisible", "true");
 		defaultProperties.setProperty("signs.playingColor.sliderPos", "0.45");
-		//defaultProperties.setProperty("signs.highlightErrorLines", "true");
+		// defaultProperties.setProperty("signs.highlightErrorLines", "true");
 		defaultProperties.setProperty("mod.lastVersionRun", "0");
 		defaultProperties.setProperty("tutorial.lastDownload", "0");
 	}
@@ -257,7 +257,7 @@ public class MinetunesConfig {
 
 		// Flush some settings to their respective fields (placed in other
 		// classes for accessing speed over using a properties key)
-		
+
 		// Push this value to the sign renderer (extreme speed needed there,
 		// can't use getInt every sign render!)
 		TileEntitySignRendererMinetunes.blinkTimeMS = getInt("signs.errorBlinkMS");
@@ -421,7 +421,20 @@ public class MinetunesConfig {
 		return boolValue;
 	}
 
+	/**
+	 * Handles setting particlesEnabled and noteParticlesDisabled as fields in
+	 * this class as well
+	 * 
+	 * @param key
+	 * @param value
+	 */
 	public static void setBoolean(String key, boolean value) {
+		if (key.equalsIgnoreCase("particles.noteParticlesDisabled")) {
+			noteParticlesDisabled = value;
+		} else if (key.equalsIgnoreCase("particles.enabled")) {
+			particlesEnabled = value;
+		}
+
 		properties.setProperty(key, Boolean.toString(value));
 	}
 
@@ -493,16 +506,33 @@ public class MinetunesConfig {
 		}
 		return keyValue;
 	}
-	
+
 	/**
 	 * Toggles the boolean value of the given key.
+	 * 
 	 * @param key
 	 * @return the new value
 	 */
-	public static boolean toggleBoolean (String key) {
+	public static boolean toggleBoolean(String key) {
 		boolean currValue = getBoolean(key);
 		setBoolean(key, !currValue);
 		return !currValue;
+	}
+
+	/**
+	 * 
+	 */
+	public static void incrementVolumeMode() {
+		if (MinetunesConfig.getVolumeMode() == MidiVolumeMode.MAX) {
+			MinetunesConfig.setVolumeMode(MidiVolumeMode.MC_SOUND);
+		} else if (MinetunesConfig.getVolumeMode() == MidiVolumeMode.MC_SOUND) {
+			MinetunesConfig.setVolumeMode(MidiVolumeMode.MC_MUSIC);
+		} else if (MinetunesConfig.getVolumeMode() == MidiVolumeMode.MC_MUSIC) {
+			MinetunesConfig.setVolumeMode(MidiVolumeMode.MAX);
+		} else {
+			// Unknown volume mode
+			MinetunesConfig.setVolumeMode(MidiVolumeMode.MC_SOUND);
+		}
 	}
 
 }

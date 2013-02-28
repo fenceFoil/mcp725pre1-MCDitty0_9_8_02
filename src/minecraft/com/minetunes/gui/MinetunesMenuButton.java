@@ -46,7 +46,7 @@ public class MinetunesMenuButton extends GuiButton {
 		boolean result = super.mousePressed(par1Minecraft, par2, par3);
 		if (result) {
 			// Open MineTunes menu
-			Minecraft.getMinecraft().displayGuiScreen(new MinetunesGui());
+			Minecraft.getMinecraft().displayGuiScreen(new MinetunesGui(Minecraft.getMinecraft().currentScreen));
 		}
 		return result;
 	}

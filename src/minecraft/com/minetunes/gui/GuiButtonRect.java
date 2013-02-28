@@ -65,12 +65,12 @@ public class GuiButtonRect extends Gui {
 			drawRect(size.x, size.y, size.x + size.width, size.y + size.height,
 					0x44ffffff);
 		}
-		int textColor = 0xffffff;
+		int textColor = 0xffffa0;
 		if (!isMouseOver(mx, my)) {
-			textColor = 0xa0a0a0;
+			textColor = 0xffffff;
 		}
-		drawCenteredString(fr, label, (size.x + size.width) / 2,
-				(size.y + size.height) / 2 - (8/2), textColor);
+		drawCenteredString(fr, label, (size.x) + (size.width / 2),
+				(size.y) + (size.height / 2) - (8/2), textColor);
 	}
 
 	public void onMousePressed(int mx, int my, int button) {
@@ -97,5 +97,12 @@ public class GuiButtonRect extends Gui {
 
 	public void addActionListener(ActionListener l) {
 		listeners.add(l);
+	}
+
+	/**
+	 * 
+	 */
+	public void removeActionListeners() {
+		listeners.clear();
 	}
 }

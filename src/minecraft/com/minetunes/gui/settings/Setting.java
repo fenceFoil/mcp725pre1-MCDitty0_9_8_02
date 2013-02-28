@@ -23,12 +23,14 @@
  */
 package com.minetunes.gui.settings;
 
+import java.awt.Color;
 import java.io.IOException;
 
 import aurelienribon.tweenengine.Tween;
 
 import com.minetunes.Color4f;
 import com.minetunes.config.MinetunesConfig;
+import com.minetunes.config.NoPlayTokens;
 import com.minetunes.gui.GuiSlider;
 import com.minetunes.gui.SettingsGui;
 
@@ -49,7 +51,8 @@ public class Setting extends Gui {
 	private int y = 0;
 	private GuiButton button;
 	private boolean valueInverted;
-	
+	private boolean sliderClicked = false;
+
 	static {
 		Tween.registerAccessor(Setting.class, new SettingTweenAccessor());
 	}
@@ -77,11 +80,22 @@ public class Setting extends Gui {
 				GuiSlider s = (GuiSlider) button;
 				s.sliderValue = MinetunesConfig.getFloat(settingKey
 						+ ".sliderPos");
+
+				button.drawButton(mc, mx, my);
+				
+				// Show slider color
+				float[] currColor = sineBowColor((float) (s.sliderValue * 2f * Math.PI));
+				drawRect((int) ((float) s.xPosition + 1), s.yPosition + 1,
+						(int) ((float) s.xPosition) + 120 - 1,
+						s.yPosition + 20 - 1,
+						new Color(currColor[0] / 255f, currColor[1] / 255f,
+								currColor[2] / 255f, 0.5f).getRGB());
 			} else {
 				button.displayString = SettingType.getButtonLabel(type,
 						getValueObj(), valueInverted);
+				button.drawButton(mc, mx, my);
 			}
-			button.drawButton(mc, mx, my);
+
 		}
 
 		int stringWidth = mc.fontRenderer.getStringWidth(labelText);
@@ -103,6 +117,10 @@ public class Setting extends Gui {
 			return MinetunesConfig.getFloat(settingKey + ".sliderPos");
 		case INTEGER_SHORT_TIME:
 			return MinetunesConfig.getInt(settingKey);
+		case MIDI_VOLUME:
+			return MinetunesConfig.getVolumeMode();
+		case NO_PLAY_TOKENS:
+			return null;
 		default:
 			break;
 
@@ -125,12 +143,18 @@ public class Setting extends Gui {
 					MinetunesConfig.toggleBoolean(settingKey);
 					break;
 				case COLOR:
-					// TODO
+					sliderClicked = true;
 					break;
 				case INTEGER_SHORT_TIME:
 					MinetunesConfig.setInt(settingKey, SettingType
 							.nextShortTimeIntValue(MinetunesConfig
 									.getInt(settingKey)));
+					break;
+				case MIDI_VOLUME:
+					MinetunesConfig.incrementVolumeMode();
+					break;
+				case NO_PLAY_TOKENS:
+					NoPlayTokens.editNoPlayTokens();
 					break;
 				default:
 					break;
@@ -153,8 +177,12 @@ public class Setting extends Gui {
 	public void onMouseMovedOrUp(int mx, int my, int mb) {
 		if (button instanceof GuiSlider) {
 			GuiSlider signColorSlider = (GuiSlider) button;
-			boolean draggingSignColorSlider = signColorSlider.dragging;
-			if (draggingSignColorSlider && signColorSlider.dragging == false) {
+			if (sliderClicked && !(mx > signColorSlider.xPosition
+					&& mx < signColorSlider.xPosition + 120
+					&& my < signColorSlider.yPosition && my > signColorSlider.yPosition + 20)) {
+				sliderClicked = false;
+				signColorSlider.dragging = false;
+				
 				// Color was selected
 				MinetunesConfig
 						.setString(
@@ -164,10 +192,12 @@ public class Setting extends Gui {
 										.toString());
 				MinetunesConfig.setFloat(settingKey + ".sliderPos",
 						signColorSlider.sliderValue);
+				System.out.println (signColorSlider.sliderValue);
+
 				try {
 					MinetunesConfig.flush();
 				} catch (IOException e) {
-					//e.printStackTrace();
+					e.printStackTrace();
 				}
 			}
 		}
@@ -197,6 +227,19 @@ public class Setting extends Gui {
 			button = new GuiButton(settingKey.hashCode(), 0, -50, 100, 20,
 					type.getButtonLabel(type,
 							MinetunesConfig.getInt(settingKey), valueInverted));
+			break;
+		case MIDI_VOLUME:
+			button = new GuiButton(settingKey.hashCode(), 0, -50, 100, 20,
+					type.getButtonLabel(
+							type,
+							SettingType.getButtonLabel(type,
+									MinetunesConfig.getVolumeMode(), false),
+							false));
+			break;
+		case NO_PLAY_TOKENS:
+			button = new GuiButton(settingKey.hashCode(), 0, -50, 100, 20,
+					type.getButtonLabel(type, SettingType.getButtonLabel(type,
+							new Object(), false), false));
 			break;
 		default:
 			break;

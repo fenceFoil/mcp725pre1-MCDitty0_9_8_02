@@ -210,7 +210,7 @@ public class KeysGui extends GuiScreen {
 	protected void actionPerformed(GuiButton guibutton) {
 		if (guibutton.id == 100) {
 			// Exit screen
-			mc.displayGuiScreen(new MinetunesGui());
+			mc.displayGuiScreen(new MinetunesGui(this));
 		} else if (guibutton.id >= 0 && guibutton.id <= 99) {
 			for (int i = 0; i < keyBindings.size(); i++) {
 				if (guibutton.id == i) {

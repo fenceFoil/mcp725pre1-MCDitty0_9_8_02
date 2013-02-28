@@ -417,7 +417,7 @@ public class OldSettingsGui extends GuiScreen {
 	protected void actionPerformed(GuiButton guibutton) {
 		if (guibutton.id == 100) {
 			// Exit screen
-			mc.displayGuiScreen(new MinetunesGui());
+			mc.displayGuiScreen(new MinetunesGui(null));
 		} else if (guibutton.id == 200) {
 			// Particles on button
 

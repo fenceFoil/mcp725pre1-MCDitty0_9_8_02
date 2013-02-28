@@ -167,7 +167,7 @@ public class KeypressProcessor {
 			Minetunes.mutePlayingDitties();
 		} else if (action.equalsIgnoreCase("menu")) {
 			// Show menu
-			MinetunesGui guiToOpen = new MinetunesGui();
+			MinetunesGui guiToOpen = new MinetunesGui(null);
 			Minecraft.getMinecraft().displayGuiScreen(guiToOpen);
 		} else if (action.equalsIgnoreCase("showErrors")) {
 			// Toggle showing errors and blinking signs
