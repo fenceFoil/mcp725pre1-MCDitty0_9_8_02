@@ -48,6 +48,8 @@ import net.minecraft.client.Minecraft;
 public class ModUpdater extends FileUpdater {
 	private String[] modPackages = {};
 
+	private String specialFileTitle = "";
+
 	/**
 	 * AutoUpdate has been run once or more already.
 	 */
@@ -149,7 +151,8 @@ public class ModUpdater extends FileUpdater {
 	 * @param messagePrefix
 	 * @return
 	 */
-	public boolean autoUpdate(String mcVer, File zipDir, File jarSwapperDir, InputStream jarSwapperInputStream) {
+	public boolean autoUpdate(String mcVer, File zipDir, File jarSwapperDir,
+			InputStream jarSwapperInputStream) {
 		if (alreadyRun) {
 			fireFileUpdaterEvent(UpdateEventLevel.WARN, "",
 					"Can't auto-update twice! Restart Minecraft before trying again.");
@@ -323,8 +326,8 @@ public class ModUpdater extends FileUpdater {
 				// + e.getName());
 
 				if (i % (updatedMinecraftEntries.size() / 10) == 1) {
-					int percent = (int) (((double) i
-							/ (double) updatedMinecraftEntries.size()) * 100d);
+					int percent = (int) (((double) i / (double) updatedMinecraftEntries
+							.size()) * 100d);
 					fireFileUpdaterEvent(UpdateEventLevel.INFO, "Mixing",
 							"Writing: " + percent + "%%");
 				}
@@ -352,7 +355,8 @@ public class ModUpdater extends FileUpdater {
 		// Extract renaming script to file
 		fireFileUpdaterEvent(UpdateEventLevel.INFO, "Swapper",
 				"Extracting jar swapper...");
-		File jarSwapperFile = new File(jarSwapperDir + File.separator + "jarSwapper.jar");
+		File jarSwapperFile = new File(jarSwapperDir + File.separator
+				+ "jarSwapper.jar");
 		try {
 			ReadableByteChannel jarSwapperChannel = Channels
 					.newChannel(jarSwapperInputStream);
@@ -398,5 +402,26 @@ public class ModUpdater extends FileUpdater {
 	private File getMinecraftJarFile() {
 		return new File(Minecraft.getMinecraft().getMinecraftDir()
 				+ File.separator + "bin" + File.separator + "minecraft.jar");
+	}
+
+	/**
+	 * Uses a non-normal source for update checking. Instead of looking under
+	 * "mod.latest.mc.1.4.6", you can look under "mod.dev.latest.mc.1.4.6" to
+	 * get snapshots, etc.
+	 * 
+	 * @param mode
+	 */
+	public void setSpecialMode(String mode) {
+		clearCache();
+		clearStaticCache();
+		fileTitle= "mod." + mode;
+		specialFileTitle = mode;
+	}
+
+	/**
+	 * Lets auto-update run again.
+	 */
+	public void clearAlreadyTriedFlag() {
+		alreadyRun = false;
 	}
 }
