@@ -216,6 +216,15 @@ public class BlockTune implements BlockTuneAccess {
 			return -24;
 		case 114:
 			return 12;
+		case 58:
+			// Tuba
+			return -24;
+		case 60:
+			// French horn
+			return -12;
+		case 79:
+			// ocarina
+			return 24;
 
 			// GM Level 1 Instrument Families
 			// 0-7: Piano
@@ -621,7 +630,8 @@ public class BlockTune implements BlockTuneAccess {
 			Point3D nodePoint) {
 		// Check that the basic components are attached before verifying the
 		// corners
-		int leversFound = Point3D.getNumAdjacent(world, Block.lever.blockID, nodePoint);
+		int leversFound = Point3D.getNumAdjacent(world, Block.lever.blockID,
+				nodePoint);
 		if (leversFound <= 0) {
 			return false;
 		}
@@ -779,7 +789,7 @@ public class BlockTune implements BlockTuneAccess {
 				(int) Minecraft.getMinecraft().thePlayer.posX,
 				(int) Minecraft.getMinecraft().thePlayer.posY,
 				(int) Minecraft.getMinecraft().thePlayer.posZ);
-		
+
 		double shortestDistance = Double.MAX_VALUE;
 		try {
 
@@ -1160,7 +1170,7 @@ public class BlockTune implements BlockTuneAccess {
 	public Scale getScale() {
 		return scale;
 	}
-	
+
 	public void setRemoved() {
 		prepareForRemoval();
 	}
