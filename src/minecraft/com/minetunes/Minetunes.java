@@ -153,7 +153,7 @@ import com.minetunes.signs.keywords.ProxPadKeyword;
  * MineTunes
  */
 public class Minetunes {
-	
+
 	static {
 		// Register tweens
 		Tween.registerAccessor(GuiButton.class, new GuiButtonTweenAccessor());
@@ -545,6 +545,24 @@ public class Minetunes {
 		t.setName("MineTunes Entity Render Map Checker");
 		t.start();
 
+		Thread t2 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					addButtonsToGuis();
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		t2.setName("MineTunes Options Button Checker");
+		t2.start();
+
 		// Load the config file
 		MinetunesConfig.loadAndUpdateSettings();
 
@@ -592,7 +610,8 @@ public class Minetunes {
 				// greater
 				// than the last time we checked
 				if (foundVersion != null
-						&& CompareVersion.isVersionNewerThanCurrent(foundVersion)
+						&& CompareVersion
+								.isVersionNewerThanCurrent(foundVersion)
 						&& !MinetunesConfig.getString(
 								"updates.lastVersionFound")
 								.equals(foundVersion)) {
@@ -898,6 +917,9 @@ public class Minetunes {
 	}
 
 	private static void addButtonsToGuis() {
+		if (Minecraft.getMinecraft() == null) {
+			return;
+		}
 		GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
 		if (currentScreen != null) {
 			List mControlList = null;
@@ -1937,7 +1959,7 @@ public class Minetunes {
 		synchronized (signIndex) {
 			signIndex.add(entitySign);
 		}
-		
+
 		// Check for faces
 		entitySign.isFace(true);
 	}
