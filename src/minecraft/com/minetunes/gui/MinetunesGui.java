@@ -200,7 +200,7 @@ public class MinetunesGui extends GuiScreen {
 		} else if (guibutton.id == 200) {
 			mc.displayGuiScreen(new KeysGui());
 		} else if (guibutton.id == 300) {
-			mc.displayGuiScreen(new SettingsGui());
+			mc.displayGuiScreen(new OldSettingsGui());
 		} else if (guibutton.id == 400) {
 			// Exit
 			mc.displayGuiScreen(null);
@@ -444,7 +444,7 @@ public class MinetunesGui extends GuiScreen {
 					return;
 				case 2:
 					// Settings pressed
-					mc.displayGuiScreen(new SettingsGui());
+					mc.displayGuiScreen(new OldSettingsGui());
 					return;
 				}
 			}

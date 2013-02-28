@@ -37,7 +37,7 @@ import com.minetunes.config.MidiVolumeMode;
 import com.minetunes.config.MinetunesConfig;
 import com.minetunes.config.NoPlayTokens;
 
-public class SettingsGui extends GuiScreen {
+public class OldSettingsGui extends GuiScreen {
 	private GuiButton particlesOnButton;
 	// private GuiButton oneParticleButton;
 	private GuiButton onlyFirstErrorButton;
@@ -56,7 +56,7 @@ public class SettingsGui extends GuiScreen {
 	private GuiButton noPlayTokensButton;
 	private GuiButton noteBlockTooltipsButton;
 
-	public SettingsGui() {
+	public OldSettingsGui() {
 
 	}
 
