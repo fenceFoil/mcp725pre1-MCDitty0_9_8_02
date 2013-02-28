@@ -35,7 +35,7 @@ public class GuiMinetimesGraphicsMenuButton extends GuiButton {
 	private GuiScreen backscreen;
 
 	public GuiMinetimesGraphicsMenuButton(GuiScreen backscreen) {
-		super(19087892, 5, 5, 50, 20, "Signs");
+		super(19087892, 5, 5, 60, 20, "Signs");
 		this.backscreen = backscreen;
 	}
 

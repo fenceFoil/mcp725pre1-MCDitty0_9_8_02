@@ -38,7 +38,7 @@ public class MinetunesMenuButton extends GuiButton {
 
 	public MinetunesMenuButton() {
 		// Arbitrary id number, not likely to conflict with vanilla gui
-		super(19087890, 5, 5, 50, 20, "MineTunes");
+		super(19087890, 5, 5, 70, 20, "MineTunes");
 	}
 
 	@Override
