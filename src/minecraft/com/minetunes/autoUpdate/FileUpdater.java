@@ -64,7 +64,7 @@ public class FileUpdater {
 	public static void clearStaticCache() {
 		cachedProperties.clear();
 	}
-	
+
 	/**
 	 * Clears this instance's cached properties
 	 */

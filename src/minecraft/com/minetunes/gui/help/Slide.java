@@ -33,6 +33,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+import net.minecraft.client.Minecraft;
+
 import org.imgscalr.Scalr;
 
 /**
@@ -68,10 +70,9 @@ public class Slide {
 			}
 
 			// Make an appropriately-sized square image for a texture
-			int dimensions = 1024 * 2;
+			int dimensions = 512;
 			image = new BufferedImage(dimensions, dimensions,
 					BufferedImage.TYPE_INT_ARGB);
-
 			BufferedImage scaledImage = Scalr.resize(rawImage, dimensions);
 
 			setUsedWidth(scaledImage.getWidth());
@@ -87,20 +88,21 @@ public class Slide {
 		}
 	}
 
-	public int getNextLargestPowOf2(int numberInside) {
-		int n = numberInside;
-
-		n--;
-		n |= n >> 1; // Divide by 2^k for consecutive doublings of k up to 32,
-		n |= n >> 2; // and then or the results.
-		n |= n >> 4;
-		n |= n >> 8;
-		n |= n >> 16;
-		n++; // The result is a number of 1 bits equal to the number
-				// of bits in the original number, plus 1. That's the
-				// next highest power of 2.
-		return n;
-	}
+//	public int getNextLargestPowOf2(int numberInside) {
+//		int n = numberInside;
+//
+//		n--;
+//		n |= n >> 1; // Divide by 2^k for consecutive doublings of k up to 32,
+//		n |= n >> 2; // and then or the results.
+//		n |= n >> 4;
+//		n |= n >> 8;
+//		n |= n >> 16;
+//		n++; // The result is a number of 1 bits equal to the number
+//				// of bits in the original number, plus 1. That's the
+//				// next highest power of 2.
+//		n=64;
+//		return n;
+//	}
 
 	public String getTitle() {
 		return title;

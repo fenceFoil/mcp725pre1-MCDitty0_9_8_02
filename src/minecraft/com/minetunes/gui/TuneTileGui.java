@@ -59,6 +59,8 @@ public class TuneTileGui extends Gui {
 
 	private boolean mouseOver;
 
+	private boolean hasSettingsButton = true;
+
 	private static float lastElapsedTicks = 0;
 	private static float lastElapsedPartialTicks = 0;
 
@@ -78,6 +80,22 @@ public class TuneTileGui extends Gui {
 		setX(x);
 	}
 
+	/**
+	 * @param i
+	 * @param j
+	 * @param blocktunes
+	 * @param b
+	 * @param c
+	 */
+	public TuneTileGui(int x, int y, TuneTileType type, boolean on,
+			boolean settingsButton) {
+		this(x, y, type, on);
+		hasSettingsButton = settingsButton;
+		if (!hasSettingsButton) {
+			this.settingsButton = null;
+		}
+	}
+
 	public void draw(Minecraft mc, int mx, int my) {
 		int tex = Minecraft.getMinecraft().renderEngine
 				.getTexture("/com/minetunes/resources/textures/mineTunesLogo.png");
@@ -95,7 +113,9 @@ public class TuneTileGui extends Gui {
 		}
 
 		helpButton.drawButton(mc, mx, my);
-		settingsButton.drawButton(mc, mx, my);
+		if (settingsButton != null) {
+			settingsButton.drawButton(mc, mx, my);
+		}
 	}
 
 	private static int getUForType(TuneTileType t) {
@@ -152,7 +172,9 @@ public class TuneTileGui extends Gui {
 	public void setY(int y) {
 		this.y = y;
 		helpButton.yPosition = y - 23;
-		settingsButton.yPosition = y + 64 + 3;
+		if (settingsButton != null) {
+			settingsButton.yPosition = y + 64 + 3;
+		}
 	}
 
 	public boolean isOn() {
@@ -177,7 +199,9 @@ public class TuneTileGui extends Gui {
 			fireActionEvent(new ActionEvent(helpButton, 1, ""));
 		}
 
-		if (settingsButton.mousePressed(Minecraft.getMinecraft(), mx, my)) {
+		if (settingsButton != null
+				&& settingsButton
+						.mousePressed(Minecraft.getMinecraft(), mx, my)) {
 			fireActionEvent(new ActionEvent(settingsButton, 2, ""));
 		}
 	}

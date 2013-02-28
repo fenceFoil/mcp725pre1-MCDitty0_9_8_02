@@ -42,19 +42,19 @@ import org.lwjgl.opengl.GL11;
 
 import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenManager;
-import aurelienribon.tweenengine.equations.Bounce;
-import aurelienribon.tweenengine.equations.Elastic;
+import aurelienribon.tweenengine.equations.Linear;
 import aurelienribon.tweenengine.equations.Quart;
 
 import com.minetunes.Finder;
 import com.minetunes.Minetunes;
 import com.minetunes.autoUpdate.FileUpdater;
 import com.minetunes.config.MinetunesConfig;
-import com.minetunes.gui.help.GuiHelp;
+import com.minetunes.gui.help.GuiHelpTopics;
 import com.minetunes.resources.UpdateResourcesThread;
 
 public class MinetunesGui extends GuiScreen {
 
+	private static final int TILE_RETRACT_Y = -100;
 	private static boolean outdated;
 	private static boolean tutorialUpdated = false;
 	private GuiButton turnedOffButton;
@@ -63,6 +63,10 @@ public class MinetunesGui extends GuiScreen {
 	private GuiButton cancelTutorialButton;
 	private LinkedList<TuneTileGui> tiles = new LinkedList<TuneTileGui>();
 	private String typedKeys = "";
+	private boolean showingTiles = true;
+	private GuiButton graphicsButton;
+	private GuiButton soundfontsButton;
+	private GuiButton midiButton;
 
 	public MinetunesGui() {
 	}
@@ -135,11 +139,11 @@ public class MinetunesGui extends GuiScreen {
 			// Toggle debug
 			MinetunesConfig.DEBUG = !MinetunesConfig.DEBUG;
 			if (MinetunesConfig.DEBUG) {
-			Minecraft.getMinecraft().sndManager.playSoundFX("note.pling", 1.0F,
-					2.0f);
+				Minecraft.getMinecraft().sndManager.playSoundFX("note.pling",
+						1.0F, 2.0f);
 			} else {
-				Minecraft.getMinecraft().sndManager.playSoundFX("note.bass", 1.0F,
-						0.5f);
+				Minecraft.getMinecraft().sndManager.playSoundFX("note.bass",
+						1.0F, 0.5f);
 			}
 		} else if (typedKeys.toLowerCase().endsWith("clearcache")) {
 			// Clear cache for updating things
@@ -148,6 +152,25 @@ public class MinetunesGui extends GuiScreen {
 			FileUpdater.clearStaticCache();
 			Minetunes.autoUpdater.clearCache();
 			Minetunes.tutorialUpdater.clearCache();
+		} else if (typedKeys.toLowerCase().endsWith("getdev")) {
+			// Try to look for dev versions of minetunes on auto-update
+			Minecraft.getMinecraft().sndManager.playSoundFX("note.snare", 1.0F,
+					1.0f);
+			Minetunes.autoUpdater.setSpecialMode("dev");
+			checkForUpdates();
+		} else if (typedKeys.toLowerCase().endsWith("gettest")) {
+			// Try to look for test versions of minetunes on auto-update
+			Minecraft.getMinecraft().sndManager.playSoundFX("note.snare", 1.0F,
+					1.0f);
+			Minetunes.autoUpdater.setSpecialMode("test");
+			checkForUpdates();
+		} else if (typedKeys.toLowerCase().endsWith("shutupandautoupdate")) {
+			// Try to look for test versions of minetunes on auto-update
+			Minecraft.getMinecraft().sndManager.playSoundFX("note.snare", 1.0F,
+					1.0f);
+			Minetunes.autoUpdater.clearAlreadyTriedFlag();
+		} else if (typedKeys.toLowerCase().endsWith("graphics")) {
+			mc.displayGuiScreen(new GraphicsGui(this));
 		}
 	}
 
@@ -221,6 +244,11 @@ public class MinetunesGui extends GuiScreen {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		} else if (guibutton.id == 2000) {
+			// Switch out the center
+			showingTiles = !showingTiles;
+			tweenTiles(showingTiles);
+			tweenButtons(!showingTiles);
 		}
 	}
 
@@ -292,17 +320,21 @@ public class MinetunesGui extends GuiScreen {
 				100, 20, "MineTunesLand");
 		controlList.add(tutorialButton);
 
+		controlList.add(new GuiButton(2000, width - 85, 5, 80, 20, "Switch"));
+
 		addTutorialCancel();
 
 		// controlList.add(new GuiButton(600, width / 3 * 2 - 55, height - 70,
 		// 110, 20, "Sound Test"));
-		// controlList.add(new GuiButton(700, width / 3 * 2 - 55, height - 100,
-		// 110, 20, "Graphics"));
-		// controlList.add(new GuiButton(500, width / 3 * 2 - 55, height - 130,
-		// 110, 20, "MIDI Folder"));
-		// controlList.add(new GuiButton(900, width / 3 - 55, height - 40, 110,
-		// 20, "SoundFonts"));
-
+		graphicsButton = new GuiButton(700, width / 6 * 3 - 55, TILE_RETRACT_Y,
+				110, 20, "Graphics");
+		controlList.add(graphicsButton);
+		midiButton = new GuiButton(500, width / 6 * 5 - 55, TILE_RETRACT_Y,
+				 110, 20, "MIDI Folder");
+		 controlList.add(midiButton);
+		soundfontsButton = new GuiButton(900, width / 6 - 55, TILE_RETRACT_Y,
+				110, 20, "SoundFonts");
+		controlList.add(soundfontsButton);
 		// turnedOffButton = new GuiButton(1000, 15, 15, 110, 20,
 		// MinetunesConfig.getMCDittyTurnedOffText());
 		// controlList.add(turnedOffButton);
@@ -311,27 +343,16 @@ public class MinetunesGui extends GuiScreen {
 
 		// Check for updates
 		// outdated = GuiMineTunesUpdates.checkForUpdates();
-		Thread t = new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				MinetunesGui.setOutdated(MinetunesUpdateGui.checkForUpdates());
-				MinetunesGui.setTutorialUpdated(Minetunes.tutorialUpdater
-						.checkForUpdates(MinetunesConfig.MC_CURRENT_VERSION));
-			}
-
-		});
-		t.setName("MineTunes Menu Update Checker");
-		t.start();
+		checkForUpdates();
 
 		// Add tiles
 		tiles.clear();
 
 		final MinetunesGui thisGui = this;
 
-		final TuneTileGui noteblockTile = new TuneTileGui(width / 4 - 32, -125,
-				TuneTileType.NOTEBLOCKS,
-				!MinetunesConfig.getBoolean("noteblock.signsDisabled"));
+		final TuneTileGui noteblockTile = new TuneTileGui(width / 4 - 32,
+				TILE_RETRACT_Y, TuneTileType.NOTEBLOCKS,
+				!MinetunesConfig.getBoolean("noteblock.signsDisabled"), false);
 		noteblockTile.addActionListener(new ActionListener() {
 
 			@Override
@@ -349,7 +370,7 @@ public class MinetunesGui extends GuiScreen {
 					return;
 				case 1:
 					// Help pressed
-					mc.displayGuiScreen(new GuiHelp("noteblocks", thisGui));
+					mc.displayGuiScreen(new GuiHelpTopics("noteblocks", thisGui));
 					return;
 				case 2:
 					// Settings pressed
@@ -358,13 +379,13 @@ public class MinetunesGui extends GuiScreen {
 			}
 		});
 		Tween.to(noteblockTile, TuneTileGuiTweenAccessor.TWEEN_TYPE_Y, 2000)
-				.target((float) (height / 2 - 32 + 30)).ease(Quart.INOUT)
+				.target((float) (height / 2 - 32 + 30)).ease(Quart.OUT)
 				.start(tweenManager);
 		tiles.add(noteblockTile);
 
 		final TuneTileGui blockTunesTile = new TuneTileGui(width / 2 - 32,
-				-125, TuneTileType.BLOCKTUNES,
-				!MinetunesConfig.getBoolean("blockTunes.disabled"));
+				TILE_RETRACT_Y, TuneTileType.BLOCKTUNES,
+				!MinetunesConfig.getBoolean("blockTunes.disabled"), false);
 		blockTunesTile.addActionListener(new ActionListener() {
 
 			@Override
@@ -382,6 +403,7 @@ public class MinetunesGui extends GuiScreen {
 					return;
 				case 1:
 					// Help pressed
+					mc.displayGuiScreen(new GuiHelpTopics("blocktunes", thisGui));
 					return;
 				case 2:
 					// Settings pressed
@@ -390,12 +412,12 @@ public class MinetunesGui extends GuiScreen {
 			}
 		});
 		Tween.to(blockTunesTile, TuneTileGuiTweenAccessor.TWEEN_TYPE_Y, 2000)
-				.target((float) (height / 2 - 32 + 0)).ease(Quart.INOUT)
+				.target((float) (height / 2 - 32 + 0)).ease(Quart.OUT)
 				.start(tweenManager);
 		tiles.add(blockTunesTile);
 
 		final TuneTileGui signTunesTile = new TuneTileGui(width / 4 * 3 - 32,
-				-125, TuneTileType.SIGNTUNES,
+				TILE_RETRACT_Y, TuneTileType.SIGNTUNES,
 				!MinetunesConfig.getBoolean("signs.disabled"));
 		signTunesTile.addActionListener(new ActionListener() {
 
@@ -418,20 +440,82 @@ public class MinetunesGui extends GuiScreen {
 					return;
 				case 1:
 					// Help pressed
+					mc.displayGuiScreen(new GuiHelpTopics("signtunes", thisGui));
 					return;
 				case 2:
 					// Settings pressed
+					mc.displayGuiScreen(new SettingsGui());
 					return;
 				}
 			}
 		});
 		Tween.to(signTunesTile, TuneTileGuiTweenAccessor.TWEEN_TYPE_Y, 2000)
-				.target((float) (height / 2 - 32 - 30)).ease(Quart.INOUT)
+				.target((float) (height / 2 - 32 - 30)).ease(Quart.OUT)
 				.start(tweenManager);
 		tiles.add(signTunesTile);
 
+		tweenTiles(showingTiles);
+		tweenButtons(!showingTiles);
+
 		// Check config file to see that it's up to date
 		MinetunesConfig.loadAndUpdateSettings();
+	}
+
+	/**
+	 * 
+	 */
+	private void tweenTiles(boolean down) {
+		int currTile = 0;
+		for (TuneTileGui tile : tiles) {
+			if (down) {
+				Tween.to(tile, TuneTileGuiTweenAccessor.TWEEN_TYPE_Y, 2000)
+						.target((float) (height / 2 - 32 - 60 + (30 * (3 - currTile))))
+						.ease(Quart.OUT).start(tweenManager);
+			} else {
+				Tween.to(tile, TuneTileGuiTweenAccessor.TWEEN_TYPE_Y, 2000)
+						.target((float) TILE_RETRACT_Y).ease(Quart.OUT)
+						.start(tweenManager);
+			}
+			currTile++;
+		}
+	}
+
+	private void tweenButtons(boolean down) {
+		int currTile = 0;
+		GuiButton[] buttons = new GuiButton[3];
+		buttons[1] = graphicsButton;
+		buttons[0] = soundfontsButton;
+		buttons[2] = midiButton;
+		for (GuiButton button : buttons) {
+			if (down) {
+				Tween.to(button, GuiButtonTweenAccessor.TWEEN_TYPE_Y, 2000).delay(300)
+						.target((float) (height / 2 - 32 - 40 + (30 * (3 - currTile))))
+						.ease(Linear.INOUT).start(tweenManager);
+			} else {
+				Tween.to(button, GuiButtonTweenAccessor.TWEEN_TYPE_Y, 500)
+						.target((float) TILE_RETRACT_Y).ease(Linear.INOUT)
+						.start(tweenManager);
+			}
+			currTile++;
+		}
+	}
+
+	/**
+	 * 
+	 */
+	private void checkForUpdates() {
+		Thread t = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				MinetunesGui.setOutdated(MinetunesUpdateGui.checkForUpdates());
+				MinetunesGui.setTutorialUpdated(Minetunes.tutorialUpdater
+						.checkForUpdates(MinetunesConfig.MC_CURRENT_VERSION));
+			}
+
+		});
+		t.setName("MineTunes Menu Update Checker");
+		t.start();
 	}
 
 	/**
