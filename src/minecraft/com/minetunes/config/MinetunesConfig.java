@@ -124,6 +124,7 @@ public class MinetunesConfig {
 		// defaultProperties.setProperty("signs.highlightErrorLines", "true");
 		defaultProperties.setProperty("mod.lastVersionRun", "0");
 		defaultProperties.setProperty("tutorial.lastDownload", "0");
+		defaultProperties.setProperty("slides.highQuality", "true");
 	}
 
 	/**

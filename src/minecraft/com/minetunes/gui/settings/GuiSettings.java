@@ -95,6 +95,14 @@ public class GuiSettings extends GuiScreen {
 				SettingType.MIDI_VOLUME));
 	}
 
+	public static final LinkedList<Setting> MINETUNES_SETTINGS = new LinkedList<Setting>();
+	static {
+		MINETUNES_SETTINGS.add(new Setting("MIDI Volume", "",
+				SettingType.MIDI_VOLUME));
+		MINETUNES_SETTINGS.add(new Setting("Help Images: High Quality",
+				"slides.highQuality", SettingType.BOOLEAN_ENABLED_DISABLED));
+	}
+
 	private LinkedList<Setting> settings;
 	private GuiScreen backScreen;
 	private int settingsPerPage = 0;

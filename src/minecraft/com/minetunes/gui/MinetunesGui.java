@@ -332,7 +332,7 @@ public class MinetunesGui extends GuiScreen {
 				100, 20, "MineTunesLand");
 		controlList.add(tutorialButton);
 
-		controlList.add(new GuiButton(2000, width - 85, 5, 80, 20, "Switch"));
+		controlList.add(new GuiButton(2000, width - 85, 10, 80, 20, "Switch"));
 
 		addTutorialCancel();
 

@@ -192,7 +192,6 @@ public class Setting extends Gui {
 										.toString());
 				MinetunesConfig.setFloat(settingKey + ".sliderPos",
 						signColorSlider.sliderValue);
-				System.out.println (signColorSlider.sliderValue);
 
 				try {
 					MinetunesConfig.flush();

@@ -23,6 +23,7 @@
  */
 package com.minetunes.gui.help;
 
+import java.awt.Desktop;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,12 +66,13 @@ public class GuiHelp extends GuiScreen {
 	private int currSlide = -1;
 	private boolean badCaptions = false;
 	private LinkedList<Slide> slides = new LinkedList<Slide>();
-	private int textureIndex = -1;
 	private GuiButtonRect fwdButton;
 	private GuiButtonRect backButton;
 
 	private File helpDir = new File(MinetunesConfig.getResourcesDir(), "help");
 	private GuiButtonRect exitButton;
+	private GuiButtonRect printButton;
+	private boolean printableSlide = false;
 
 	public GuiHelp(String topic, GuiScreen backScreen) {
 		this.backScreen = backScreen;
@@ -111,12 +113,13 @@ public class GuiHelp extends GuiScreen {
 			} else {
 				lastTitle = title;
 			}
+			int textureQuality = MinetunesConfig
+					.getBoolean("slides.highQuality") ? 512 : 1024;
 			Slide s = new Slide(new File(helpDir.getPath(), paddedSlideNum
-					+ ".png"), title, props.getProperty(i + ".caption"));
+					+ ".png"), title, props.getProperty(i + ".caption"),
+					SIDE_BUTTON_WIDTH, TOP_MARGIN, textureQuality);
 			slides.add(s);
 		}
-
-		textureIndex = GL11.glGenTextures();
 	}
 
 	/**
@@ -128,8 +131,17 @@ public class GuiHelp extends GuiScreen {
 
 		// Change shown slide texture
 		Slide slide = slides.get(newSlideNum);
-		mc.renderEngine.setupTexture(slide.getImage(), textureIndex);
+		slide.prepareToShow();
 		currSlide = newSlideNum;
+
+		// Check for printable slide
+		if (props.getProperty(currSlide + ".printable") != null
+				&& props.getProperty(currSlide + ".printable")
+						.equalsIgnoreCase("true")) {
+			printableSlide = true;
+		} else {
+			printableSlide = false;
+		}
 	}
 
 	@Override
@@ -149,8 +161,9 @@ public class GuiHelp extends GuiScreen {
 	@Override
 	public void onGuiClosed() {
 		super.onGuiClosed();
-
-		mc.renderEngine.deleteTexture(textureIndex);
+		for (Slide s : slides) {
+			s.unloadImage();
+		}
 	}
 
 	@Override
@@ -175,58 +188,29 @@ public class GuiHelp extends GuiScreen {
 			changeSlide(0);
 		}
 
-		Slide slide = slides.get(currSlide);
-
 		// Render the picture
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0f);
-		mc.renderEngine.bindTexture(textureIndex);
-		int pixelWidth = (int) (slide.getUsedWidth() / ((double) slide
-				.getImage().getWidth() / 256d));
-		int pixelHeight = (int) (slide.getUsedHeight() / ((double) slide
-				.getImage().getHeight() / 256d));
-
-		int drawHeight = height - BOTTOM_MARGIN - TOP_MARGIN;
-		int drawWidth = (int) (((double) slide.getUsedWidth() / (double) slide
-				.getUsedHeight()) * (double) drawHeight);
-
-		int x1 = width / 2 - drawWidth / 2;
-		int y1 = TOP_MARGIN;
-		int x2 = width / 2 + drawWidth / 2;
-		int y2 = height - BOTTOM_MARGIN;
-
-		float var7 = 0.00390625F;
-		float var8 = 0.00390625F;
-		Tessellator var9 = Tessellator.instance;
-		var9.startDrawingQuads();
-		var9.addVertexWithUV((double) (x1), (double) (y2),
-				(double) this.zLevel, (double) ((float) (0) * var7),
-				(double) ((float) (pixelHeight) * var8));
-		var9.addVertexWithUV((double) (x2), (double) (y2),
-				(double) this.zLevel, (double) ((float) (pixelWidth) * var7),
-				(double) ((float) (pixelHeight) * var8));
-		var9.addVertexWithUV((double) (x2), (double) (y1),
-				(double) this.zLevel, (double) ((float) (pixelWidth) * var7),
-				(double) ((float) (0) * var8));
-		var9.addVertexWithUV((double) (x1), (double) (y1),
-				(double) this.zLevel, (double) ((float) (0) * var7),
-				(double) ((float) (0) * var8));
-		var9.draw();
+		Slide slide = slides.get(currSlide);
+		slide.draw(new Rectangle(width - 2 * SIDE_BUTTON_WIDTH, height
+				- TOP_MARGIN - BOTTOM_MARGIN), true);
 
 		// Render the title and caption
 		drawCenteredString(fontRenderer, slide.getTitle(), width / 2,
 				(TOP_MARGIN / 2) - 5, 0xffff00);
-		fontRenderer.drawSplitString(slide.getCaption(), x1, height - 40,
-				x2-x1, 0xffffff);
+		fontRenderer.drawSplitString(slide.getCaption(), SIDE_BUTTON_WIDTH + 2,
+				height - 40, width - 2 * SIDE_BUTTON_WIDTH - 4, 0xffffff);
 
 		// Render left and right buttons
 		if (currSlide < numSlides - 1) {
 			fwdButton.draw(mx, my, par3, fontRenderer);
 		}
-
 		if (currSlide > 0) {
 			backButton.draw(mx, my, par3, fontRenderer);
 		}
+
 		exitButton.draw(mx, my, par3, fontRenderer);
+		if (printableSlide) {
+			printButton.draw(mx, my, par3, fontRenderer);
+		}
 
 		// Render count
 		drawString(fontRenderer, (currSlide + 1) + " of " + numSlides,
@@ -250,6 +234,30 @@ public class GuiHelp extends GuiScreen {
 			}
 		});
 
+		printButton = new GuiButtonRect(new Rectangle(60, 0, 60, 20), "Print",
+				0xbb3030a0);
+		final GuiHelp thisGui = this;
+		printButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (Desktop.isDesktopSupported() && thisGui.printableSlide) {
+					try {
+						// Print the file. Filter out the "\." that gets added
+						// into the path sometimes.
+						Desktop.getDesktop()
+								.print(new File(slides.get(currSlide).getFile()
+										.getPath()
+										.replace("./", "").replace(".\\", "")));
+					} catch (IOException e1) {
+						e1.printStackTrace();
+						mc.displayGuiScreen(new GuiSimpleMessage(thisGui,
+								"Could not read image to print.", 0xffffff));
+					}
+				}
+			}
+		});
+
 		backButton = new GuiButtonRect(new Rectangle(0, TOP_MARGIN,
 				SIDE_BUTTON_WIDTH, height - TOP_MARGIN - BOTTOM_MARGIN), "<--");
 		backButton.addActionListener(new ActionListener() {
@@ -259,6 +267,7 @@ public class GuiHelp extends GuiScreen {
 				changeSlide(currSlide - 1);
 			}
 		});
+
 		fwdButton = new GuiButtonRect(new Rectangle(width - SIDE_BUTTON_WIDTH,
 				TOP_MARGIN, width, height - TOP_MARGIN - BOTTOM_MARGIN), "-->");
 		fwdButton.addActionListener(new ActionListener() {
@@ -266,7 +275,6 @@ public class GuiHelp extends GuiScreen {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				changeSlide(currSlide + 1);
-
 			}
 		});
 	}
@@ -277,11 +285,19 @@ public class GuiHelp extends GuiScreen {
 		fwdButton.onMousePressed(mx, my, button);
 		backButton.onMousePressed(mx, my, button);
 		exitButton.onMousePressed(mx, my, button);
+		printButton.onMousePressed(mx, my, button);
 	}
 
 	@Override
 	protected void actionPerformed(GuiButton par1GuiButton) {
 		if (par1GuiButton.id == 0) {
+			mc.displayGuiScreen(backScreen);
+		}
+	}
+
+	@Override
+	protected void keyTyped(char par1, int par2) {
+		if (par2 == 1) {
 			mc.displayGuiScreen(backScreen);
 		}
 	}
