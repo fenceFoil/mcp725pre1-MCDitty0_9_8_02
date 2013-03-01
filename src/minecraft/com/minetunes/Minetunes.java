@@ -721,8 +721,10 @@ public class Minetunes {
 			}
 		}
 
-		// Check all prox pads for collisions
-		updateProxpads(minecraft);
+		if (!MinetunesConfig.getBoolean("signs.disabled")) {
+			// Check all prox pads for collisions
+			updateProxpads(minecraft);
+		}
 
 		// If not in a gui...
 		if (currGui == null) {
