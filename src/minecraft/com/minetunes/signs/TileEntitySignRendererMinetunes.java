@@ -12,6 +12,7 @@ import net.minecraft.src.TileEntitySignRenderer;
 import org.lwjgl.opengl.GL11;
 
 import com.minetunes.Point3D;
+import com.minetunes.gui.signEditor.GuiEditSignBase;
 
 /**
  * 
@@ -159,8 +160,12 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 		boolean renderSign = true;
 		boolean doNotHideForSure = false;
 
-		if (!fullRenderingEnabled && !signEntity.alwaysRender
-				&& renderCountLastTick > 100) {
+		// If in a sign editor, the fraction of a tick argument varies, throwing
+		// off the render count total to be under 100: the threshold where ALL
+		// signs around are renderered
+		if (!fullRenderingEnabled
+				&& !signEntity.alwaysRender
+				&& ((renderCountLastTick > 100) || (mc.currentScreen instanceof GuiEditSignBase))) {
 			// Decide whether to render sign text (expensive)
 			renderText = false;
 			renderSign = false;
@@ -177,7 +182,7 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 			// Eliminate signs that are far from the player
 			double distToPlayer = playerPoint.distanceToRel(signEntity
 					.posToPoint3D(tempPoint));
-			if (distToPlayer < 2 * 2) {
+			if (distToPlayer < 5 * 5) {
 				// So close, could be inside block. Ensure it is rendered
 				doNotHideForSure = true;
 				renderSign = true;
@@ -478,6 +483,7 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 							.toString();
 				}
 			}
+
 			if (blinkTextStateOn && signEntity.errorBlinkLine[currRenderLine]) {
 				sWithCaret = "§c" + sWithCaret;
 			} else if (signEntity.highlightLine[currRenderLine] != null

@@ -124,7 +124,7 @@ public class GuiEditSignBase extends GuiEditSign {
 			par1TileEntitySign = new TileEntitySignMinetunes(par1TileEntitySign);
 		}
 		sign = (TileEntitySignMinetunes) par1TileEntitySign;
-		sign.setEditable(true);
+		// sign.setEditable(true);
 		sign.alwaysRender = true;
 
 		// Add first entry to savedSigns buffer
@@ -275,7 +275,7 @@ public class GuiEditSignBase extends GuiEditSign {
 			}
 
 			TileEntityRenderer.instance.renderTileEntityAt(sign, -0.5D, -0.75D,
-					-0.5D, 0.0F);
+					-0.5D, 0f);
 			sign.lineBeingEdited = -1;
 			GL11.glPopMatrix();
 		}
@@ -311,7 +311,7 @@ public class GuiEditSignBase extends GuiEditSign {
 				Math.min(height / 4 + 120, height - 40), 120, 20, "Done & Save");
 		controlList.add(doneButton);
 
-		controlList.add(new MinetunesVersionGuiElement(-100));
+		// controlList.add(new MinetunesVersionGuiElement(-100));
 
 		// // Added new buttons
 		// controlList.add(new GuiButton(400, 5, height - 150, 80, 20,
@@ -404,14 +404,20 @@ public class GuiEditSignBase extends GuiEditSign {
 
 		// Check for queued up gui to display
 		if (queuedGui != null) {
-			mc.displayGuiScreen(queuedGui);
+			GuiScreen t = queuedGui;
 			queuedGui = null;
+			mc.displayGuiScreen(t);
 		}
 
 		// Update the current tick
 		updateCounter++;
-		
-		System.out.println (">");
+
+		// Check whether the SignTunes gui should be opened instead
+		if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES
+				&& !(mc.currentScreen instanceof GuiEditSignTune)) {
+			mc.displayGuiScreen(new GuiEditSignTune(sign, recalledSignCount,
+					editLine, editChar));
+		}
 
 		// // Give things some time to work in the background?
 		// try {
