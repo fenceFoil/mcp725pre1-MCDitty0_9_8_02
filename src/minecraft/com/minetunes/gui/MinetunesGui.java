@@ -32,6 +32,7 @@ import java.util.LinkedList;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.EnumOS;
+import net.minecraft.src.FontRenderer;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;
@@ -47,6 +48,7 @@ import aurelienribon.tweenengine.equations.Linear;
 import aurelienribon.tweenengine.equations.Quart;
 
 import com.minetunes.Finder;
+import com.minetunes.FontRendererUtils;
 import com.minetunes.Minetunes;
 import com.minetunes.autoUpdate.FileUpdater;
 import com.minetunes.config.MinetunesConfig;
@@ -181,6 +183,13 @@ public class MinetunesGui extends GuiScreen {
 			mc.displayGuiScreen(new GraphicsGui(this));
 		} else if (typedKeys.toLowerCase().endsWith("oldsettings")) {
 			mc.displayGuiScreen(new OldSettingsGui());
+		} else if (typedKeys.toLowerCase().endsWith("blockarina")) {
+			mc.displayGuiScreen(new GuiBlockarinaTest(this));
+		} else if (typedKeys.toLowerCase().endsWith("cga")) {
+			mc.fontRenderer = new FontRenderer(mc.gameSettings,
+					"/com/minetunes/resources/textures/CGAFont.png",
+					mc.renderEngine, false);
+			FontRendererUtils.changeCharWidth(8, mc.fontRenderer);
 		}
 	}
 
@@ -315,10 +324,9 @@ public class MinetunesGui extends GuiScreen {
 	@Override
 	public void initGui() {
 		// Add buttons
-		//if (backScreen instanceof GuiOptions) {
-			controlList.add(new GuiButton(400, 2, 10,
-					80, 20, "§bBack"));
-		//}
+		// if (backScreen instanceof GuiOptions) {
+		controlList.add(new GuiButton(400, 2, 10, 80, 20, "§bBack"));
+		// }
 
 		// controlList.add(new GuiButton(300, width / 3 - 55, height - 130, 110,
 		// 20, "Settings"));
