@@ -63,6 +63,7 @@ import net.minecraft.src.EntityFX;
 import net.minecraft.src.EntityFireworkRocket;
 import net.minecraft.src.EntityHeartFX;
 import net.minecraft.src.EntityPlayerSP;
+import net.minecraft.src.FontRenderer;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiEditSign;
 import net.minecraft.src.GuiOptions;
@@ -122,7 +123,7 @@ import com.minetunes.gui.ChangelogGui;
 import com.minetunes.gui.GuiButtonTweenAccessor;
 import com.minetunes.gui.GuiMinetimesGraphicsMenuButton;
 import com.minetunes.gui.MinetunesMenuButton;
-import com.minetunes.gui.signEditor.GuiEditSignMinetunes;
+import com.minetunes.gui.signEditor.GuiEditSignBase;
 import com.minetunes.keyboard.KeypressProcessor;
 import com.minetunes.noteblocks.BlockNoteMinetunes;
 import com.minetunes.noteblocks.EntityNoteBlockTooltip;
@@ -757,10 +758,10 @@ public class Minetunes {
 	private static void swapSignGui() {
 		try {
 			if (Minecraft.getMinecraft().currentScreen instanceof GuiEditSign
-					&& !(Minecraft.getMinecraft().currentScreen instanceof GuiEditSignMinetunes)) {
+					&& !(Minecraft.getMinecraft().currentScreen instanceof GuiEditSignBase)) {
 				GuiEditSign vanillaSignGui = (GuiEditSign) Minecraft
 						.getMinecraft().currentScreen;
-				Minecraft.getMinecraft().currentScreen = new GuiEditSignMinetunes(
+				Minecraft.getMinecraft().currentScreen = new GuiEditSignBase(
 						(TileEntitySign) Finder.getUniqueTypedFieldFromClass(
 								GuiEditSign.class, TileEntitySign.class,
 								vanillaSignGui));
