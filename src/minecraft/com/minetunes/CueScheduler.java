@@ -33,7 +33,7 @@ import java.util.Set;
 import com.minetunes.config.MinetunesConfig;
 import com.minetunes.ditty.event.CueEvent;
 import com.minetunes.ditty.event.TimedDittyEvent;
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 
 /**
  * CueScheduler accepts lyric texts and BotActions, indexes and combines them
@@ -78,7 +78,7 @@ public class CueScheduler {
 	 */
 	public void addLyricText(String lyricLabel, String lyricText, int repetition) {
 		if (MinetunesConfig.DEBUG) {
-			BlockSignMinetunes.simpleLog("addLyricText called: " + lyricLabel + " with "
+			SignTuneParser.simpleLog("addLyricText called: " + lyricLabel + " with "
 					+ lyricText + " rep=" + repetition);
 		}
 
@@ -94,7 +94,7 @@ public class CueScheduler {
 		}
 
 		if (MinetunesConfig.DEBUG) {
-			BlockSignMinetunes.simpleLog("addLyricText: in list already? "
+			SignTuneParser.simpleLog("addLyricText: in list already? "
 					+ alreadyInLists);
 		}
 
@@ -151,7 +151,7 @@ public class CueScheduler {
 	 */
 	public CueEvent getLyric(String lyricLabel, int repetition) {
 		if (MinetunesConfig.DEBUG) {
-			BlockSignMinetunes.simpleLog("getLyric called: " + lyricLabel + " rep="
+			SignTuneParser.simpleLog("getLyric called: " + lyricLabel + " rep="
 					+ repetition);
 		}
 
@@ -253,7 +253,7 @@ public class CueScheduler {
 	 */
 	public void setLyricTime(String lyricLabel, long time) {
 		if (MinetunesConfig.DEBUG) {
-			BlockSignMinetunes.simpleLog("setLyricTime called: " + lyricLabel + ":"
+			SignTuneParser.simpleLog("setLyricTime called: " + lyricLabel + ":"
 					+ time);
 		}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2012 William Karnavas 
+ * Copyright (c) 2012-2013 William Karnavas 
  * All Rights Reserved
  */
 
@@ -34,59 +34,27 @@ import com.minetunes.signs.SignTuneParser;
  * @author William
  * 
  */
-public class VolumeKeyword extends SignTuneKeyword {
+public class ResetKeyword extends SignTuneKeyword {
 
-	private int volume = 1;
-
-	public VolumeKeyword(String wholeKeyword) {
+	/**
+	 * @param wholeKeyword
+	 */
+	public ResetKeyword(String wholeKeyword) {
 		super(wholeKeyword);
-	}
-
-	@Override
-	public void parse() {
-		// Get volume; it must be specified
-		int numArgs = getWholeKeyword().split(" ").length;
-		if (numArgs >= 2) {
-			String argument = getWholeKeyword().split(" ")[1];
-			if (argument.trim().matches("\\d+")) {
-				setVolume(Integer.parseInt(argument.trim()));
-			} else {
-				// Error: invalid agument
-				setGoodKeyword(false);
-				setErrorMessageType(ERROR);
-				setErrorMessage("Follow Volume with a number from 0 to 100.");
-			}
-		}
-
-		if (numArgs > 2) {
-			// Error: Too many arguments
-			setGoodKeyword(true);
-			setErrorMessageType(INFO);
-			setErrorMessage("Only one number is needed.");
-		} else if (numArgs < 2) {
-			// Error: No arguemnts
-			setGoodKeyword(false);
-			setErrorMessageType(ERROR);
-			setErrorMessage("Follow Volume with a number from 0 to 100.");
-		}
-	}
-
-	public int getVolume() {
-		return volume;
-	}
-
-	public void setVolume(int volume) {
-		this.volume = volume;
 	}
 
 	@Override
 	public Point3D execute(Ditty ditty, Point3D location,
 			TileEntitySign signTileEntity, Point3D nextSign, World world,
 			StringBuilder readMusicString) {
-		// Inserts a volume token into the song
+		// Reset keyword: replace with a more
+		// musicstring-neutral token
+		// Do not check for errors! The token is a
+		// MineTunes-only
+		// token.
 		ditty.addMusicStringTokens(readMusicString,
-				SignTuneParser.getAdjustedVolumeToken(getVolume(), ditty),
-				false);
+				SignTuneParser.getResetToken(), false);
+
 		return null;
 	}
 

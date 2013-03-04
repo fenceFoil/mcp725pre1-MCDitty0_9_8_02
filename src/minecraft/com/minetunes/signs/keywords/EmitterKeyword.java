@@ -26,7 +26,14 @@ package com.minetunes.signs.keywords;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
 import com.minetunes.Emitter;
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.ditty.event.CreateEmitterEvent;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.Comment;
 import com.minetunes.signs.ParsedSign;
 
@@ -34,14 +41,14 @@ import com.minetunes.signs.ParsedSign;
  * 
  *
  */
-public class EmitterKeyword extends ParsedKeyword {
+public class EmitterKeyword extends SignTuneKeyword {
 
 	/**
 	 * All types of particles currently supported by emitters
 	 */
 	public static String[] types;
 	static {
-		types = new String [3+Emitter.particleHandleMap.size()];
+		types = new String[3 + Emitter.particleHandleMap.size()];
 		Collection<String> c = Emitter.particleHandleMap.keySet();
 		ArrayList<String> typesList = new ArrayList<String>();
 		typesList.addAll(c);
@@ -115,23 +122,24 @@ public class EmitterKeyword extends ParsedKeyword {
 		super(wholeKeyword);
 	}
 
-	public static EmitterKeyword parse(String rawArgs) {
-		EmitterKeyword keyword = new EmitterKeyword(rawArgs);
+	@Override
+	public void parse() {
+		EmitterKeyword keyword = new EmitterKeyword(getWholeKeyword());
 
 		// Get number of blocks to move; default is 1 if not specified
-		String[] args = rawArgs.split(" ");
+		String[] args = getWholeKeyword().split(" ");
 		int numArgs = args.length;
 
 		if (numArgs > 2) {
 			// Too many arguments
-			keyword.setGoodKeyword(true);
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("Only one type is needed.");
+			setGoodKeyword(true);
+			setErrorMessageType(INFO);
+			setErrorMessage("Only one type is needed.");
 		} else if (numArgs <= 1) {
 			// No type
-			keyword.setGoodKeyword(false);
-			keyword.setErrorMessageType(ERROR);
-			keyword.setErrorMessage("Follow Emitter with a type of particle to emit.");
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Follow Emitter with a type of particle to emit.");
 		} else {
 			// Type supplied
 			String type = args[1].toLowerCase().trim();
@@ -145,15 +153,13 @@ public class EmitterKeyword extends ParsedKeyword {
 			}
 
 			if (!valid) {
-				keyword.setGoodKeyword(true);
-				keyword.setErrorMessageType(WARNING);
-				keyword.setErrorMessage("Cannot emit this type of particle.");
+				setGoodKeyword(true);
+				setErrorMessageType(WARNING);
+				setErrorMessage("Cannot emit this type of particle.");
 			}
 
-			keyword.setType(type);
+			setType(type);
 		}
-
-		return keyword;
 	}
 
 	@Override
@@ -175,7 +181,7 @@ public class EmitterKeyword extends ParsedKeyword {
 	}
 
 	@Override
-	public <T extends ParsedKeyword> void parseWithMultiline(
+	public <T extends SignTuneKeyword> void parseWithMultiline(
 			ParsedSign parsedSign, int keywordLine, T k) {
 		super.parseWithMultiline(parsedSign, keywordLine, k);
 
@@ -552,6 +558,25 @@ public class EmitterKeyword extends ParsedKeyword {
 
 	public void setStreamFreq(String streamFreq) {
 		this.streamFreq = streamFreq;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		// Creates a create emitter event in the ditty, with
+		// corresponding token
+		int eventID = ditty.addDittyEvent(new CreateEmitterEvent(this, -1, ditty
+				.getDittyID(), location.clone()));
+		ditty.addMusicStringTokens(readMusicString,
+				SignTuneParser.TIMED_EVENT_TOKEN + eventID, false);
+
+		return null;
+	}
+
+	@Override
+	public boolean isAllBelow() {
+		return true;
 	}
 
 }

@@ -25,7 +25,15 @@ package com.minetunes.signs.keywords;
 
 import java.util.HashSet;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
 import org.jfugue.JFugueDefinitions;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.signs.SignTuneParser;
+import com.minetunes.signs.SignParser;
 
 /**
  * Keyword format:
@@ -34,30 +42,28 @@ import org.jfugue.JFugueDefinitions;
  * 
  * [octaves]: -10 to 10 Ints; multiple; optional (default is just a single 1)
  */
-public class OctavesKeyword extends ParsedKeyword {
+public class OctavesKeyword extends SignTuneKeyword {
 
-	private HashSet<Integer> octaves = new HashSet<Integer>(); 
+	private HashSet<Integer> octaves = new HashSet<Integer>();
 
 	private int duration = -1;
-	
+
 	private String durationString = "";
 
 	public OctavesKeyword(String wholeKeyword) {
 		super(wholeKeyword);
 	}
 
-	public static OctavesKeyword parse(String rawLine) {
-		
-		OctavesKeyword keyword = new OctavesKeyword(rawLine);
-
-		String[] args = rawLine.split(" ");
-		int numArgs = rawLine.split(" ").length;
+	@Override
+	public void parse() {
+		String[] args = getWholeKeyword().split(" ");
+		int numArgs = getWholeKeyword().split(" ").length;
 
 		int argsLeft = 0;
 		if (numArgs <= 1) {
 			// Set up the default and go
-			keyword.getOctaves().add(1);
-			return keyword;
+			getOctaves().add(1);
+			return;
 		} else {
 			argsLeft = numArgs - 1;
 		}
@@ -71,32 +77,32 @@ public class OctavesKeyword extends ParsedKeyword {
 				Integer tonesArg = Integer.parseInt(argument);
 				if (tonesArg > 10 || tonesArg < -10) {
 					// Out of range
-					keyword.setGoodKeyword(false);
-					keyword.setErrorMessageType(WARNING);
-					keyword.setErrorMessage("Follow Octaves with numbers (-10 to +10).");
-					return keyword;
+					setGoodKeyword(false);
+					setErrorMessageType(WARNING);
+					setErrorMessage("Follow Octaves with numbers (-10 to +10).");
+					return;
 				}
-				keyword.getOctaves().add(tonesArg);
-				
+				getOctaves().add(tonesArg);
+
 				// Note that some octaves were specified
 				octavesSpecified = true;
 			} else {
 				// Bad argument
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ERROR);
-				keyword.setErrorMessage("Follow Octaves with numbers (-10 to +10).");
-				return keyword;
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Follow Octaves with numbers (-10 to +10).");
+				return;
 			}
 
 			argsLeft--;
 		}
-		
+
 		// If nothing was read, set up defaults
 		if (!octavesSpecified) {
-			keyword.getOctaves().add(1);
+			getOctaves().add(1);
 		}
-		
-		return keyword;
+
+		return;
 	}
 
 	public HashSet<Integer> getOctaves() {
@@ -126,6 +132,18 @@ public class OctavesKeyword extends ParsedKeyword {
 	// Copied from JFugue's MusicStringParser (I know, bad form); modified
 	private static double parseLetterDuration(String s, int slen, int index) {
 		return StaccatoKeyword.parseLetterDuration(s, slen, index);
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		// Add an octaves note effect token
+		Object[] octaves = getOctaves().toArray(new Integer[0]);
+		String token = SignTuneParser.createNoteEffectToken(false,
+				SignTuneParser.NOTE_EFFECT_OCTAVES, octaves);
+		ditty.addMusicStringTokens(readMusicString, token, false);
+		return null;
 	}
 
 }

@@ -23,39 +23,45 @@
  */
 package com.minetunes.signs.keywords;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
 import org.jfugue.JFugueDefinitions;
 import org.jfugue.factories.NoteFactory;
 import org.jfugue.factories.NoteFactory.NoteContext;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.signs.SignTuneParser;
+import com.minetunes.signs.SignParser;
 
 /**
  * Keyword format:
  * 
  * Staccato [eighths] [duration]
  * 
- * [eighths]: 0-8 Int
- * [duration]: JFugue duration
+ * [eighths]: 0-8 Int [duration]: JFugue duration
  */
-public class TransposeKeyword extends ParsedKeyword {
+public class TransposeKeyword extends SignTuneKeyword {
 
 	private int deltaTones = 2;
 
 	private int duration = -1;
-	
+
 	private String durationString = "";
 
 	public TransposeKeyword(String wholeKeyword) {
 		super(wholeKeyword);
 	}
 
-	public static TransposeKeyword parse(String rawLine) {
-		TransposeKeyword keyword = new TransposeKeyword(rawLine);
-
-		String[] args = rawLine.split(" ");
-		int numArgs = rawLine.split(" ").length;
+	@Override
+	public void parse() {
+		String[] args = getWholeKeyword().split(" ");
+		int numArgs = getWholeKeyword().split(" ").length;
 
 		int argsLeft = 0;
 		if (numArgs <= 1) {
-			return keyword;
+			return;
 		} else {
 			argsLeft = numArgs - 1;
 		}
@@ -71,37 +77,36 @@ public class TransposeKeyword extends ParsedKeyword {
 				Integer tonesArg = Integer.parseInt(argument);
 				if (tonesArg > 127 || tonesArg < -127) {
 					// Out of range
-					keyword.setGoodKeyword(false);
-					keyword.setErrorMessageType(ERROR);
-					keyword.setErrorMessage("Follow Trans with semitones to transpose (-127 to +127).");
-					return keyword;
+					setGoodKeyword(false);
+					setErrorMessageType(ERROR);
+					setErrorMessage("Follow Trans with semitones to transpose (-127 to +127).");
+					return;
 				}
-				keyword.setTones(tonesArg);
-				
+				setTones(tonesArg);
+
 				tonesRead = true;
 			} else {
-				double decimalDuration = parseLetterDuration(argument.toUpperCase(), argument.length(), 0);
-				keyword.setDuration((int) (decimalDuration * JFugueDefinitions.SEQUENCE_RESOLUTION));
-				keyword.setDurationString (argument);
-				
-				//System.out.println (decimalDuration + ":"+argument);
-				
+				double decimalDuration = parseLetterDuration(
+						argument.toUpperCase(), argument.length(), 0);
+				setDuration((int) (decimalDuration * JFugueDefinitions.SEQUENCE_RESOLUTION));
+				setDurationString(argument);
+
+				// System.out.println (decimalDuration + ":"+argument);
+
 				durationRead = true;
 			}
 
 			argsLeft--;
 			currArg++;
 		}
-		
+
 		// Ensure that tones are specified
 		if (!tonesRead) {
-			keyword.setGoodKeyword(false);
-			keyword.setErrorMessageType(ERROR);
-			keyword.setErrorMessage("Follow Trans with semitones to transpose (-127 to +127).");
-			return keyword;
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Follow Trans with semitones to transpose (-127 to +127).");
+			return;
 		}
-
-		return keyword;
 	}
 
 	public int getTones() {
@@ -131,6 +136,19 @@ public class TransposeKeyword extends ParsedKeyword {
 	// Copied from JFugue's MusicStringParser (I know, bad form); modified
 	private static double parseLetterDuration(String s, int slen, int index) {
 		return StaccatoKeyword.parseLetterDuration(s, slen, index);
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		// Add a transpose note effect token
+		String token = SignTuneParser.createNoteEffectToken(false,
+				SignTuneParser.NOTE_EFFECT_TRANSPOSE, getTones(),
+				getDuration());
+		ditty.addMusicStringTokens(readMusicString, token, false);
+
+		return null;
 	}
 
 }

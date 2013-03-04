@@ -15,7 +15,7 @@ import com.minetunes.autoUpdate.ModUpdater;
 import com.minetunes.autoUpdate.UpdateEventLevel;
 import com.minetunes.config.MinetunesConfig;
 import com.minetunes.resources.ResourceManager;
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 
 /**
  * Copyright (c) 2012 William Karnavas 
@@ -263,7 +263,7 @@ public class MinetunesUpdateGui extends GuiScreen implements
 		if (newVersion == null) {
 			newVersion = "Could Not Download Version";
 		}
-		BlockSignMinetunes
+		SignTuneParser
 				.simpleLog("GuiMCDittyUpdates.checkForUpdates: downloaded version number "
 						+ newVersion);
 		if (CompareVersion.isVersionNumber(newVersion)) {

@@ -32,7 +32,7 @@ import net.minecraft.src.TileEntitySign;
 import net.minecraft.src.World;
 
 import com.minetunes.Point3D;
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 
 /**
  * Measures a disco floor's size, scanning for wool blocks connected to the
@@ -67,7 +67,7 @@ public class MeasureDiscoFloorThread extends Thread {
 
 		// Determing where to start measuring from: find the wool block this
 		// sign is mounted on
-		startBlock = BlockSignMinetunes.getBlockAttachedTo(anchor);
+		startBlock = SignTuneParser.getBlockAttachedTo(anchor);
 
 		// Flood fill wool sheet
 		// TODO: Fill a wool AREA, then remove any blocks that aren't visible

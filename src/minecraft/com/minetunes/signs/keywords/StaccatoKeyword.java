@@ -23,39 +23,45 @@
  */
 package com.minetunes.signs.keywords;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
 import org.jfugue.JFugueDefinitions;
 import org.jfugue.factories.NoteFactory;
 import org.jfugue.factories.NoteFactory.NoteContext;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.signs.SignTuneParser;
+import com.minetunes.signs.SignParser;
 
 /**
  * Keyword format:
  * 
  * Staccato [eighths] [duration]
  * 
- * [eighths]: 0-8 Int
- * [duration]: JFugue duration
+ * [eighths]: 0-8 Int [duration]: JFugue duration
  */
-public class StaccatoKeyword extends ParsedKeyword {
+public class StaccatoKeyword extends SignTuneKeyword {
 
 	private int eighths = 2;
 
 	private int duration = -1;
-	
+
 	private String durationString = "";
 
 	public StaccatoKeyword(String wholeKeyword) {
 		super(wholeKeyword);
 	}
 
-	public static StaccatoKeyword parse(String rawLine) {
-		StaccatoKeyword keyword = new StaccatoKeyword(rawLine);
-
-		String[] args = rawLine.split(" ");
-		int numArgs = rawLine.split(" ").length;
+	@Override
+	public void parse() {
+		String[] args = getWholeKeyword().split(" ");
+		int numArgs = getWholeKeyword().split(" ").length;
 
 		int argsLeft = 0;
 		if (numArgs <= 1) {
-			return keyword;
+			return;
 		} else {
 			argsLeft = numArgs - 1;
 		}
@@ -71,22 +77,23 @@ public class StaccatoKeyword extends ParsedKeyword {
 				Integer eighthsArg = Integer.parseInt(argument);
 				if (eighthsArg > 8 || eighthsArg < 0) {
 					// Out of range
-					keyword.setGoodKeyword(false);
-					keyword.setErrorMessageType(ERROR);
-					keyword.setErrorMessage("Follow Staccato with a number from 0 to 8.");
-					return keyword;
+					setGoodKeyword(false);
+					setErrorMessageType(ERROR);
+					setErrorMessage("Follow Staccato with a number from 0 to 8.");
+					return;
 				}
-				keyword.setEighths(eighthsArg);
-				
+				setEighths(eighthsArg);
+
 				eighthsRead = true;
 			} else {
-				double decimalDuration = parseLetterDuration(argument.toUpperCase(), argument.length(), 0);
-				keyword.setDuration((int) (decimalDuration * JFugueDefinitions.SEQUENCE_RESOLUTION));
-				
-				keyword.setDurationString (argument);
-				
-				//System.out.println (decimalDuration + ":"+argument);
-				
+				double decimalDuration = parseLetterDuration(
+						argument.toUpperCase(), argument.length(), 0);
+				setDuration((int) (decimalDuration * JFugueDefinitions.SEQUENCE_RESOLUTION));
+
+				setDurationString(argument);
+
+				// System.out.println (decimalDuration + ":"+argument);
+
 				durationRead = true;
 			}
 
@@ -94,7 +101,7 @@ public class StaccatoKeyword extends ParsedKeyword {
 			currArg++;
 		}
 
-		return keyword;
+		return;
 	}
 
 	public int getEighths() {
@@ -184,6 +191,20 @@ public class StaccatoKeyword extends ParsedKeyword {
 		}
 
 		return duration;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		// Create and add a staccato note effect token
+		String staccatoToken = SignTuneParser.createNoteEffectToken(false,
+				SignTuneParser.NOTE_EFFECT_STACCATO, getEighths(),
+				getDuration());
+
+		ditty.addMusicStringTokens(readMusicString, staccatoToken, false);
+
+		return null;
 	}
 
 }

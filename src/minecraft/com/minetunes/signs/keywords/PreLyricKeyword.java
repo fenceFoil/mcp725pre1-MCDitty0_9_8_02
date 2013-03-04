@@ -23,16 +23,24 @@
  */
 package com.minetunes.signs.keywords;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
+import com.minetunes.CueScheduler;
+import com.minetunes.Point3D;
+import com.minetunes.config.MinetunesConfig;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.ParsedSign;
 
 /**
  * @author William
  * 
  */
-public class PreLyricKeyword extends ParsedKeyword {
+public class PreLyricKeyword extends SignTuneKeyword {
 
 	private String colorCode = "";
-	//private int repetition = 1;
+	// private int repetition = 1;
 	private String label = "";
 	private String lyricText = "";
 
@@ -44,36 +52,35 @@ public class PreLyricKeyword extends ParsedKeyword {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static PreLyricKeyword parse(String currLine) {
-		PreLyricKeyword keyword = new PreLyricKeyword(currLine);
-
+	@Override
+	public void parse() {
 		// Read arguments
-		int numArgs = currLine.split(" ").length;
+		int numArgs = getWholeKeyword().split(" ").length;
 
 		// Get arguments
 		// Get label (required)
 		if (numArgs >= 2) {
-			keyword.label = currLine.split(" ")[1];
-			if (!isValidCueLabel(keyword.label)) {
+			label = getWholeKeyword().split(" ")[1];
+			if (!isValidCueLabel(label)) {
 				// Illegal label
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ParsedKeyword.WARNING);
-				keyword.setErrorMessage("Lyric names should only contain letters, numbers, and underscores.");
+				setGoodKeyword(false);
+				setErrorMessageType(SignTuneKeyword.WARNING);
+				setErrorMessage("Lyric names should only contain letters, numbers, and underscores.");
 			}
 		} else {
 			// No label; this results in an error
-			keyword.setGoodKeyword(false);
-			keyword.setErrorMessageType(ParsedKeyword.ERROR);
-			keyword.setErrorMessage("Follow the PreLyric keyword with a lyric name: e.g., 'PreLyric chorus'.");
+			setGoodKeyword(false);
+			setErrorMessageType(SignTuneKeyword.ERROR);
+			setErrorMessage("Follow the PreLyric keyword with a lyric name: e.g., 'PreLyric chorus'.");
 		}
 
 		// Check for third argument (color code or repetition)
 
 		// Default values for the ensuing (optional) arguments
-		String colorCode = keyword.getColorCode();
+		String colorCode = getColorCode();
 
 		if (numArgs >= 3) {
-			String argument = currLine.split(" ")[2];
+			String argument = getWholeKeyword().split(" ")[2];
 			if (argument.trim().matches("&[\\dabcdefABCDEFlmnokrLMNOKR]")) {
 				// Color code!
 				colorCode = argument.trim();
@@ -82,22 +89,19 @@ public class PreLyricKeyword extends ParsedKeyword {
 				// not a number -- probably someone putting a
 				// space in a label.
 				// Throw error
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ParsedKeyword.ERROR);
-				keyword.setErrorMessage("A lyric's name can't contain spaces.");
+				setGoodKeyword(false);
+				setErrorMessageType(SignTuneKeyword.ERROR);
+				setErrorMessage("A lyric's name can't contain spaces.");
 			}
 		}
 		
+		setColorCode(colorCode);
+
 		// Too many arguments
 		if (numArgs > 3) {
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("At most, PreLyric only needs a lyric name and a color code.");
+			setErrorMessageType(INFO);
+			setErrorMessage("At most, PreLyric only needs a lyric name and a color code.");
 		}
-
-		// Set the read (or default) color codes and repetitions
-		keyword.colorCode = colorCode;
-
-		return keyword;
 	}
 
 	public static boolean isValidCueLabel(String label) {
@@ -135,22 +139,45 @@ public class PreLyricKeyword extends ParsedKeyword {
 	}
 
 	@Override
-	public <T extends ParsedKeyword> void parseWithMultiline(
+	public <T extends SignTuneKeyword> void parseWithMultiline(
 			ParsedSign parsedSign, int keywordLine, T k) {
 		super.parseWithMultiline(parsedSign, keywordLine, k);
-		
-		// TODO: Read lyric text
-		StringBuilder lyricTextB = new StringBuilder();
-		for (int i=keywordLine+1;i<parsedSign.getLines().length;i++) {
-			// TODO
-			parsedSign.getLines()[i] = this;
+
+		// If there's a line below (or more), read as the lyric prefix
+		if (keywordLine < 3) {
+			setLyricText(SignTuneParser.readLyricFromSign(keywordLine + 1,
+					parsedSign.getSignText(), getColorCode()));
 		}
-		lyricTextB.append("LYRIC TEXT PLACEHOLDER -- SEE parseWithMultiline()");
-		lyricText = lyricTextB.toString();
 	}
 
 	@Override
 	public boolean isMultiline() {
+		return true;
+	}
+
+	public String getLyricText() {
+		return lyricText;
+	}
+
+	public void setLyricText(String lyricText) {
+		this.lyricText = lyricText;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder b) {
+		// Adding to existing lyric?
+		if (MinetunesConfig.getBoolean("lyrics.enabled")) {
+			CueScheduler lyrics = ditty.getLyricsStorage();
+			lyrics.addLyricPreText(getLabel(), getLyricText());
+		}
+
+		return null;
+	}
+
+	@Override
+	public boolean isAllBelow() {
 		return true;
 	}
 

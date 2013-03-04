@@ -28,40 +28,40 @@ import java.util.LinkedList;
 
 import com.minetunes.Minetunes;
 import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
 import com.minetunes.signs.Comment;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.src.TileEntitySign;
 import net.minecraft.src.World;
 
 /**
  * @author William
  * 
  */
-public class GotoKeyword extends ParsedKeyword {
+public class GotoKeyword extends SignTuneKeyword {
 	private String destinationComment = "";
 
 	public GotoKeyword(String wholeKeyword) {
 		super(wholeKeyword);
 	}
 
-	public static GotoKeyword parse(String rawLine) {
-		GotoKeyword keyword = new GotoKeyword(rawLine);
-
-		int numArgs = rawLine.split(" ").length;
+	@Override
+	public void parse() {
+		int numArgs = getWholeKeyword().split(" ").length;
 		if (numArgs <= 1) {
 			// No argument
-			keyword.setGoodKeyword(true);
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("Add a comment to jump to.");
+			setGoodKeyword(true);
+			setErrorMessageType(INFO);
+			setErrorMessage("Add a comment to jump to.");
 		} else {
 			try {
-				keyword.setComment(rawLine.substring("goto ".length()));
+				setComment(getWholeKeyword().substring("goto ".length()));
 			} catch (Exception e) {
 				// In case of string bounds errors
 				e.printStackTrace();
 			}
 		}
-
-		return keyword;
 	}
 
 	public static LinkedList<Comment> matchingCommentsNearby(Point3D signPos,
@@ -79,17 +79,19 @@ public class GotoKeyword extends ParsedKeyword {
 				matchingComments.add(c);
 			}
 		}
-		
+
 		return matchingComments;
 	}
 
 	/**
 	 * Todo: optimise
+	 * 
 	 * @param signPos
 	 * @param world
 	 * @return
 	 */
-	public static Comment getNearestMatchingComment(Point3D signPos, World world, String comment) {
+	public static Comment getNearestMatchingComment(Point3D signPos,
+			World world, String comment) {
 		LinkedList<Comment> matchingComments = new LinkedList<Comment>();
 		// TODO: Optimise this line to be called less often?
 		Minetunes.optimizeCommentList(world);
@@ -115,7 +117,7 @@ public class GotoKeyword extends ParsedKeyword {
 		if (bestMatch == null && matchingComments.size() >= 1) {
 			bestMatch = matchingComments.get(0);
 		}
-		
+
 		return bestMatch;
 	}
 
@@ -125,5 +127,21 @@ public class GotoKeyword extends ParsedKeyword {
 
 	public void setComment(String destinationComment) {
 		this.destinationComment = destinationComment;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location, TileEntitySign sign,
+			Point3D r, World world, StringBuilder readMusicString) {
+		// Try to jump to sign with the given comment
+		Comment match = GotoKeyword.getNearestMatchingComment(location, world,
+				getComment());
+		if (match == null) {
+			// Simulate an explicit goto pointing at thin air
+			// TODO: This is a hack. Please come up with a more
+			// explicit solution.
+			return new Point3D(0, -1, 0);
+		} else {
+			return match.getLocation().clone();
+		}
 	}
 }

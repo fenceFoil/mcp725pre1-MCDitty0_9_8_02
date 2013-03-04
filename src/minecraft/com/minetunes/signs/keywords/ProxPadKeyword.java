@@ -23,11 +23,13 @@
  */
 package com.minetunes.signs.keywords;
 
+import javax.swing.text.AbstractDocument.LeafElement;
+
 /**
  * @author William
  * 
  */
-public class ProxPadKeyword extends ParsedKeyword {
+public class ProxPadKeyword extends SignTuneKeyword {
 
 	private int width = 0;
 	private int length = 0;
@@ -40,87 +42,92 @@ public class ProxPadKeyword extends ParsedKeyword {
 		super(wholeKeyword);
 	}
 
-	public static ProxPadKeyword parse(String currLine) {
-		ProxPadKeyword k = new ProxPadKeyword(currLine);
+	@Override
+	public void parse() {
+		if (getKeyword().toLowerCase().equals("proximity")) {
+			// Proximity keyword: a 1x1 version of a proxpad
+			width = 1;
+			length = 1;
+			height = 1;
+			return;
+		}
 
 		// Break up input string
-		String[] args = currLine.split(" ");
+		String[] args = getWholeKeyword().split(" ");
 		int numArgs = args.length;
 
 		if (numArgs != 3 && numArgs != 4) {
-			k.setErrorMessageType(ERROR);
-			k.setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setGoodKeyword(false);
 			if (numArgs == 1) {
-				k.setErrorMessage("Follow Area with two or three numbers (width, depth, and (optional) height of area).");
+				setErrorMessage("Follow Area with two or three numbers (width, depth, and (optional) height of area).");
 			} else if (numArgs == 2) {
-				k.setErrorMessage("Follow Area with two or three numbers (width, depth, and (optional) height of area).");
+				setErrorMessage("Follow Area with two or three numbers (width, depth, and (optional) height of area).");
 			} else {
-				k.setErrorMessage("Follow Area with two or three numbers (width, depth, and (optional) height of area).");
+				setErrorMessage("Follow Area with two or three numbers (width, depth, and (optional) height of area).");
 			}
-			return k;
+			return;
 		}
 
 		// Read width
 		String argument = args[1];
 		if (argument.matches("\\d+")) {
-			k.width = Integer.parseInt(argument);
+			width = Integer.parseInt(argument);
 		} else {
-			k.setGoodKeyword(false);
-			k.setErrorMessageType(ERROR);
-			k.setErrorMessage("First number (width) isn't a number.");
-			return k;
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("First number (width) isn't a number.");
+			return;
 		}
 
 		// range check
-		if (k.width <= 0 || k.width >= 16) {
-			k.setGoodKeyword(false);
-			k.setErrorMessageType(ERROR);
-			k.setErrorMessage("Area widths range from 1 to 15.");
-			return k;
+		if (width <= 0 || width >= 16) {
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Area widths range from 1 to 15.");
+			return;
 		}
 
 		// Read length
 		argument = args[2];
 		if (argument.matches("\\d+")) {
-			k.length = Integer.parseInt(argument);
+			length = Integer.parseInt(argument);
 		} else {
-			k.setGoodKeyword(false);
-			k.setErrorMessageType(ERROR);
-			k.setErrorMessage("Second number (depth) isn't a number.");
-			return k;
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Second number (depth) isn't a number.");
+			return;
 		}
 
 		// range check
-		if (k.length <= 0 || k.length >= 16) {
-			k.setGoodKeyword(false);
-			k.setErrorMessageType(ERROR);
-			k.setErrorMessage("Area depths range from 1 to 15.");
-			return k;
+		if (length <= 0 || length >= 16) {
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Area depths range from 1 to 15.");
+			return;
 		}
 
 		// Read height
-		k.height = 1;
+		height = 1;
 		if (numArgs >= 4) {
 			argument = args[3];
 			if (argument.matches("\\d+")) {
-				k.height = Integer.parseInt(argument);
+				height = Integer.parseInt(argument);
 			} else {
-				k.setGoodKeyword(false);
-				k.setErrorMessageType(ERROR);
-				k.setErrorMessage("Third number (height) isn't a number.");
-				return k;
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Third number (height) isn't a number.");
+				return;
 			}
 		}
 
 		// range check
-		if (k.height <= 0 || k.height >= 16) {
-			k.setGoodKeyword(false);
-			k.setErrorMessageType(ERROR);
-			k.setErrorMessage("Area heights range from 1 to 15.");
-			return k;
+		if (height <= 0 || height >= 16) {
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Area heights range from 1 to 15.");
+			return;
 		}
-
-		return k;
 	}
 
 	/**

@@ -26,7 +26,7 @@ package com.minetunes.signs.keywords;
 /**
  * 
  */
-public class PatternKeyword extends ParsedKeyword {
+public class PatternKeyword extends SignTuneKeyword {
 
 	private int repeatCount = 1;
 
@@ -34,29 +34,36 @@ public class PatternKeyword extends ParsedKeyword {
 		super(rawLine);
 	}
 
-	public static PatternKeyword parse(String rawLine) {
-		PatternKeyword keyword = new PatternKeyword(rawLine);
-
-		// Get number of repetitions of pattern; default is 1 if not specified
-		int numArgs = rawLine.split(" ").length;
+	@Override
+	public void parse() {
+		// Decide defaults
+		if (getKeyword().toLowerCase().equals("repeat")) {
+			// Repeats historically implied a default of 2 repetitions
+			repeatCount = 2;
+		} else if (getKeyword().toLowerCase().equals("pattern")){
+			// Pattern historically implied a default of 1 repetition
+			repeatCount = 1;
+		}
+		
+		// Get number of repetitions of pattern
+		int numArgs = getWholeKeyword().split(" ").length;
 		if (numArgs == 2) {
-			String argument = rawLine.split(" ")[1];
+			String argument = getWholeKeyword().split(" ")[1];
 			if (argument.trim().matches("\\d+")) {
-				keyword.setRepeatCount(Integer.parseInt(argument.trim()));
+				setRepeatCount(Integer.parseInt(argument.trim()));
 			} else {
 				// Error: invalid agument
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ERROR);
-				keyword.setErrorMessage("Follow Pattern with a number: how many times should it repeat?");
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Follow Pattern with a number: how many times should it repeat?");
 			}
 		} else if (numArgs > 2) {
 			// Warning: Too Many Arguments
-			keyword.setGoodKeyword(true);
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("Only one number is needed.");
+			setGoodKeyword(true);
+			setErrorMessageType(INFO);
+			setErrorMessage("Only one number is needed.");
 		}
-
-		return keyword;
+		
 	}
 
 	public void setRepeatCount(int parseInt) {
@@ -68,7 +75,7 @@ public class PatternKeyword extends ParsedKeyword {
 	}
 
 	@Override
-	public boolean isFirstLineOnly() {
+	public boolean hasSpecialExecution() {
 		return true;
 	}
 }

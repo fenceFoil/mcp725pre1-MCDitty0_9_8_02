@@ -1,12 +1,10 @@
 PlayMIDI
 [Next Line Contains The Filename]
 
-Plays a saved MIDI file. From the /.minecraft/MineTunes/midi/ folder.
+Plays a saved MIDI file from /.minecraft/mineTunes/midi/ 
 
 The filename should be letters and numbers, with no symbols or spaces. ".mid" is automatically added to the end. Note that currently ".midi" files should be renamed to end with ".mid" if you want to play them with PlayMIDI.
 
 Note that there is no guarantee that the MIDI played will be in sync with the current ditty. There will be a pause before the MIDI begins playing.
-
-§m0.9.8:§r The MIDI is played at full volume, irrespective of Minecraft's volume.
 
 §dSee:§r SaveMIDI

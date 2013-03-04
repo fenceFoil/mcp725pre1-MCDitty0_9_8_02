@@ -25,7 +25,7 @@ package com.minetunes;
 
 import org.lwjgl.input.Mouse;
 
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 
 /**
  * Waits for all mouse buttons to be lifted, then sets a flag in BlockSign.
@@ -44,14 +44,14 @@ public class RightClickCheckThread extends Thread {
 	public void run() {
 		while (true) {
 			if (!Mouse.isButtonDown(0) && !Mouse.isButtonDown(1)) {
-				BlockSignMinetunes.clickHeld = false;
+				SignTuneParser.clickHeld = false;
 				break;
 			}
 			try {
 				Thread.sleep(5);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-				BlockSignMinetunes.clickHeld = false;
+				SignTuneParser.clickHeld = false;
 				break;
 			}
 		}

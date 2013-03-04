@@ -23,69 +23,36 @@
  */
 package com.minetunes.signs.keywords;
 
-import com.minetunes.signs.BlockSignMinetunes;
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.ditty.event.PlayMidiDittyEvent;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.ParsedSign;
 
 /**
  * 
  */
-public class SaveMidiKeyword extends ParsedKeyword {
-	
-	private String midiFilename = null;
-	
+public class SaveMidiKeyword extends BaseMidiKeyword {
+
 	public SaveMidiKeyword(String rawLine) {
 		super(rawLine);
 	}
 
-	public static SaveMidiKeyword parse(String rawLine) {
-		SaveMidiKeyword keyword = new SaveMidiKeyword(rawLine);
-		return keyword;
-	}
-
 	@Override
-	public boolean isFirstLineOnly() {
-		return true;
-	}
-
-	@Override
-	public <T extends ParsedKeyword> void parseWithMultiline(
-			ParsedSign parsedSign, int keywordLine, T k) {
-		super.parseWithMultiline(parsedSign, keywordLine, k);
-		
-		// Mark filename line
-				parsedSign.getLines()[1] = this;
-		
-		String givenFilename = (String) parsedSign.getSignText()[1];
-		if (!givenFilename.matches("[\\d\\w]*") && (!givenFilename.equals(""))) {
-			// Bad filename: non-alphanumeric characters
-			setGoodKeyword(false);
-			setErrorMessageType(ERROR);
-			setErrorMessage("A MIDI file name should only contain letters and numbers (no spaces)");
-			BlockSignMinetunes.simpleLog("Bad filename: " + givenFilename);
-			return;
-		} else if (givenFilename.equals("")) {
-			// Empty filenames are frowned upon
-			setGoodKeyword(false);
-			setErrorMessageType(ERROR);
-			setErrorMessage("Put a file name on the line after a "
-					+ getKeyword() + " keyword.");
-			return;
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		if (!ditty.getMidiAlreadySaved()) {
+			ditty.setMidiSaveFile(getMidiFile());
+			// No music on this sign
+			// Saved as given filename: don't save any more
+			// midis of this song
+			ditty.setMidiAlreadySaved(true);
 		}
 
-		// Otherwise, good filename
-		setMidiFilename(givenFilename + ".mid");
-	}
-
-	@Override
-	public boolean isMultiline() {
-		return true;
-	}
-
-	public String getMidiFilename() {
-		return midiFilename;
-	}
-
-	public void setMidiFilename(String midiFilename) {
-		this.midiFilename = midiFilename;
+		return null;
 	}
 }

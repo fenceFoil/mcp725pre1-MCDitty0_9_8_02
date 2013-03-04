@@ -23,70 +23,35 @@
  */
 package com.minetunes.signs.keywords;
 
-import com.minetunes.signs.BlockSignMinetunes;
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.ditty.event.PlayMidiDittyEvent;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.ParsedSign;
 
 /**
  *
  */
-public class PlayMidiKeyword extends ParsedKeyword {
-
-	private String midiFilename;
+public class PlayMidiKeyword extends BaseMidiKeyword {
 
 	public PlayMidiKeyword(String wholeKeyword) {
 		super(wholeKeyword);
 	}
 
-	public static PlayMidiKeyword parse(String rawLine) {
-		PlayMidiKeyword keyword = new PlayMidiKeyword(rawLine);
-		return keyword;
-	}
-
 	@Override
-	public boolean isFirstLineOnly() {
-		return true;
-	}
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		// Play a midi
+		int eventID = ditty.addDittyEvent(new PlayMidiDittyEvent(getMidiFile(),
+				ditty.getDittyID()));
+		ditty.addMusicStringTokens(readMusicString,
+				SignTuneParser.TIMED_EVENT_TOKEN + eventID, false);
 
-	@Override
-	public boolean isMultiline() {
-		return true;
-	}
-
-	@Override
-	public <T extends ParsedKeyword> void parseWithMultiline(
-			ParsedSign parsedSign, int keywordLine, T k) {
-		super.parseWithMultiline(parsedSign, keywordLine, k);
-		
-		// Mark filename line
-		parsedSign.getLines()[1] = this;
-
-		String givenFilename = (String) parsedSign.getSignText()[1];
-		if (!givenFilename.matches("[\\d\\w]*") && (!givenFilename.equals(""))) {
-			// Bad filename: non-alphanumeric characters
-			setGoodKeyword(false);
-			setErrorMessageType(ERROR);
-			setErrorMessage("A MIDI file name should only contain letters and numbers (no spaces)");
-			BlockSignMinetunes.simpleLog("Bad filename: " + givenFilename);
-			return;
-		} else if (givenFilename.equals("")) {
-			// Empty filenames are frowned upon
-			setGoodKeyword(false);
-			setErrorMessageType(ERROR);
-			setErrorMessage("Put a file name on the line after a "
-					+ getKeyword() + " keyword.");
-			return;
-		}
-
-		// Otherwise, good filename
-		setMidiFilename(givenFilename + ".mid");
-	}
-
-	public String getMidiFilename() {
-		return midiFilename;
-	}
-
-	public void setMidiFilename(String midiFilename) {
-		this.midiFilename = midiFilename;
+		return null;
 	}
 
 }

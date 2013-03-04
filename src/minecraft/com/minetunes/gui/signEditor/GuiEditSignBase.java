@@ -49,7 +49,7 @@ import com.minetunes.config.MinetunesConfig;
 import com.minetunes.gui.MinetunesGui;
 import com.minetunes.gui.MinetunesVersionGuiElement;
 import com.minetunes.sfx.SFXManager;
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.TileEntitySignMinetunes;
 
 public class GuiEditSignBase extends GuiEditSign {
@@ -578,7 +578,7 @@ public class GuiEditSignBase extends GuiEditSign {
 		mc.displayGuiScreen(null);
 
 		// Prevent clicking done button from activating sign
-		BlockSignMinetunes.clickHeld = true;
+		SignTuneParser.clickHeld = true;
 		RightClickCheckThread t = new RightClickCheckThread();
 		t.start();
 	}

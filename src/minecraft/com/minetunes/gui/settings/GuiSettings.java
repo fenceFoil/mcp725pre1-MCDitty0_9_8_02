@@ -67,6 +67,8 @@ public class GuiSettings extends GuiScreen {
 				"signs.proximityEnabled", SettingType.BOOLEAN_ON_OFF));
 		SIGNTUNES_SETTINGS.add(new Setting("SaveMIDI", "signs.saveMidiEnabled",
 				SettingType.BOOLEAN_ON_OFF));
+		SIGNTUNES_SETTINGS.add(new Setting("Disco Floors",
+				"signs.disco.disabled", SettingType.BOOLEAN_ON_OFF, true));
 		SIGNTUNES_SETTINGS.add(new Setting("'MIDI Saved' Message",
 				"midiSavedMessage", SettingType.BOOLEAN_ON_OFF));
 		SIGNTUNES_SETTINGS.add(new Setting("All Particles",

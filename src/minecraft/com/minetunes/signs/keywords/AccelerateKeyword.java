@@ -23,9 +23,17 @@
  */
 package com.minetunes.signs.keywords;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
 import org.jfugue.JFugueDefinitions;
 import org.jfugue.factories.NoteFactory;
 import org.jfugue.factories.NoteFactory.NoteContext;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.signs.SignTuneParser;
+import com.minetunes.signs.SignParser;
 
 /**
  * Keyword format:
@@ -34,7 +42,7 @@ import org.jfugue.factories.NoteFactory.NoteContext;
  * 
  * [bpm]: -300 to 300 Int [duration]: JFugue duration
  */
-public class AccelerateKeyword extends ParsedKeyword {
+public class AccelerateKeyword extends SignTuneKeyword {
 
 	private int bpm = 2;
 
@@ -47,15 +55,14 @@ public class AccelerateKeyword extends ParsedKeyword {
 		super(wholeKeyword);
 	}
 
-	public static AccelerateKeyword parse(String rawLine) {
-		AccelerateKeyword keyword = new AccelerateKeyword(rawLine);
-
-		String[] args = rawLine.split(" ");
-		int numArgs = rawLine.split(" ").length;
+	@Override
+	public void parse() {
+		String[] args = getWholeKeyword().split(" ");
+		int numArgs = getWholeKeyword().split(" ").length;
 
 		int argsLeft = 0;
 		if (numArgs <= 1) {
-			return keyword;
+			return;
 		} else {
 			argsLeft = numArgs - 1;
 		}
@@ -71,19 +78,19 @@ public class AccelerateKeyword extends ParsedKeyword {
 				Integer arg = Integer.parseInt(argument);
 				if (arg > 300 || arg < -300) {
 					// Out of range
-					keyword.setGoodKeyword(false);
-					keyword.setErrorMessageType(ERROR);
-					keyword.setErrorMessage("Follow Accel with bpm to increase (-300 to +300).");
-					return keyword;
+					setGoodKeyword(false);
+					setErrorMessageType(ERROR);
+					setErrorMessage("Follow Accel with bpm to increase (-300 to +300).");
+					return;
 				}
-				keyword.setBPM(arg);
+				setBPM(arg);
 
 				tonesRead = true;
 			} else {
 				double decimalDuration = parseLetterDuration(
 						argument.toUpperCase(), argument.length(), 0);
-				keyword.setDuration((int) (decimalDuration * JFugueDefinitions.SEQUENCE_RESOLUTION));
-				keyword.setDurationString(argument);
+				setDuration((int) (decimalDuration * JFugueDefinitions.SEQUENCE_RESOLUTION));
+				setDurationString(argument);
 
 				// System.out.println (decimalDuration + ":"+argument);
 
@@ -96,13 +103,13 @@ public class AccelerateKeyword extends ParsedKeyword {
 
 		// Ensure that tones are specified
 		if (!tonesRead) {
-			keyword.setGoodKeyword(false);
-			keyword.setErrorMessageType(ERROR);
-			keyword.setErrorMessage("Follow Accel with bpm to increase (-300 to +300).");
-			return keyword;
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Follow Accel with bpm to increase (-300 to +300).");
+			return;
 		}
 
-		return keyword;
+		return;
 	}
 
 	public int getBPM() {
@@ -132,6 +139,18 @@ public class AccelerateKeyword extends ParsedKeyword {
 	// Copied from JFugue's MusicStringParser (I know, bad form); modified
 	private static double parseLetterDuration(String s, int slen, int index) {
 		return StaccatoKeyword.parseLetterDuration(s, slen, index);
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		String token = SignTuneParser.createNoteEffectToken(false,
+				SignTuneParser.NOTE_EFFECT_ACCELERATE, getBPM(),
+				getDuration());
+		ditty.addMusicStringTokens(readMusicString, token, false);
+
+		return null;
 	}
 
 }

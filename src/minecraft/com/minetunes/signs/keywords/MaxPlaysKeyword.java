@@ -23,40 +23,46 @@
  */
 package com.minetunes.signs.keywords;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.signs.SignDitty;
+
 /**
  * MaxPlays [Times]
  */
-public class MaxPlaysKeyword extends ParsedKeyword {
+public class MaxPlaysKeyword extends SignTuneKeyword {
 
-	private int maxPlays= 1;
+	private int maxPlays = 1;
 
 	public MaxPlaysKeyword(String wholeKeyword) {
 		super(wholeKeyword);
 	}
 
-	public static MaxPlaysKeyword parse(String rawLine) {
-		MaxPlaysKeyword keyword = new MaxPlaysKeyword(rawLine);
-
+	@Override
+	public void parse() {
 		// Get number of blocks to move; default is 1 if not specified
-		int numArgs = rawLine.split(" ").length;
+		int numArgs = getWholeKeyword().split(" ").length;
 		if (numArgs == 2) {
-			String argument = rawLine.split(" ")[1];
+			String argument = getWholeKeyword().split(" ")[1];
 			if (argument.trim().matches("\\d+")) {
-				keyword.setMaxPlays(Integer.parseInt(argument.trim()));
+				setMaxPlays(Integer.parseInt(argument.trim()));
 			} else {
 				// Error: invalid agument
-				keyword.setGoodKeyword(true);
-				keyword.setErrorMessageType(ERROR);
-				keyword.setErrorMessage("Follow MaxPlays with a number.");
+				setGoodKeyword(true);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Follow MaxPlays with a number.");
 			}
 		} else if (numArgs > 2) {
 			// Warning: Too Many Arguments
-			keyword.setGoodKeyword(true);
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("Only one number is needed.");
+			setGoodKeyword(true);
+			setErrorMessageType(INFO);
+			setErrorMessage("Only one number is needed.");
 		}
 
-		return keyword;
+		return;
 	}
 
 	public int getMaxPlays() {
@@ -65,6 +71,18 @@ public class MaxPlaysKeyword extends ParsedKeyword {
 
 	public void setMaxPlays(int maxPlays) {
 		this.maxPlays = maxPlays;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		// Add maxplay lock point
+		if (ditty instanceof SignDitty) {
+			((SignDitty) ditty).addMaxPlayLockPoint(location, getMaxPlays());
+		}
+
+		return null;
 	}
 
 }

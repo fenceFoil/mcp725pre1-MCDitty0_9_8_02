@@ -1125,8 +1125,8 @@ public class BlockTune implements BlockTuneAccess {
 				topCount++;
 			}
 			for (int i = 0; i < topCount; i++) {
-				picks.add(getInteriorPoint(rand.nextInt(getInteriorWidth()), -1));
-				picks.add(getInteriorPoint(rand.nextInt(getInteriorWidth()),
+				picks.add(getInteriorPoint(rand.nextInt(Math.max(0, getInteriorWidth())), -1));
+				picks.add(getInteriorPoint(rand.nextInt(Math.max(0, getInteriorWidth())),
 						getInteriorHeight()));
 			}
 

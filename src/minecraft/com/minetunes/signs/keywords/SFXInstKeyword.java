@@ -25,17 +25,24 @@ package com.minetunes.signs.keywords;
 
 import java.io.File;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
 import org.jfugue.elements.Note;
 
+import com.minetunes.Point3D;
 import com.minetunes.config.MinetunesConfig;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.ditty.event.SFXInstrumentEvent;
 import com.minetunes.sfx.SFXManager;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.ParsedSign;
 
 /**
  * 
  *
  */
-public class SFXInstKeyword extends ParsedKeyword {
+public class SFXInstKeyword extends SignTuneKeyword {
 
 	// /**
 	// * A MusicStringParser, set once and used many times thereafter to save
@@ -89,13 +96,12 @@ public class SFXInstKeyword extends ParsedKeyword {
 		super(wholeKeyword);
 	}
 
-	public static SFXInstKeyword parse(String rawArgs) {
-		SFXInstKeyword keyword = new SFXInstKeyword(rawArgs);
-
+	@Override
+	public void parse() {
 		// Parse the first line of a SFX inst sign
 
 		// Get the instrument number
-		String[] args = rawArgs.split(" ");
+		String[] args = getWholeKeyword().split(" ");
 		int numArgs = args.length;
 
 		if (args.length >= 1) {
@@ -103,49 +109,49 @@ public class SFXInstKeyword extends ParsedKeyword {
 			String rootKeyword = args[0];
 			if (rootKeyword.equalsIgnoreCase("sfxinst")) {
 				// Use Alpha-1.3 source
-				keyword.sfxSource = 0;
+				sfxSource = 0;
 			} else if (rootKeyword.equalsIgnoreCase("sfxinst2")) {
 				// use 1.4 source
-				keyword.sfxSource = 1;
+				sfxSource = 1;
 			}
 		}
 
 		// Calculate other arguments
 		if (numArgs > 2) {
 			// Too many arguments
-			keyword.setGoodKeyword(true);
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("Only the instrument number is needed on the first line.");
+			setGoodKeyword(true);
+			setErrorMessageType(INFO);
+			setErrorMessage("Only the instrument number is needed on the first line.");
 		} else if (numArgs <= 1) {
 			// No instrument number
-			keyword.setGoodKeyword(false);
-			keyword.setErrorMessageType(ERROR);
-			keyword.setErrorMessage("Follow SFXInst with an instrument number.");
-			return keyword;
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Follow SFXInst with an instrument number.");
+			return;
 		} else {
 			// Instrument number given
 			String argument = args[1];
 			if (argument.trim().matches("\\d+")) {
-				keyword.setInstrument(Integer.parseInt(argument));
+				setInstrument(Integer.parseInt(argument));
 			} else {
 				// Error: invalid agument
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ERROR);
-				keyword.setErrorMessage("Follow SFXInst with an instrument number.");
-				return keyword;
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Follow SFXInst with an instrument number.");
+				return;
 			}
 
-			if (keyword.getInstrument() < 0 || keyword.getInstrument() > 127) {
+			if (getInstrument() < 0 || getInstrument() > 127) {
 				// Out of bounds
-				keyword.setInstrument(0);
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ERROR);
-				keyword.setErrorMessage("Instrument numbers range from 0 to 127.");
-				return keyword;
+				setInstrument(0);
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Instrument numbers range from 0 to 127.");
+				return;
 			}
 		}
 
-		return keyword;
+		return;
 	}
 
 	@Override
@@ -159,10 +165,10 @@ public class SFXInstKeyword extends ParsedKeyword {
 	}
 
 	@Override
-	public <T extends ParsedKeyword> void parseWithMultiline(
+	public <T extends SignTuneKeyword> void parseWithMultiline(
 			ParsedSign parsedSign, int keywordLine, T k) {
 		super.parseWithMultiline(parsedSign, keywordLine, k);
-		
+
 		SFXInstKeyword keyword;
 		int source;
 		if (!(k instanceof SFXInstKeyword)) {
@@ -218,8 +224,8 @@ public class SFXInstKeyword extends ParsedKeyword {
 				// Check for valid SFX name, stripping any digits first.
 				// XXX: Could cause bugs by removing digits in middle of
 				// shorthand
-				String fullSFXName = SFXManager.getEffectForShorthandName(s
-						.replaceAll("\\d", ""), sfxSource);
+				String fullSFXName = SFXManager.getEffectForShorthandName(
+						s.replaceAll("\\d", ""), sfxSource);
 
 				if (fullSFXName == null) {
 					// No SFX by that name.
@@ -256,11 +262,13 @@ public class SFXInstKeyword extends ParsedKeyword {
 					setSFXNumber(digit);
 
 					// Get the filename of the sfx
-					File sfxFile = SFXManager.getEffectFile(fullSFXName, digit, source);
+					File sfxFile = SFXManager.getEffectFile(fullSFXName, digit,
+							source);
 					if (!sfxFile.exists()) {
 						// If the sfx filename does not exist
 						// Try resetting the digit to 0
-						sfxFile = SFXManager.getEffectFile(fullSFXName, 1, source);
+						sfxFile = SFXManager.getEffectFile(fullSFXName, 1,
+								source);
 						// Update the saved SFX number to reflect this
 						setSFXNumber(1);
 					}
@@ -298,7 +306,8 @@ public class SFXInstKeyword extends ParsedKeyword {
 		if (centerPitch == -1) {
 			// Try to get the default center pitch
 			Integer defaultCenterPitch = SFXManager.getDefaultTuningInt(
-					SFXManager.getEffectForShorthandName(sfxName, source), sfxNumber, source);
+					SFXManager.getEffectForShorthandName(sfxName, source),
+					sfxNumber, source);
 			if (defaultCenterPitch != null) {
 				setCenterPitch(defaultCenterPitch);
 			} else {
@@ -375,6 +384,23 @@ public class SFXInstKeyword extends ParsedKeyword {
 
 	public void setSFXSource(int source) {
 		sfxSource = source;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		int eventID = ditty.addDittyEvent(new SFXInstrumentEvent(this, -1,
+				ditty.getDittyID()));
+		ditty.addMusicStringTokens(readMusicString,
+				SignTuneParser.TIMED_EVENT_TOKEN + eventID, false);
+
+		return null;
+	}
+
+	@Override
+	public int getLineCount() {
+		return 2;
 	}
 
 }

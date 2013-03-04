@@ -135,14 +135,14 @@ import com.minetunes.particle.NoteParticleRequest;
 import com.minetunes.particle.ParticleRequest;
 import com.minetunes.resources.UpdateResourcesThread;
 import com.minetunes.sfx.SFXManager;
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.Comment;
 import com.minetunes.signs.Packet130UpdateSignMinetunes;
 import com.minetunes.signs.SignLine;
 import com.minetunes.signs.SignParser;
 import com.minetunes.signs.TileEntitySignMinetunes;
 import com.minetunes.signs.TileEntitySignRendererMinetunes;
-import com.minetunes.signs.keywords.ParsedKeyword;
+import com.minetunes.signs.keywords.SignTuneKeyword;
 import com.minetunes.signs.keywords.ProxPadKeyword;
 
 /**
@@ -819,13 +819,13 @@ public class Minetunes {
 					held = heldStack.itemID;
 				}
 
-				if (BlockSignMinetunes.getSignBlockType(hoverPoint,
+				if (SignTuneParser.getSignBlockType(hoverPoint,
 						minecraft.theWorld) != null) {
 					// A sign has been clicked!
 					// Perform some functions of
 					// BlockSignMinetunes.blockActivated
-					if (isIDPickaxe(held) && !BlockSignMinetunes.clickHeld) {
-						BlockSignMinetunes.clickHeld = true;
+					if (isIDPickaxe(held) && !SignTuneParser.clickHeld) {
+						SignTuneParser.clickHeld = true;
 						RightClickCheckThread t = new RightClickCheckThread();
 						t.start();
 
@@ -856,7 +856,7 @@ public class Minetunes {
 					} else if (!isIDAxe(held)
 							&& !minecraft.thePlayer.isSneaking()) {
 						// Manually trigger blockActivated
-						BlockSignMinetunes.blockActivated(minecraft.theWorld,
+						SignTuneParser.blockActivated(minecraft.theWorld,
 								hoverPoint.x, hoverPoint.y, hoverPoint.z,
 								minecraft.thePlayer);
 					}
@@ -864,8 +864,8 @@ public class Minetunes {
 					// If not aiming at a sign
 					if ((held == 270 || held == 274 || held == 285
 							|| held == 278 || held == 257)
-							&& !BlockSignMinetunes.clickHeld) {
-						BlockSignMinetunes.clickHeld = true;
+							&& !SignTuneParser.clickHeld) {
+						SignTuneParser.clickHeld = true;
 						RightClickCheckThread t = new RightClickCheckThread();
 						t.start();
 
@@ -1215,7 +1215,7 @@ public class Minetunes {
 						if (signTileEntity != null) {
 							for (String s : signTileEntity.signText) {
 								// Check this line for the keyword proxpad
-								ParsedKeyword candidateKeyword = SignParser
+								SignTuneKeyword candidateKeyword = SignParser
 										.parseKeyword(s);
 								if (!(candidateKeyword instanceof ProxPadKeyword)) {
 									// If there really appears to be no proxpad,
@@ -1232,7 +1232,7 @@ public class Minetunes {
 									// Start tune from this proximity sign
 									if (MinetunesConfig
 											.getBoolean("signs.proximityEnabled")) {
-										BlockSignMinetunes
+										SignTuneParser
 												.playDittyFromSigns(
 														Minecraft
 																.getMinecraft().theWorld,
@@ -1325,7 +1325,7 @@ public class Minetunes {
 
 				// We can be pretty sure that x, y, z is a sign.
 				// Get type of sign
-				Block signType = BlockSignMinetunes.getSignBlockType(
+				Block signType = SignTuneParser.getSignBlockType(
 						new Point3D(bb.getPadX(), bb.getPadY(), bb.getPadZ()),
 						Minecraft.getMinecraft().theWorld);
 				if (signType == null) {
@@ -1334,7 +1334,7 @@ public class Minetunes {
 				// System.out.println(": " + signType.blockID);
 
 				// Get sign facing
-				int facing = BlockSignMinetunes.getSignFacing(
+				int facing = SignTuneParser.getSignFacing(
 						Minecraft.getMinecraft().theWorld.getBlockMetadata(
 								bb.getPadX(), bb.getPadY(), bb.getPadZ()),
 						signType);
@@ -1347,7 +1347,7 @@ public class Minetunes {
 					// Get proxpad size
 
 					// Check this line for the keyword proxpad
-					ParsedKeyword candidateKeyword = SignParser.parseKeyword(s);
+					SignTuneKeyword candidateKeyword = SignParser.parseKeyword(s);
 					if (!(candidateKeyword instanceof ProxPadKeyword)) {
 						// If there really appears to be no proxpad, continue
 						continue;
@@ -1372,7 +1372,7 @@ public class Minetunes {
 
 					double z1 = 0;
 					double z2 = 0;
-					if (facing == BlockSignMinetunes.FACES_SOUTH) {
+					if (facing == SignTuneParser.FACES_SOUTH) {
 						// width is along x axis
 						x1 = (double) bb.getPadX() + 0.5d - (width / 2d);
 						x2 = (double) bb.getPadX() + 0.5d + (width / 2d);
@@ -1380,7 +1380,7 @@ public class Minetunes {
 						// length is along z axis
 						z1 = bb.getPadZ();
 						z2 = z1 + length;
-					} else if (facing == BlockSignMinetunes.FACES_NORTH) {
+					} else if (facing == SignTuneParser.FACES_NORTH) {
 						// width is along x axis
 						x1 = (double) bb.getPadX() + 0.5d - (width / 2d);
 						x2 = (double) bb.getPadX() + 0.5d + (width / 2d);
@@ -1388,7 +1388,7 @@ public class Minetunes {
 						// length is along z axis
 						z1 = bb.getPadZ() + 1;
 						z2 = z1 - length;
-					} else if (facing == BlockSignMinetunes.FACES_EAST) {
+					} else if (facing == SignTuneParser.FACES_EAST) {
 						// width is along z axis
 						z1 = (double) bb.getPadZ() + 0.5d - (width / 2d);
 						z2 = (double) bb.getPadZ() + 0.5d + (width / 2d);
@@ -1396,7 +1396,7 @@ public class Minetunes {
 						// length is along x axis
 						x1 = bb.getPadX();
 						x2 = x1 + length;
-					} else if (facing == BlockSignMinetunes.FACES_WEST) {
+					} else if (facing == SignTuneParser.FACES_WEST) {
 						// width is along z axis
 						z1 = (double) bb.getPadZ() + 0.5d - (width / 2d);
 						z2 = (double) bb.getPadZ() + 0.5d + (width / 2d);
@@ -1495,7 +1495,7 @@ public class Minetunes {
 				int damBlockX = damage.getPartialBlockX();
 				int damBlockY = damage.getPartialBlockY();
 				int damBlockZ = damage.getPartialBlockZ();
-				if (BlockSignMinetunes.getSignBlockType(new Point3D(damBlockX,
+				if (SignTuneParser.getSignBlockType(new Point3D(damBlockX,
 						damBlockY, damBlockZ), minecraft.theWorld) != null) {
 					TileEntity entity = Minecraft.getMinecraft().theWorld
 							.getBlockTileEntity(damBlockX, damBlockY, damBlockZ);
@@ -2122,6 +2122,10 @@ public class Minetunes {
 	 * @param d
 	 */
 	public static void addDiscoFloor(final DiscoFloor d) {
+		if (MinetunesConfig.getBoolean("signs.disco.disabled")) {
+			return;
+		}
+		
 		// It is here that a disco floor is measured and readied to be used.
 		MeasureDiscoFloorThread t = new MeasureDiscoFloorThread(d,
 				Minecraft.getMinecraft().theWorld);

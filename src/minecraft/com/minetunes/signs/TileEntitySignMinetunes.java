@@ -210,7 +210,7 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 			// Wiggle arms
 			if (worldObj.isRemote) {
 				if (Minetunes.rand.nextInt(500) == 0) {
-					Point3D anchor = BlockSignMinetunes
+					Point3D anchor = SignTuneParser
 							.getBlockAttachedTo(this);
 					for (Point3D p : Point3D.getAdjacentBlocks(anchor)) {
 						if (worldObj.getBlockId(p.x, p.y, p.z) == Block.lever.blockID) {
@@ -249,7 +249,7 @@ public class TileEntitySignMinetunes extends TileEntitySign {
 	public boolean isAnchorBlockOpaque() {
 		if (!opaqueAnchorCalculated) {
 			try {
-				Point3D blockBehindSign = BlockSignMinetunes
+				Point3D blockBehindSign = SignTuneParser
 						.getBlockAttachedTo(this);
 				if (Block.blocksList[Minecraft.getMinecraft().theWorld
 						.getBlockId(blockBehindSign.x, blockBehindSign.y,

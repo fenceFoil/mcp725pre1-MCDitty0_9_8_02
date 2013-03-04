@@ -31,6 +31,11 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.src.Block;
+import net.minecraft.src.GuiButton;
+import net.minecraft.src.TileEntity;
+import net.minecraft.src.TileEntitySign;
+
 import org.jfugue.JFugueException;
 import org.jfugue.ParserListener;
 import org.jfugue.elements.Instrument;
@@ -41,30 +46,26 @@ import org.jfugue.parsers.MusicStringParser;
 import org.jfugue.util.MapUtils;
 import org.lwjgl.input.Keyboard;
 
-import net.minecraft.src.Block;
-import net.minecraft.src.GuiButton;
-import net.minecraft.src.TileEntity;
-import net.minecraft.src.TileEntitySign;
-
 import com.minetunes.MidiFileFilter;
 import com.minetunes.Point3D;
 import com.minetunes.config.MinetunesConfig;
 import com.minetunes.gui.GuiScrollingTextPanel;
 import com.minetunes.resources.ResourceManager;
 import com.minetunes.sfx.SFXManager;
-import com.minetunes.signs.BlockSignMinetunes;
 import com.minetunes.signs.Comment;
 import com.minetunes.signs.ParsedSign;
 import com.minetunes.signs.SignParser;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.TileEntitySignMinetunes;
+import com.minetunes.signs.keywords.BaseMidiKeyword;
 import com.minetunes.signs.keywords.ExplicitGotoKeyword;
 import com.minetunes.signs.keywords.GotoKeyword;
 import com.minetunes.signs.keywords.LyricKeyword;
-import com.minetunes.signs.keywords.ParsedKeyword;
 import com.minetunes.signs.keywords.PlayMidiKeyword;
 import com.minetunes.signs.keywords.ProxPadKeyword;
 import com.minetunes.signs.keywords.SFXInstKeyword;
 import com.minetunes.signs.keywords.SFXKeyword;
+import com.minetunes.signs.keywords.SignTuneKeyword;
 
 /**
  *
@@ -283,12 +284,10 @@ public class GuiEditSignTune extends GuiEditSignBase {
 		if (par1GuiButton.id == 1200) {
 			// Play the sign
 			LinkedList<Point3D> signsToPlay = new LinkedList<Point3D>();
-			signsToPlay.add(new Point3D(sign.xCoord, sign.yCoord,
-					sign.zCoord));
-			LinkedList<String> testErrors = BlockSignMinetunes
+			signsToPlay.add(new Point3D(sign.xCoord, sign.yCoord, sign.zCoord));
+			LinkedList<String> testErrors = SignTuneParser
 					.playDittyFromSignsQuietly(mc.theWorld, sign.xCoord,
-							sign.yCoord, sign.zCoord, true,
-							signsToPlay);
+							sign.yCoord, sign.zCoord, true, signsToPlay);
 
 			// Display any errors, or success if there aren't any
 			// Strip all color codes as well from the error message
@@ -372,8 +371,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 		helpTextArea.setVisible(true);
 
 		// Parse the current sign.
-		ParsedSign parsedSign = SignParser.parseSign(sign
-				.getSignTextNoCodes());
+		ParsedSign parsedSign = SignParser.parseSign(sign.getSignTextNoCodes());
 
 		// Update highlighting
 		updateKeywordHighlightingAndMessage(editLine, parsedSign);
@@ -390,7 +388,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 			// Otherwise, show token help
 			if (parsedSign.getLine(editLine) == null) {
 				showGenericTokenHelp();
-			} else if (parsedSign.getLine(editLine) instanceof ParsedKeyword) {
+			} else if (parsedSign.getLine(editLine) instanceof SignTuneKeyword) {
 				showKeywordHelp(editLine, parsedSign);
 			} else if (parsedSign.getLine(editLine) instanceof String) {
 				// Random text or tokens. I hope it's tokens.
@@ -398,14 +396,14 @@ public class GuiEditSignTune extends GuiEditSignBase {
 			}
 		} else if (helpState == HELP_STATE_KEYWORD) {
 			// Show keyword help
-			if (parsedSign.getLine(editLine) instanceof ParsedKeyword) {
+			if (parsedSign.getLine(editLine) instanceof SignTuneKeyword) {
 				showKeywordHelp(editLine, parsedSign);
 			} else {
 				showGenericKeywordHelp();
 			}
 		} else if (helpState == HELP_STATE_TOKEN) {
 			// Show token help
-			if (parsedSign.getLine(editLine) instanceof ParsedKeyword) {
+			if (parsedSign.getLine(editLine) instanceof SignTuneKeyword) {
 				showKeywordHelp(editLine, parsedSign);
 			} else if (parsedSign.getLine(editLine) == null) {
 				showGenericTokenHelp();
@@ -426,7 +424,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 	 */
 	private void showCommentHelp(Comment comment) {
 		// Show generic comment help
-		helpTextArea.setText(BlockSignMinetunes.COMMENT_HIGHLIGHT_CODE
+		helpTextArea.setText(SignTuneParser.COMMENT_HIGHLIGHT_CODE
 				+ "Comment:§r\n" + "\n" + "Text that isn't read as music.\n"
 				+ "\n"
 				+ "Goto and Patt keywords can jump to signs with comments.");
@@ -1068,25 +1066,25 @@ public class GuiEditSignTune extends GuiEditSignBase {
 		for (int i = 0; i < parsedSign.getSignText().length; i++) {
 			Object signLineContents = parsedSign.getLine(i);
 
-			if (signLineContents instanceof ParsedKeyword) {
-				ParsedKeyword keyword = (ParsedKeyword) signLineContents;
+			if (signLineContents instanceof SignTuneKeyword) {
+				SignTuneKeyword keyword = (SignTuneKeyword) signLineContents;
 				int bottomMessageColor;
 				switch (keyword.getErrorMessageType()) {
-				case ParsedKeyword.ERROR:
+				case SignTuneKeyword.ERROR:
 					bottomMessageColor = 0xff0000;
 					sign.highlightLine[i] = "§4";
 					break;
-				case ParsedKeyword.WARNING:
+				case SignTuneKeyword.WARNING:
 					bottomMessageColor = 0xffff00;
 					sign.highlightLine[i] = "§e";
 					break;
-				case ParsedKeyword.INFO:
+				case SignTuneKeyword.INFO:
 					bottomMessageColor = 0x0000ff;
 					sign.highlightLine[i] = "§1";
 					break;
 				default:
 					bottomMessageColor = 0xffffff;
-					sign.highlightLine[i] = BlockSignMinetunes.KEYWORD_HIGHLIGHT_CODE;
+					sign.highlightLine[i] = SignTuneParser.KEYWORD_HIGHLIGHT_CODE;
 					break;
 				}
 
@@ -1108,8 +1106,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 
 				// But it might be an errored musicstring also
 				// Check tokens for errors
-				for (String token : sign.getSignTextNoCodes()[i]
-						.split(" ")) {
+				for (String token : sign.getSignTextNoCodes()[i].split(" ")) {
 					if (token.trim().length() > 0) {
 						try {
 							musicStringParser.parseTokenStrict(token.trim());
@@ -1128,15 +1125,15 @@ public class GuiEditSignTune extends GuiEditSignBase {
 
 	private void showKeywordHelp(int line, ParsedSign parsedSign) {
 
-		ParsedKeyword keyword = null;
+		SignTuneKeyword keyword = null;
 		Object keywordObject = parsedSign.getLine(line);
 
 		// Handle null keywords
 		if (keywordObject == null) {
 			showGenericKeywordHelp();
 			return;
-		} else if (keywordObject instanceof ParsedKeyword) {
-			keyword = (ParsedKeyword) keywordObject;
+		} else if (keywordObject instanceof SignTuneKeyword) {
+			keyword = (SignTuneKeyword) keywordObject;
 		}
 
 		// Handle different types of keywords
@@ -1145,7 +1142,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 			// proximity help
 			if (sign.signText[line].trim().toLowerCase()
 					.startsWith("proximity")) {
-				showDefaultKeywordHelp(new ParsedKeyword("proximity"));
+				showDefaultKeywordHelp(new SignTuneKeyword("proximity"));
 			} else {
 				// If the keyword is not the special case of a proximity
 				// keyword
@@ -1155,15 +1152,15 @@ public class GuiEditSignTune extends GuiEditSignBase {
 			// Show what gotos are pointing at right now
 
 			// "Run" all gotos on sign to find the block they point at
-			Point3D startBlock = new Point3D(sign.xCoord,
-					sign.yCoord, sign.zCoord);
+			Point3D startBlock = new Point3D(sign.xCoord, sign.yCoord,
+					sign.zCoord);
 			Point3D pointedAtBlock = startBlock.clone();
-			int currSignFacing = BlockSignMinetunes.getSignFacing(
+			int currSignFacing = SignTuneParser.getSignFacing(
 					sign.getBlockMetadata(), sign.getBlockType());
 			for (int i = 0; i < sign.signText.length; i++) {
 				// On each line of the sign
-				ParsedKeyword gotoCandidate = SignParser
-						.parseKeyword(sign.getSignTextNoCodes()[i]);
+				SignTuneKeyword gotoCandidate = SignParser.parseKeyword(sign
+						.getSignTextNoCodes()[i]);
 				// ... if there's a goto keyword ...
 				if (gotoCandidate instanceof ExplicitGotoKeyword) {
 					ExplicitGotoKeyword g = (ExplicitGotoKeyword) gotoCandidate;
@@ -1179,7 +1176,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 
 						// Adjust next sign position based on the amount to
 						// move and the current sign's facing
-						pointedAtBlock = BlockSignMinetunes
+						pointedAtBlock = SignTuneParser
 								.getCoordsRelativeToSign(pointedAtBlock,
 										currSignFacing, amount, 0, 0);
 					}
@@ -1193,7 +1190,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 
 						// Adjust next sign position based on the amount to
 						// move and the current sign's facing
-						pointedAtBlock = BlockSignMinetunes
+						pointedAtBlock = SignTuneParser
 								.getCoordsRelativeToSign(pointedAtBlock,
 										currSignFacing, 0, 0, amount);
 					}
@@ -1207,7 +1204,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 
 						// Adjust next sign position based on the amount to
 						// move and the current sign's facing
-						pointedAtBlock = BlockSignMinetunes
+						pointedAtBlock = SignTuneParser
 								.getCoordsRelativeToSign(pointedAtBlock,
 										currSignFacing, 0, amount, 0);
 					}
@@ -1235,7 +1232,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 				} else if (pointedBlock == null) {
 					helpTextArea
 							.setText("§eGotos on sign point at something that isn't a sign.");
-				} else if (BlockSignMinetunes.getSignBlockType(pointedAtBlock,
+				} else if (SignTuneParser.getSignBlockType(pointedAtBlock,
 						mc.theWorld) != null) {
 					// Get sign's text
 					TileEntity pointedEntity = mc.theWorld.getBlockTileEntity(
@@ -1322,13 +1319,12 @@ public class GuiEditSignTune extends GuiEditSignBase {
 
 				// Fill auto-suggest
 				Comment bestMatch = GotoKeyword.getNearestMatchingComment(
-						new Point3D(sign.xCoord, sign.yCoord,
-								sign.zCoord), mc.theWorld, gotoKeyword
-								.getComment());
+						new Point3D(sign.xCoord, sign.yCoord, sign.zCoord),
+						mc.theWorld, gotoKeyword.getComment());
 				LinkedList<Comment> matchingComments = gotoKeyword
 						.matchingCommentsNearby(new Point3D(sign.xCoord,
-								sign.yCoord, sign.zCoord),
-								mc.theWorld, gotoKeyword.getComment());
+								sign.yCoord, sign.zCoord), mc.theWorld,
+								gotoKeyword.getComment());
 
 				// Compile matching comments into a string
 				StringBuilder b = new StringBuilder();
@@ -1336,9 +1332,10 @@ public class GuiEditSignTune extends GuiEditSignBase {
 					b.append("§aTargeted Comment: §b");
 					b.append(bestMatch.getCommentText());
 					b.append(" §r\n(");
-					b.append(Math.round(bestMatch.getLocation().distanceTo(
-							new Point3D(sign.xCoord, sign.yCoord,
-									sign.zCoord))));
+					b.append(Math
+							.round(bestMatch.getLocation().distanceTo(
+									new Point3D(sign.xCoord, sign.yCoord,
+											sign.zCoord))));
 					b.append(" blocks away)");
 				} else {
 					b.append("§cNo Match");
@@ -1349,8 +1346,8 @@ public class GuiEditSignTune extends GuiEditSignBase {
 					for (Comment c : matchingComments) {
 						b.append("§a(");
 						b.append(Math.round(c.getLocation().distanceTo(
-								new Point3D(sign.xCoord,
-										sign.yCoord, sign.zCoord))));
+								new Point3D(sign.xCoord, sign.yCoord,
+										sign.zCoord))));
 						b.append(")§r");
 						b.append(c.getCommentText());
 						b.append("\n");
@@ -1377,8 +1374,8 @@ public class GuiEditSignTune extends GuiEditSignBase {
 				LinkedList<File> matchingMidis = new LinkedList<File>();
 				File exactMatch = null;
 
-				String filenameFromKeyword = ((PlayMidiKeyword) parsedSign
-						.getLine(line)).getMidiFilename();
+				String filenameFromKeyword = ((BaseMidiKeyword) parsedSign
+						.getLine(line)).getMidiFile().getPath();
 				if (filenameFromKeyword == null) {
 					// Replace null filenames with empty strings
 					filenameFromKeyword = "";
@@ -1655,7 +1652,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 	 */
 	public static final Map<String, String> INSTRUMENT_NAMES_MAP;
 
-	private void showDefaultKeywordHelp(ParsedKeyword keyword) {
+	private void showDefaultKeywordHelp(SignTuneKeyword keyword) {
 		if (keyword == null) {
 			showGenericKeywordHelp();
 			return;

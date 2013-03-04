@@ -43,7 +43,7 @@ import com.minetunes.Point3D;
 import com.minetunes.config.MinetunesConfig;
 import com.minetunes.ditty.event.CueEvent;
 import com.minetunes.particle.ParticleRequest;
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.SignParser;
 import com.minetunes.signs.TileEntitySignMinetunes;
 import com.minetunes.signs.keywords.NoteblockTriggerKeyword;
@@ -242,7 +242,7 @@ public class BlockNoteMinetunes extends BlockNote {
 		int lastNull = 0;
 		for (int i = 0; i < nearby.size(); i++) {
 			// If point has no sign, ignore it
-			Block blockType = BlockSignMinetunes.getSignBlockType(
+			Block blockType = SignTuneParser.getSignBlockType(
 					nearby.get(i), tile.getWorldObj());
 			if (blockType == null || blockType == Block.signPost) {
 				// Not a sign, or definitely not attached to noteblock
@@ -260,7 +260,7 @@ public class BlockNoteMinetunes extends BlockNote {
 					continue;
 				}
 
-				if (!BlockSignMinetunes.getBlockAttachedTo(
+				if (!SignTuneParser.getBlockAttachedTo(
 						(TileEntitySign) signTile).equals(
 						new Point3D(tile.xCoord, tile.yCoord, tile.zCoord))) {
 					// Sign isn't attached to noteblock. Ignore.
@@ -309,11 +309,11 @@ public class BlockNoteMinetunes extends BlockNote {
 
 			if (SignParser.parseKeyword(tile.getSignTextNoCodes()[0]) instanceof NoteblockTriggerKeyword) {
 				// Start ditty
-				BlockSignMinetunes.playDittyFromSigns(noteTile.getWorldObj(),
+				SignTuneParser.playDittyFromSigns(noteTile.getWorldObj(),
 						signPoint.x, signPoint.y, signPoint.z, true);
 			} else {
 				// Read lyric
-				lyricBuffer.add(BlockSignMinetunes.readLyricFromSign(0,
+				lyricBuffer.add(SignTuneParser.readLyricFromSign(0,
 						tile.getSignTextNoCodes(), ""));
 			}
 		}

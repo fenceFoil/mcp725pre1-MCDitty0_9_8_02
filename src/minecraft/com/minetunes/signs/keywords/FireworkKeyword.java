@@ -23,10 +23,27 @@
  */
 package com.minetunes.signs.keywords;
 
+import java.util.LinkedList;
+import java.util.Random;
+
+import net.minecraft.src.Entity;
+import net.minecraft.src.EntityItemFrame;
+import net.minecraft.src.ItemStack;
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.ditty.event.FireworkEvent;
+import com.minetunes.signs.SignTuneParser;
+import com.minetunes.signs.SignDitty;
+
 /**
  * 
  */
-public class FireworkKeyword extends ParsedKeyword {
+public class FireworkKeyword extends SignTuneKeyword {
+
+	private static Random random = new Random();
 
 	private int up = 1;
 
@@ -34,29 +51,26 @@ public class FireworkKeyword extends ParsedKeyword {
 		super(wholeKeyword);
 	}
 
-	public static FireworkKeyword parse(String rawLine) {
-		FireworkKeyword keyword = new FireworkKeyword(rawLine);
-
+	@Override
+	public void parse() {
 		// Get number of blocks to move; default is 1 if not specified
-		int numArgs = rawLine.split(" ").length;
+		int numArgs = getWholeKeyword().split(" ").length;
 		if (numArgs == 2) {
-			String argument = rawLine.split(" ")[1];
+			String argument = getWholeKeyword().split(" ")[1];
 			if (argument.trim().matches("[+-]?\\d+")) {
-				keyword.setUp(Integer.parseInt(argument.trim()));
+				setUp(Integer.parseInt(argument.trim()));
 			} else {
 				// Error: invalid agument
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ERROR);
-				keyword.setErrorMessage("Follow Firework with a number.");
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Follow Firework with a number.");
 			}
 		} else if (numArgs > 2) {
 			// Warning: Too Many Arguments
-			keyword.setGoodKeyword(true);
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("Only one number is needed.");
+			setGoodKeyword(true);
+			setErrorMessageType(INFO);
+			setErrorMessage("Only one number is needed.");
 		}
-
-		return keyword;
 	}
 
 	/**
@@ -72,6 +86,58 @@ public class FireworkKeyword extends ParsedKeyword {
 	 */
 	public void setUp(int amountMove) {
 		this.up = amountMove;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D currSignPoint,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+
+		// Find nearby fireworks in frames
+		LinkedList<ItemStack> fireworks = new LinkedList<ItemStack>();
+		for (Object entityObj : world.loadedEntityList) {
+			Entity entity = (Entity) entityObj;
+			if (Math.abs(entity.posX - currSignPoint.x) <= 2
+					&& Math.abs(entity.posY - currSignPoint.y) <= 2
+					&& Math.abs(entity.posZ - currSignPoint.z) <= 2) {
+
+				if (entity instanceof EntityItemFrame) {
+					EntityItemFrame frame = (EntityItemFrame) entity;
+					ItemStack framedItem = frame.getDisplayedItem();
+
+					if (framedItem != null && framedItem.itemID == 401) {
+						fireworks.add(framedItem);
+					}
+				}
+			}
+		}
+
+		if (fireworks.size() > 0) {
+			// Choose a firework
+			ItemStack fireworkItem = fireworks.get(random.nextInt(fireworks
+					.size()));
+
+			// Create the event
+			int yOffset = getUp();
+			FireworkEvent event = new FireworkEvent(currSignPoint.x + 0.5f,
+					currSignPoint.y + yOffset, currSignPoint.z + 0.5f,
+					fireworkItem, ditty.getDittyID());
+
+			// Add the event to the ditty
+			int eventID = ditty.addDittyEvent(event);
+			ditty.addMusicStringTokens(readMusicString,
+					SignTuneParser.TIMED_EVENT_TOKEN + eventID, false);
+		} else {
+			// No fireworks :(
+			ditty.addErrorMessage("A firework sign has no fireworks in Item Frames nearby.");
+			for (int i = 0; i < 4; i++) {
+				if (ditty instanceof SignDitty) {
+					((SignDitty) ditty).addErrorHighlight(currSignPoint, i);
+				}
+			}
+		}
+
+		return null;
 	}
 
 }

@@ -23,19 +23,26 @@
  */
 package com.minetunes.signs.keywords;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
+import com.minetunes.CueScheduler;
+import com.minetunes.Point3D;
+import com.minetunes.config.MinetunesConfig;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.ParsedSign;
 
 /**
  * @author William
  * 
  */
-public class LyricKeyword extends ParsedKeyword {
+public class LyricKeyword extends SignTuneKeyword {
 
 	private String colorCode = "";
 	private int repetition = 1;
 	private String label = "";
 	private String lyricText = "";
-	
 
 	/**
 	 * @param wholeKeyword
@@ -45,41 +52,41 @@ public class LyricKeyword extends ParsedKeyword {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static LyricKeyword parse(String currLine) {
-		LyricKeyword keyword = new LyricKeyword(currLine);
-
+	@Override
+	public void parse() {
 		// Read arguments
-		int numArgs = currLine.split(" ").length;
+		int numArgs = getWholeKeyword().split(" ").length;
 
 		// Get arguments
 		// Get label (required)
 		if (numArgs >= 2) {
-			keyword.label = currLine.split(" ")[1];
-			if (!isValidCueLabel(keyword.label)) {
+			label = getWholeKeyword().split(" ")[1];
+			if (!isValidCueLabel(label)) {
 				// Illegal label
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ParsedKeyword.WARNING);
-				keyword.setErrorMessage("Lyric names should only contain letters, numbers, and underscores.");
+				setGoodKeyword(false);
+				setErrorMessageType(WARNING);
+				setErrorMessage("Lyric names should only contain letters, numbers, and underscores.");
 			}
 		} else {
 			// No label; this results in an error
-			keyword.setGoodKeyword(false);
-			keyword.setErrorMessageType(ParsedKeyword.ERROR);
-			keyword.setErrorMessage("Follow the Lyric keyword with a lyric name: e.g., 'Lyric chorus'.");
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Follow the Lyric keyword with a lyric name: e.g., 'Lyric chorus'.");
 		}
 
 		// Check for third argument (color code or repetition)
 
 		// Default values for the ensuing (optional) arguments
-		int repetition = keyword.getRepetition();
-		String colorCode = keyword.getColorCode();
+		int repetition = getRepetition();
+		String colorCode = getColorCode();
 
 		if (numArgs >= 3) {
-			String argument = currLine.split(" ")[2];
+			String argument = getWholeKeyword().split(" ")[2];
 			if (argument.matches("\\d+")) {
 				// Repetition!
 				repetition = Integer.parseInt(argument);
-			} else if (argument.trim().matches("&[\\dabcdefABCDEFlmnokrLMNOKR]")) {
+			} else if (argument.trim()
+					.matches("&[\\dabcdefABCDEFlmnokrLMNOKR]")) {
 				// Color code!
 				colorCode = argument.trim();
 			} else {
@@ -87,19 +94,20 @@ public class LyricKeyword extends ParsedKeyword {
 				// not a number -- probably someone putting a
 				// space in a label.
 				// Throw error
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ParsedKeyword.ERROR);
-				keyword.setErrorMessage("A lyric's name can't contain spaces.");
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("A lyric's name can't contain spaces.");
 			}
 		}
 
 		// Check for fourth argument (color code or repetition)
 		if (numArgs >= 4) {
-			String argument = currLine.split(" ")[3];
+			String argument = getWholeKeyword().split(" ")[3];
 			if (argument.matches("\\d+")) {
 				// Repetition!
 				repetition = Integer.parseInt(argument);
-			} else if (argument.trim().matches("&[\\dabcdefABCDEFlmnokrLMNOKR]")) {
+			} else if (argument.trim()
+					.matches("&[\\dabcdefABCDEFlmnokrLMNOKR]")) {
 				// Color code!
 				colorCode = argument.trim();
 			} else {
@@ -107,23 +115,22 @@ public class LyricKeyword extends ParsedKeyword {
 				// not a number -- probably someone putting a
 				// space in a label.
 				// Throw error
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ParsedKeyword.ERROR);
-				keyword.setErrorMessage("A lyric's name can't contain spaces.");
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("A lyric's name can't contain spaces.");
 			}
 		}
 		
+		setRepetition(repetition);
+		setColorCode(colorCode);
+
 		// Too many arguments
 		if (numArgs > 4) {
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("At most, lyric only needs a lyric name, a repetition, and a color code.");
+			setErrorMessageType(INFO);
+			setErrorMessage("At most, lyric only needs a lyric name, a repetition, and a color code.");
 		}
 
-		// Set the read (or default) color codes and repetitions
-		keyword.colorCode = colorCode;
-		keyword.repetition = repetition;
-
-		return keyword;
+		return;
 	}
 
 	public static boolean isValidCueLabel(String label) {
@@ -176,22 +183,48 @@ public class LyricKeyword extends ParsedKeyword {
 	}
 
 	@Override
-	public <T extends ParsedKeyword> void parseWithMultiline(
+	public <T extends SignTuneKeyword> void parseWithMultiline(
 			ParsedSign parsedSign, int keywordLine, T k) {
 		super.parseWithMultiline(parsedSign, keywordLine, k);
-		
-		// TODO: Read lyric text
-		StringBuilder lyricTextB = new StringBuilder();
-		for (int i=keywordLine+1;i<parsedSign.getLines().length;i++) {
-			// TODO
-			parsedSign.getLines()[i] = this;
+
+		// Read lyric text (but not if there's no line after the keyword)
+		if (keywordLine < 3) {
+			setLyricText(SignTuneParser.readLyricFromSign(keywordLine + 1,
+					parsedSign.getSignText(), getColorCode()));
 		}
-		lyricTextB.append("LYRIC TEXT PLACEHOLDER -- SEE parseWithMultiline()");
-		lyricText = lyricTextB.toString();
 	}
 
 	@Override
 	public boolean isMultiline() {
+		return true;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTilEntity, Point3D nextSign, World world,
+			StringBuilder b) {
+		// Check that this isn't on the last line (no lyric text
+		// possible), after parsing arguments.
+
+		// Adding to existing lyric?
+		if (MinetunesConfig.getBoolean("lyrics.enabled")) {
+			CueScheduler lyrics = ditty.getLyricsStorage();
+			lyrics.addLyricText(getLabel(), lyricText, getRepetition());
+		}
+
+		return null;
+	}
+
+	public String getLyricText() {
+		return lyricText;
+	}
+
+	public void setLyricText(String lyricText) {
+		this.lyricText = lyricText;
+	}
+
+	@Override
+	public boolean isAllBelow() {
 		return true;
 	}
 

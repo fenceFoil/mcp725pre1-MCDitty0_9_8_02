@@ -1,6 +1,5 @@
-
 /**
- * Copyright (c) 2012 William Karnavas 
+ * Copyright (c) 2012-2013 William Karnavas 
  * All Rights Reserved
  */
 
@@ -22,17 +21,15 @@
  * along with MineTunes. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
-package com.minetunes.signs.keywords;
+package com.minetunes.sfx;
 
-public class NoteblockTriggerKeyword extends SignTuneKeyword {
-
-	public NoteblockTriggerKeyword(String wholeKeyword) {
-		super(wholeKeyword);
-	}
-
-	@Override
-	public boolean isFirstLineOnly() {
-		return true;
-	}
+/**
+ * Does not fully imitate MIDI. Accepts note requests and plays them.
+ *
+ */
+public class SFXSimpleSynth {
+	
+	private String[] voiceSFX = new String[16];
+	
 
 }

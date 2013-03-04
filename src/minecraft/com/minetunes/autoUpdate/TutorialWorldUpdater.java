@@ -37,7 +37,7 @@ import com.minetunes.Minetunes;
 import com.minetunes.Point3D;
 import com.minetunes.config.MinetunesConfig;
 import com.minetunes.resources.ResourceManager;
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.Comment;
 
 /**
@@ -62,7 +62,7 @@ public class TutorialWorldUpdater extends FileUpdater {
 			return "§bWait for the last download to finish before starting another.";
 		}
 		downloadingExampleWorld = true;
-		BlockSignMinetunes.simpleLog("downloadExampleWorld called");
+		SignTuneParser.simpleLog("downloadExampleWorld called");
 
 		if (!quiet) {
 			Minetunes.showTextAsLyricNow("§aDownloading MineTunesLand...");
@@ -95,7 +95,7 @@ public class TutorialWorldUpdater extends FileUpdater {
 		String foundVersionURL = getLatestURL(mcVersion);
 		File newVersionFile = new File(downloadDir,
 				foundVersionURL.substring(foundVersionURL.lastIndexOf("/") + 1));
-		BlockSignMinetunes
+		SignTuneParser
 				.simpleLog("Saving new version as " + newVersionFile.getPath());
 
 		// Do the downloaad

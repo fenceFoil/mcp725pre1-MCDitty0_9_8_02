@@ -26,9 +26,16 @@ package com.minetunes.signs.keywords;
 
 import java.util.LinkedList;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.ditty.event.CreateBotEvent;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.ParsedSign;
 
-public class NewBotKeyword extends ParsedKeyword {
+public class NewBotKeyword extends SignTuneKeyword {
 
 	private String name = "";
 
@@ -43,24 +50,23 @@ public class NewBotKeyword extends ParsedKeyword {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static NewBotKeyword parse(String rawArgs) {
-		NewBotKeyword keyword = new NewBotKeyword(rawArgs);
-
+	@Override
+	public void parse() {
 		// Get number of blocks to move; default is 1 if not specified
-		String[] args = rawArgs.split(" ");
+		String[] args = getWholeKeyword().split(" ");
 		int numArgs = args.length;
 
 		if (numArgs > 3) {
 			// Too many arguments
-			keyword.setGoodKeyword(true);
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("Only the bot's name and position are needed on this line.");
+			setGoodKeyword(true);
+			setErrorMessageType(INFO);
+			setErrorMessage("Only the bot's name and position are needed on this line.");
 		} else if (numArgs <= 1) {
 			// No type
-			keyword.setGoodKeyword(false);
-			keyword.setErrorMessageType(ERROR);
-			keyword.setErrorMessage("Follow NewBot with the name of the new bot.");
-			return keyword;
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Follow NewBot with the name of the new bot.");
+			return;
 		}
 
 		if (numArgs == 2) {
@@ -72,13 +78,13 @@ public class NewBotKeyword extends ParsedKeyword {
 			boolean valid = name.matches("[a-zA-Z_][a-zA-Z\\d_]*");
 
 			if (!valid) {
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ERROR);
-				keyword.setErrorMessage("Bot names should contain only letters, numbers, and underscores.");
-				return keyword;
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Bot names should contain only letters, numbers, and underscores.");
+				return;
 			}
 
-			keyword.setType(name);
+			setType(name);
 		}
 
 		if (numArgs == 3) {
@@ -89,21 +95,16 @@ public class NewBotKeyword extends ParsedKeyword {
 			boolean valid = pos.matches("[+-]*\\d+");
 
 			if (!valid) {
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ERROR);
-				keyword.setErrorMessage("Bot position above a sign should either be blank or a number.");
-				return keyword;
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Bot position above a sign should either be blank or a number.");
+				return;
 			}
 
-			keyword.setPosition(Integer.parseInt(pos));
+			setPosition(Integer.parseInt(pos));
 		}
 
-		return keyword;
-	}
-
-	@Override
-	public boolean isFirstLineOnly() {
-		return false;
+		return;
 	}
 
 	@Override
@@ -112,7 +113,7 @@ public class NewBotKeyword extends ParsedKeyword {
 	}
 
 	@Override
-	public <T extends ParsedKeyword> void parseWithMultiline(
+	public <T extends SignTuneKeyword> void parseWithMultiline(
 			ParsedSign parsedSign, int keywordLine, T k) {
 		super.parseWithMultiline(parsedSign, keywordLine, k);
 
@@ -199,6 +200,42 @@ public class NewBotKeyword extends ParsedKeyword {
 	 */
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		// If the position is null, search upwards for a
+		// space for the bot
+		boolean searchUp = (getPosition() == null);
+
+		int yOffset = 0;
+		if (getPosition() != null) {
+			yOffset = getPosition();
+		}
+
+		// Create the bot event
+		CreateBotEvent botEvent = new CreateBotEvent(
+				location.x + 0.5f,
+				location.y + yOffset,
+				location.z + 0.5f,
+				getType(),
+				SignTuneParser.getSignFacingDegrees(
+						signTileEntity.blockMetadata, signTileEntity.blockType),
+				searchUp, getName(), ditty.getDittyID());
+
+		// Add the event to the ditty
+		int eventID = ditty.addDittyEvent(botEvent);
+		ditty.addMusicStringTokens(readMusicString,
+				SignTuneParser.TIMED_EVENT_TOKEN + eventID, false);
+
+		return null;
+	}
+
+	@Override
+	public int getLineCount() {
+		return 2;
 	}
 
 }

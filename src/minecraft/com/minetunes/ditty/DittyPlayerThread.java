@@ -73,7 +73,7 @@ import com.minetunes.ditty.event.TempoDittyEvent;
 import com.minetunes.ditty.event.TimedDittyEvent;
 import com.minetunes.ditty.event.VolumeEvent;
 import com.minetunes.sfx.SFXManager;
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.SignDitty;
 import com.sun.media.sound.SF2Instrument;
 import com.sun.media.sound.SF2InstrumentRegion;
@@ -135,15 +135,15 @@ public class DittyPlayerThread extends Thread implements
 		if (ditty instanceof SignDitty) {
 			// Add this tune to the list of oneatatime ditties
 			if (((SignDitty) ditty).isOneAtATime()) {
-				synchronized (BlockSignMinetunes.oneAtATimeSignsBlocked) {
-					if (BlockSignMinetunes.oneAtATimeSignsBlocked
+				synchronized (SignTuneParser.oneAtATimeSignsBlocked) {
+					if (SignTuneParser.oneAtATimeSignsBlocked
 							.contains(((SignDitty) ditty).getStartPoint())) {
 						// Already blocked. Time to go...
 						dittyPlayers.remove(this);
 						return;
 					}
 
-					BlockSignMinetunes.oneAtATimeSignsBlocked.add(((SignDitty) ditty)
+					SignTuneParser.oneAtATimeSignsBlocked.add(((SignDitty) ditty)
 							.getStartPoint());
 				}
 			}
@@ -195,7 +195,7 @@ public class DittyPlayerThread extends Thread implements
 		this.setPriority(MAX_PRIORITY);
 
 		// Play musicstring
-		BlockSignMinetunes.simpleLog("Starting ditty!");
+		SignTuneParser.simpleLog("Starting ditty!");
 		if (!muting) {
 			try {
 				synchronized (staticPlayerMutex) {
@@ -212,7 +212,7 @@ public class DittyPlayerThread extends Thread implements
 				e.printStackTrace();
 			}
 		}
-		BlockSignMinetunes.simpleLog("Done playing a MusicString");
+		SignTuneParser.simpleLog("Done playing a MusicString");
 		try {
 			synchronized (staticPlayerMutex) {
 				player.close(false);
@@ -237,13 +237,13 @@ public class DittyPlayerThread extends Thread implements
 		if (ditty instanceof SignDitty) {
 			// Remove this tune from the list of blocked tunes
 			// (Loop until all copies are removed)
-			synchronized (BlockSignMinetunes.oneAtATimeSignsBlocked) {
-				for (int i = 0; i < BlockSignMinetunes.oneAtATimeSignsBlocked.size(); i++) {
-					Point3D blockedPoint = BlockSignMinetunes.oneAtATimeSignsBlocked
+			synchronized (SignTuneParser.oneAtATimeSignsBlocked) {
+				for (int i = 0; i < SignTuneParser.oneAtATimeSignsBlocked.size(); i++) {
+					Point3D blockedPoint = SignTuneParser.oneAtATimeSignsBlocked
 							.get(i);
 					if (blockedPoint
 							.equals(((SignDitty) ditty).getStartPoint())) {
-						BlockSignMinetunes.oneAtATimeSignsBlocked.remove(i);
+						SignTuneParser.oneAtATimeSignsBlocked.remove(i);
 						i--;
 					}
 				}
@@ -317,7 +317,7 @@ public class DittyPlayerThread extends Thread implements
 	@Override
 	public void playerHook(long time, float tempo) {
 		if (MinetunesConfig.DEBUG) {
-			BlockSignMinetunes.simpleLog("playerHook() called: time=" + time);
+			SignTuneParser.simpleLog("playerHook() called: time=" + time);
 		}
 		//System.out.println ("Latency: "+synth.getLatency());
 
@@ -528,7 +528,7 @@ public class DittyPlayerThread extends Thread implements
 		// System.out.println(sf2.getInstruments()[0].getName());
 		for (SF2Instrument i : sf2.getInstruments()) {
 			if (MinetunesConfig.DEBUG) {
-				BlockSignMinetunes.simpleLog(i.getPatch() + ": " + i.getName() + ",");
+				SignTuneParser.simpleLog(i.getPatch() + ": " + i.getName() + ",");
 			}
 		}
 	}
@@ -561,7 +561,7 @@ public class DittyPlayerThread extends Thread implements
 	public void lyricEventRead(Lyric lyric, long time) {
 		// Add lyric event to lyric index
 		if (MinetunesConfig.DEBUG) {
-			BlockSignMinetunes.simpleLog("JFuguePlayerThread.lyricReadEvent: "
+			SignTuneParser.simpleLog("JFuguePlayerThread.lyricReadEvent: "
 					+ lyric.getVerifyString() + " t=" + time);
 		}
 
@@ -576,7 +576,7 @@ public class DittyPlayerThread extends Thread implements
 	@Override
 	public void tempoEventRead(Tempo tempo, long time) {
 		if (MinetunesConfig.DEBUG) {
-			BlockSignMinetunes.simpleLog("JFuguePlayerThread.tempoEventRead: "
+			SignTuneParser.simpleLog("JFuguePlayerThread.tempoEventRead: "
 					+ tempo.getVerifyString() + " t=" + time);
 		}
 		ditty.addDittyEvent(new TempoDittyEvent(ditty.getDittyID(), time, tempo
@@ -601,12 +601,12 @@ public class DittyPlayerThread extends Thread implements
 					+ " @ " + time);
 		}
 
-		if (event.getToken().startsWith(BlockSignMinetunes.TIMED_EVENT_TOKEN)) {
+		if (event.getToken().startsWith(SignTuneParser.TIMED_EVENT_TOKEN)) {
 			// System.out.println("MineTunes Event Read! " + event.toString()
 			// + " @ " + time);
 			// Get the event denoted by this token
 			String eventIDString = event.getToken().replaceAll(
-					BlockSignMinetunes.TIMED_EVENT_TOKEN, "");
+					SignTuneParser.TIMED_EVENT_TOKEN, "");
 			int eventID = Integer.parseInt(eventIDString);
 			TimedDittyEvent timedEvent = ditty.getDittyEvent(eventID);
 			// System.out.println("Found event: " + timedEvent);
@@ -671,19 +671,19 @@ public class DittyPlayerThread extends Thread implements
 		 * opposed to a different token for different types of events)
 		 * continues.
 		 */
-		if (event.getToken().startsWith(BlockSignMinetunes.SIGN_START_TOKEN)
+		if (event.getToken().startsWith(SignTuneParser.SIGN_START_TOKEN)
 				&& ditty instanceof SignDitty) {
 			ditty.addDittyEvent(new HighlightSignPlayingEvent(
 					((SignDitty) ditty).getPointForID(Integer.parseInt(event
 							.getToken().substring(
-									BlockSignMinetunes.SIGN_START_TOKEN.length()))),
+									SignTuneParser.SIGN_START_TOKEN.length()))),
 					true, time, ditty.getDittyID()));
-		} else if (event.getToken().startsWith(BlockSignMinetunes.SIGN_END_TOKEN)
+		} else if (event.getToken().startsWith(SignTuneParser.SIGN_END_TOKEN)
 				&& ditty instanceof SignDitty) {
 			ditty.addDittyEvent(new HighlightSignPlayingEvent(
 					((SignDitty) ditty).getPointForID(Integer.parseInt(event
 							.getToken().substring(
-									BlockSignMinetunes.SIGN_START_TOKEN.length()))),
+									SignTuneParser.SIGN_START_TOKEN.length()))),
 					false, time, ditty.getDittyID()));
 		}
 
@@ -754,7 +754,7 @@ public class DittyPlayerThread extends Thread implements
 	public static void playDitty(Ditty prop) {
 		DittyPlayerThread playerThread = new DittyPlayerThread(prop);
 		if (MinetunesConfig.DEBUG) {
-			BlockSignMinetunes.simpleLog("Playing MusicString: " + prop.getMusicString());
+			SignTuneParser.simpleLog("Playing MusicString: " + prop.getMusicString());
 		}
 		playerThread.setPriority(Thread.MAX_PRIORITY);
 		playerThread.start();

@@ -23,32 +23,47 @@
  */
 package com.minetunes.signs;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+
 import com.minetunes.signs.keywords.AccelerateKeyword;
 import com.minetunes.signs.keywords.DiscoKeyword;
 import com.minetunes.signs.keywords.EmitterKeyword;
+import com.minetunes.signs.keywords.EndKeyword;
+import com.minetunes.signs.keywords.EndLineKeyword;
 import com.minetunes.signs.keywords.ExplicitGotoKeyword;
 import com.minetunes.signs.keywords.FireworkKeyword;
 import com.minetunes.signs.keywords.GotoKeyword;
+import com.minetunes.signs.keywords.IsDittyKeyword;
+import com.minetunes.signs.keywords.LoudKeyword;
 import com.minetunes.signs.keywords.LyricKeyword;
 import com.minetunes.signs.keywords.MaxPlaysKeyword;
+import com.minetunes.signs.keywords.MuteKeyword;
 import com.minetunes.signs.keywords.NewBotKeyword;
 import com.minetunes.signs.keywords.NoteblockTriggerKeyword;
 import com.minetunes.signs.keywords.OctavesKeyword;
 import com.minetunes.signs.keywords.OctavesOffKeyword;
-import com.minetunes.signs.keywords.ParsedKeyword;
+import com.minetunes.signs.keywords.OneAtATimeKeyword;
+import com.minetunes.signs.keywords.OneLineKeyword;
 import com.minetunes.signs.keywords.PattKeyword;
 import com.minetunes.signs.keywords.PatternKeyword;
+import com.minetunes.signs.keywords.PlayLastKeyword;
 import com.minetunes.signs.keywords.PlayMidiKeyword;
 import com.minetunes.signs.keywords.PreLyricKeyword;
 import com.minetunes.signs.keywords.ProxPadKeyword;
-import com.minetunes.signs.keywords.RepeatKeyword;
+import com.minetunes.signs.keywords.ResetKeyword;
 import com.minetunes.signs.keywords.SFXInstKeyword;
 import com.minetunes.signs.keywords.SFXInstOffKeyword;
 import com.minetunes.signs.keywords.SFXKeyword;
 import com.minetunes.signs.keywords.SaveMidiKeyword;
+import com.minetunes.signs.keywords.SignTuneKeyword;
 import com.minetunes.signs.keywords.StaccatoKeyword;
+import com.minetunes.signs.keywords.StaccatoOffKeyword;
+import com.minetunes.signs.keywords.SyncVoicesKeyword;
 import com.minetunes.signs.keywords.SyncWithKeyword;
 import com.minetunes.signs.keywords.TransposeKeyword;
+import com.minetunes.signs.keywords.TransposeOffKeyword;
+import com.minetunes.signs.keywords.VolumeKeyword;
 
 /**
  * Given the lines of text upon a sign, SignParser will resolve the sign into
@@ -65,20 +80,70 @@ public class SignParser {
 	 * technically work or are read without errors.
 	 */
 	public static final String[] deprecatedKeywords = { "loud", "tutorial",
-			"proxpad", "disco", "newbot" };
+			"proxpad", "disco", "newbot", "pattern" };
 
 	/**
 	 * Array of all keywords recognized by MineTunes
 	 */
-	public static final String[] keywords = { "pattern", "left", "right", "up",
-			"down", "disco", "in", "out", "end", "endline", "mute", "reset",
-			"proximity", "midi", "loud", "repeat", "oneline", "lyric",
-			"oneatatime", "isditty", "syncvoices", "syncwith", "sfx",
-			"proxpad", "volume", "area", "goto", "savemidi", "playmidi",
-			"emitter", "sfxinst2", "sfxinst", "sfxinstoff", "newbot",
-			"staccato", "staccatooff", "tran", "tranoff", "octaves",
-			"octavesoff", "prelyric", "accel", "patt", "[ditty]", "ditty",
-			"maxplays", "playlast", "flare", "firework", "[signtune]" };
+	public static String[] keywords = null;
+
+	// TODO: Use annotations instead on each keyword type?
+	public static final HashMap<String, Class<? extends SignTuneKeyword>> keywordClasses = new HashMap<String, Class<? extends SignTuneKeyword>>();
+	static {
+		keywordClasses.put("pattern", PatternKeyword.class);
+		keywordClasses.put("left", ExplicitGotoKeyword.class);
+		keywordClasses.put("right", ExplicitGotoKeyword.class);
+		keywordClasses.put("up", ExplicitGotoKeyword.class);
+		keywordClasses.put("down", ExplicitGotoKeyword.class);
+		keywordClasses.put("in", ExplicitGotoKeyword.class);
+		keywordClasses.put("out", ExplicitGotoKeyword.class);
+		keywordClasses.put("disco", DiscoKeyword.class);
+		keywordClasses.put("end", EndKeyword.class);
+		keywordClasses.put("endline", EndLineKeyword.class);
+		keywordClasses.put("mute", MuteKeyword.class);
+		keywordClasses.put("reset", ResetKeyword.class);
+		keywordClasses.put("proximity", ProxPadKeyword.class);
+		keywordClasses.put("midi", SaveMidiKeyword.class);
+		keywordClasses.put("loud", LoudKeyword.class);
+		keywordClasses.put("repeat", PatternKeyword.class);
+		keywordClasses.put("oneline", OneLineKeyword.class);
+		keywordClasses.put("lyric", LyricKeyword.class);
+		keywordClasses.put("oneatatime", OneAtATimeKeyword.class);
+		keywordClasses.put("isditty", IsDittyKeyword.class);
+		keywordClasses.put("syncvoices", SyncVoicesKeyword.class);
+		keywordClasses.put("syncwith", SyncWithKeyword.class);
+		keywordClasses.put("sfx", SFXKeyword.class);
+		keywordClasses.put("proxpad", ProxPadKeyword.class);
+		keywordClasses.put("volume", VolumeKeyword.class);
+		keywordClasses.put("area", ProxPadKeyword.class);
+		keywordClasses.put("goto", GotoKeyword.class);
+		keywordClasses.put("savemidi", SaveMidiKeyword.class);
+		keywordClasses.put("playmidi", PlayMidiKeyword.class);
+		keywordClasses.put("emitter", EmitterKeyword.class);
+		keywordClasses.put("sfxinst", SFXInstKeyword.class);
+		keywordClasses.put("sfxinst2", SFXInstKeyword.class);
+		keywordClasses.put("sfxinstoff", SFXInstOffKeyword.class);
+		keywordClasses.put("newbot", NewBotKeyword.class);
+		keywordClasses.put("staccato", StaccatoKeyword.class);
+		keywordClasses.put("staccatooff", StaccatoOffKeyword.class);
+		keywordClasses.put("tran", TransposeKeyword.class);
+		keywordClasses.put("tranoff", TransposeOffKeyword.class);
+		keywordClasses.put("octaves", OctavesKeyword.class);
+		keywordClasses.put("octavesoff", OctavesOffKeyword.class);
+		keywordClasses.put("prelyric", PreLyricKeyword.class);
+		keywordClasses.put("accel", AccelerateKeyword.class);
+		keywordClasses.put("patt", PattKeyword.class);
+		keywordClasses.put("ditty", NoteblockTriggerKeyword.class);
+		keywordClasses.put("[ditty]", NoteblockTriggerKeyword.class);
+		keywordClasses.put("[signtune]", NoteblockTriggerKeyword.class);
+		keywordClasses.put("maxplays", MaxPlaysKeyword.class);
+		keywordClasses.put("playlast", PlayLastKeyword.class);
+		// keywordClasses.put("flare", FlareKeyword.class);
+		keywordClasses.put("firework", FireworkKeyword.class);
+
+		// Create the array of keywords
+		keywords = keywordClasses.keySet().toArray(new String[0]);
+	}
 
 	/**
 	 * Prevent people from instantiating this class of static methods
@@ -152,7 +217,7 @@ public class SignParser {
 	 */
 	public static void parseKeywordInContext(ParsedSign parsedSign,
 			int keywordLine) {
-		ParsedKeyword keyword = SignParser.parseKeyword(parsedSign
+		SignTuneKeyword keyword = SignParser.parseKeyword(parsedSign
 				.getSignText()[keywordLine]);
 
 		parsedSign.getLines()[keywordLine] = keyword;
@@ -161,7 +226,7 @@ public class SignParser {
 		if (keywordLine != 0 && keyword.isFirstLineOnly()) {
 			// Not on first line when it should be
 			keyword.setGoodKeyword(false);
-			keyword.setErrorMessageType(ParsedKeyword.ERROR);
+			keyword.setErrorMessageType(SignTuneKeyword.ERROR);
 			keyword.setErrorMessage("The keyword " + keyword.getKeyword()
 					+ " must be on the first line of a sign.");
 			return;
@@ -188,77 +253,108 @@ public class SignParser {
 	 * @param rawLine
 	 * @return
 	 */
-	public static ParsedKeyword parseKeyword(String rawLine) {
+	public static SignTuneKeyword parseKeyword(String rawLine) {
 		String keyword = SignParser.recognizeKeyword(rawLine);
 
 		if (keyword == null) {
 			return null;
-		} else if (keyword.equals("sfx")) {
-			return SFXKeyword.parse(rawLine);
-		} else if (keyword.equals("left") || keyword.equals("right")
-				|| keyword.equals("up") || keyword.equals("down")
-				|| keyword.equals("in") || keyword.equals("out")) {
-			// Goto keyword
-			return ExplicitGotoKeyword.parse(rawLine);
-		} else if (keyword.equals("lyric")) {
-			return LyricKeyword.parse(rawLine);
-		} else if (keyword.equals("pattern")) {
-			return PatternKeyword.parse(rawLine);
-		} else if (keyword.equals("repeat")) {
-			return RepeatKeyword.parse(rawLine);
-		} else if (keyword.equals("syncwith")) {
-			return SyncWithKeyword.parse(rawLine);
-		} else if (keyword.equals("proxpad") || keyword.equals("area")) {
-			return ProxPadKeyword.parse(rawLine);
-		} else if (keyword.equals("disco")) {
-			return DiscoKeyword.parse(rawLine);
-		} else if (keyword.equals("proximity")) {
-			// Substitute a 1x1 proxpad for the proximity keyword
-			ProxPadKeyword k = ProxPadKeyword.parse("area 1 1");
-			return k;
-		} else if (keyword.equals("goto")) {
-			return GotoKeyword.parse(rawLine);
-		} else if (keyword.equals("midi") || keyword.equals("savemidi")) {
-			return SaveMidiKeyword.parse(rawLine);
-		} else if (keyword.equals("playmidi")) {
-			return PlayMidiKeyword.parse(rawLine);
-		} else if (keyword.equals("emitter")) {
-			return EmitterKeyword.parse(rawLine);
-		} else if (keyword.equals("sfxinst") || keyword.equals("sfxinst2")) {
-			return SFXInstKeyword.parse(rawLine);
-		} else if (keyword.equals("sfxinstoff")) {
-			return SFXInstOffKeyword.parse(rawLine);
-		} else if (keyword.equals("newbot")) {
-			return NewBotKeyword.parse(rawLine);
-		} else if (keyword.equals("staccato")) {
-			return StaccatoKeyword.parse(rawLine);
-		} else if (keyword.equals("tran")) {
-			return TransposeKeyword.parse(rawLine);
-		} else if (keyword.equals("octaves")) {
-			return OctavesKeyword.parse(rawLine);
-		} else if (keyword.equals("octavesoff")) {
-			return OctavesOffKeyword.parse(rawLine);
-		} else if (keyword.equals("prelyric")) {
-			return PreLyricKeyword.parse(rawLine);
-		} else if (keyword.equals("accel")) {
-			return AccelerateKeyword.parse(rawLine);
-		} else if (keyword.equals("patt")) {
-			return PattKeyword.parse(rawLine);
-		} else if (keyword.equals("ditty") || keyword.equals("[ditty]")
-				|| keyword.equals("[signtune]")) {
-			return new NoteblockTriggerKeyword(rawLine);
-		} else if (keyword.equals("maxplays")) {
-			return MaxPlaysKeyword.parse(rawLine);
-			// } else if (keyword.equals("flare")) {
-			// return FlareKeyword.parse(rawLine);
-		} else if (keyword.equals("firework")) {
-			return FireworkKeyword.parse(rawLine);
-		} else {
-			// Unknown or simple (no arguments) keyword
-			ParsedKeyword k = new ParsedKeyword(rawLine);
-			k.setKeyword(keyword);
-			return k;
 		}
+
+		Class<? extends SignTuneKeyword> keywordClass = keywordClasses
+				.get(keyword);
+		if (keywordClass != null) {
+			// Parse and return
+			SignTuneKeyword keywordInstance = null;
+			try {
+				keywordInstance = keywordClass.getConstructor(String.class)
+						.newInstance(rawLine);
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			keywordInstance.parse();
+			return keywordInstance;
+		}
+
+		// Unknown or simple (no arguments) keyword
+		SignTuneKeyword k = new SignTuneKeyword(rawLine);
+		return k;
+
+		// if (keyword == null) {
+		// return null;
+		// } else if (keyword.equals("sfx")) {
+		// return SFXKeyword.parse(rawLine);
+		// } else if (keyword.equals("left") || keyword.equals("right")
+		// || keyword.equals("up") || keyword.equals("down")
+		// || keyword.equals("in") || keyword.equals("out")) {
+		// // Goto keyword
+		// return ExplicitGotoKeyword.parse(rawLine);
+		// } else if (keyword.equals("lyric")) {
+		// return LyricKeyword.parse(rawLine);
+		// } else if (keyword.equals("pattern") || keyword.equals("repeat")) {
+		// return PatternKeyword.parse(rawLine);
+		// } else if (keyword.equals("syncwith")) {
+		// return SyncWithKeyword.parse(rawLine);
+		// } else if (keyword.equals("proxpad") || keyword.equals("area")
+		// || keyword.equals("proximity")) {
+		// return ProxPadKeyword.parse(rawLine);
+		// } else if (keyword.equals("disco")) {
+		// return DiscoKeyword.parse(rawLine);
+		// } else if (keyword.equals("goto")) {
+		// return GotoKeyword.parse(rawLine);
+		// } else if (keyword.equals("midi") || keyword.equals("savemidi")) {
+		// return SaveMidiKeyword.parse(rawLine);
+		// } else if (keyword.equals("playmidi")) {
+		// return PlayMidiKeyword.parse(rawLine);
+		// } else if (keyword.equals("emitter")) {
+		// return EmitterKeyword.parse(rawLine);
+		// } else if (keyword.equals("sfxinst") || keyword.equals("sfxinst2")) {
+		// return SFXInstKeyword.parse(rawLine);
+		// } else if (keyword.equals("sfxinstoff")) {
+		// return SFXInstOffKeyword.parse(rawLine);
+		// } else if (keyword.equals("newbot")) {
+		// return NewBotKeyword.parse(rawLine);
+		// } else if (keyword.equals("staccato")) {
+		// return StaccatoKeyword.parse(rawLine);
+		// } else if (keyword.equals("tran")) {
+		// return TransposeKeyword.parse(rawLine);
+		// } else if (keyword.equals("octaves")) {
+		// return OctavesKeyword.parse(rawLine);
+		// } else if (keyword.equals("octavesoff")) {
+		// return OctavesOffKeyword.parse(rawLine);
+		// } else if (keyword.equals("prelyric")) {
+		// return PreLyricKeyword.parse(rawLine);
+		// } else if (keyword.equals("accel")) {
+		// return AccelerateKeyword.parse(rawLine);
+		// } else if (keyword.equals("patt")) {
+		// return PattKeyword.parse(rawLine);
+		// } else if (keyword.equals("ditty") || keyword.equals("[ditty]")
+		// || keyword.equals("[signtune]")) {
+		// return new NoteblockTriggerKeyword(rawLine);
+		// } else if (keyword.equals("maxplays")) {
+		// return MaxPlaysKeyword.parse(rawLine);
+		// } else if (keyword.equals("firework")) {
+		// return FireworkKeyword.parse(rawLine);
+		// } else if (keyword.equals("mute")) {
+		// return new MuteKeyword(rawLine);
+		// } else {
+
+		// }
 	}
 
 	/**

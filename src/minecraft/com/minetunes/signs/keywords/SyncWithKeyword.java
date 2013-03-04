@@ -23,11 +23,18 @@
  */
 package com.minetunes.signs.keywords;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.signs.SignTuneParser;
+
 /**
  * @author William
  * 
  */
-public class SyncWithKeyword extends ParsedKeyword {
+public class SyncWithKeyword extends SignTuneKeyword {
 
 	int voice = 0;
 	// a.k.a. no layer selected; choose longest
@@ -40,62 +47,59 @@ public class SyncWithKeyword extends ParsedKeyword {
 		super(wholeKeyword);
 	}
 
-	public static SyncWithKeyword parse(String currLine) {
-		SyncWithKeyword k = new SyncWithKeyword(currLine);
-
+	@Override
+	public void parse() {
 		// Check for voice #
-		int numArgs = currLine.split(" ").length;
+		int numArgs = getWholeKeyword().split(" ").length;
 		if (numArgs >= 2) {
-			String argument = currLine.split(" ")[1];
+			String argument = getWholeKeyword().split(" ")[1];
 			if (argument.matches("\\d+")) {
-				k.voice = Integer.parseInt(argument);
+				voice = Integer.parseInt(argument);
 			} else {
-				k.setGoodKeyword(false);
-				k.setErrorMessageType(ERROR);
-				k.setErrorMessage("Follow SyncWith one or two numbers (voice and layer to sync with).");
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Follow SyncWith one or two numbers (voice and layer to sync with).");
 			}
 		} else {
-			k.setGoodKeyword(false);
-			k.setErrorMessageType(ERROR);
-			k.setErrorMessage("Follow SyncWith one or two numbers (voice and layer to sync with).");
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Follow SyncWith one or two numbers (voice and layer to sync with).");
 		}
 
 		// range check
-		if (k.voice < 0 || k.voice >= 16) {
-			k.setGoodKeyword(false);
-			k.setErrorMessageType(ERROR);
-			k.setErrorMessage("Voices range from 0 to 15.");
+		if (voice < 0 || voice >= 16) {
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Voices range from 0 to 15.");
 		}
 
 		// Check for layer #
 		if (numArgs >= 3) {
-			String argument = currLine.split(" ")[2];
+			String argument = getWholeKeyword().split(" ")[2];
 			if (argument.matches("\\d+")) {
-				k.layer = Integer.parseInt(argument);
+				layer = Integer.parseInt(argument);
 			} else {
-				k.setGoodKeyword(false);
-				k.setErrorMessageType(WARNING);
-				k.setErrorMessage("Follow SyncWith one or two numbers (voice and layer to sync with).");
+				setGoodKeyword(false);
+				setErrorMessageType(WARNING);
+				setErrorMessage("Follow SyncWith one or two numbers (voice and layer to sync with).");
 			}
 		}
 		
 		// range check
-		if (k.layer < 0 || k.layer >= 16) {
-			if (k.layer != -1000) {
-				k.setGoodKeyword(false);
-				k.setErrorMessageType(ERROR);
-				k.setErrorMessage("Layers range from 0 to 15.");
+		if (layer < 0 || layer >= 16) {
+			if (layer != -1000) {
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Layers range from 0 to 15.");
 			}
 		}
 		
 		// Check for too many args
 		if (numArgs > 3) {
-			k.setGoodKeyword(false);
-			k.setErrorMessageType(ERROR);
-			k.setErrorMessage("Follow SyncWith just one or two numbers.");
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Follow SyncWith just one or two numbers.");
 		}
-		
-		return k;
 	}
 
 	/**
@@ -124,6 +128,25 @@ public class SyncWithKeyword extends ParsedKeyword {
 	 */
 	public void setLayer(int layer) {
 		this.layer = layer;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTilEntity, Point3D nextSign, World world, StringBuilder readMusicString) {
+
+		// Finally, add token
+		if (getLayer() != -1000) {
+			ditty.addMusicStringTokens(readMusicString,
+					SignTuneParser.SYNC_WITH_TOKEN + "V" + getVoice() + "L"
+							+ getLayer(), false);
+		} else {
+			ditty.addMusicStringTokens(
+					readMusicString,
+					SignTuneParser.SYNC_WITH_TOKEN + "V" + getVoice() + "Lu",
+					false);
+		}
+		
+		return null;
 	}
 
 }

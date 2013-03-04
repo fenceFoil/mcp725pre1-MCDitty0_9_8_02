@@ -23,12 +23,19 @@
  */
 package com.minetunes.signs.keywords;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.signs.SignTuneParser;
+
 /**
  * An Explicit Goto keyword is one of 'up, down, in, out, left, or right.' Not
  * to be confused with the keyword "GoTo".
  * 
  */
-public class ExplicitGotoKeyword extends ParsedKeyword {
+public class ExplicitGotoKeyword extends SignTuneKeyword {
 
 	private int amountMove = 1;
 
@@ -36,29 +43,26 @@ public class ExplicitGotoKeyword extends ParsedKeyword {
 		super(wholeKeyword);
 	}
 
-	public static ExplicitGotoKeyword parse(String rawLine) {
-		ExplicitGotoKeyword keyword = new ExplicitGotoKeyword(rawLine);
-
+	@Override
+	public void parse() {
 		// Get number of blocks to move; default is 1 if not specified
-		int numArgs = rawLine.split(" ").length;
+		int numArgs = getWholeKeyword().split(" ").length;
 		if (numArgs == 2) {
-			String argument = rawLine.split(" ")[1];
+			String argument = getWholeKeyword().split(" ")[1];
 			if (argument.trim().matches("\\d+")) {
-				keyword.setAmountMove(Integer.parseInt(argument.trim()));
+				setAmountMove(Integer.parseInt(argument.trim()));
 			} else {
 				// Error: invalid agument
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ERROR);
-				keyword.setErrorMessage("Follow this go-to with a number of blocks to move.");
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("Follow this go-to with a number of blocks to move.");
 			}
 		} else if (numArgs > 2) {
 			// Warning: Too Many Arguments
-			keyword.setGoodKeyword(true);
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("Only one number is needed.");
+			setGoodKeyword(true);
+			setErrorMessageType(INFO);
+			setErrorMessage("Only one number is needed.");
 		}
-
-		return keyword;
 	}
 
 	/**
@@ -74,6 +78,65 @@ public class ExplicitGotoKeyword extends ParsedKeyword {
 	 */
 	public void setAmountMove(int amountMove) {
 		this.amountMove = amountMove;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder b) {
+		Point3D pointedAtSign = nextSign.clone();
+		int amount = getAmountMove();
+		
+		String ks = getKeyword().toLowerCase();
+
+		// Decide the direction to move
+		if (ks.equals("right") || ks.equals("left")) {
+			// Handle moving left or right
+			if (ks.equals("left")) {
+				amount = -amount;
+			}
+
+			// Adjust next sign position based on the amount to
+			// move and the current sign's facing
+			pointedAtSign = SignTuneParser.getCoordsRelativeToSign(
+					nextSign, SignTuneParser.getSignFacing(
+							signTileEntity.blockMetadata,
+							signTileEntity.blockType), amount, 0, 0);
+		}
+
+		if (ks.equals("in") || ks.equals("out")) {
+			// Handle moving up or down
+			if (ks.equals("in")) {
+				amount = -amount;
+			}
+
+			// Adjust next sign position based on the amount to
+			// move and the current sign's facing
+			pointedAtSign = SignTuneParser.getCoordsRelativeToSign(
+					nextSign, SignTuneParser.getSignFacing(
+							signTileEntity.blockMetadata,
+							signTileEntity.blockType), 0, 0, amount);
+		}
+
+		if (ks.equals("up") || ks.equals("down")) {
+			// Handle moving up or down
+			if (ks.equals("down")) {
+				amount = -amount;
+			}
+
+			// Adjust next sign position based on the amount to
+			// move and the current sign's facing
+			pointedAtSign = SignTuneParser.getCoordsRelativeToSign(
+					nextSign, SignTuneParser.getSignFacing(
+							signTileEntity.blockMetadata,
+							signTileEntity.blockType), 0, amount, 0);
+		}
+		// Only say next point moved if it really has
+		if (!pointedAtSign.equals(nextSign)) {
+			return pointedAtSign;
+		} else {
+			return null;
+		}
 	}
 
 }

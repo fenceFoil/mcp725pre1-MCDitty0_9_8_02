@@ -1,7 +1,5 @@
-Repeat [times]
+Repeat ##
 
-Plays any music on the lines beneath [times] times. Doesn't work with keywords.
+Plays anything on the lines below ## times (or 2 if not given). If there are any GoTo keywords, will play the pointed at signs ## times as well.
 
-A simpler version of Pattern.
-
-§bSee:§r Pattern
+0.9.11: §bRepeat§r replaces and improves §bPattern§r

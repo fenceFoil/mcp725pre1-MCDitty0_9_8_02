@@ -204,7 +204,7 @@ public class TileEntitySignRendererMinetunes extends TileEntitySignRenderer {
 
 			// Eliminate sign texts if they face same way as player
 
-			int signFacing = BlockSignMinetunes.getSignFacing(
+			int signFacing = SignTuneParser.getSignFacing(
 					signEntity.blockMetadata, signEntity.blockType);
 			if (renderText) {
 				if (signFacing == playerFacingThisTick) {

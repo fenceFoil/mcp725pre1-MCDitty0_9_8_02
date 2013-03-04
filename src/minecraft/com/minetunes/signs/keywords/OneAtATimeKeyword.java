@@ -1,6 +1,5 @@
-
 /**
- * Copyright (c) 2012 William Karnavas 
+ * Copyright (c) 2012-2013 William Karnavas 
  * All Rights Reserved
  */
 
@@ -24,15 +23,35 @@
  */
 package com.minetunes.signs.keywords;
 
-public class NoteblockTriggerKeyword extends SignTuneKeyword {
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
 
-	public NoteblockTriggerKeyword(String wholeKeyword) {
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.signs.SignDitty;
+
+/**
+ * @author William
+ * 
+ */
+public class OneAtATimeKeyword extends SignTuneKeyword {
+
+	/**
+	 * @param wholeKeyword
+	 */
+	public OneAtATimeKeyword(String wholeKeyword) {
 		super(wholeKeyword);
 	}
 
 	@Override
-	public boolean isFirstLineOnly() {
-		return true;
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		// Set a flag in the dittyproperties
+		if (ditty instanceof SignDitty) {
+			((SignDitty) ditty).setOneAtATime(true);
+		}
+		return null;
 	}
 
 }

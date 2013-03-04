@@ -27,7 +27,7 @@ import java.util.LinkedList;
 
 import net.minecraft.src.World;
 
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 
 /**
  * Parses and starts a sign ditty from a thread off of the main game loop.
@@ -62,7 +62,7 @@ public class PlayDittyFromSignWorkThread extends Thread {
 	 */
 	@Override
 	public void run() {
-		BlockSignMinetunes.playDittyFromSignsDoWork(w, x, y, z, one, silent,
+		SignTuneParser.playDittyFromSignsDoWork(w, x, y, z, one, silent,
 				limitToSigns);
 	}
 

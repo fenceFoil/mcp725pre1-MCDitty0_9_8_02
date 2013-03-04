@@ -1,6 +1,5 @@
-
 /**
- * Copyright (c) 2012 William Karnavas 
+ * Copyright (c) 2012-2013 William Karnavas 
  * All Rights Reserved
  */
 
@@ -24,14 +23,22 @@
  */
 package com.minetunes.signs.keywords;
 
-public class NoteblockTriggerKeyword extends SignTuneKeyword {
 
-	public NoteblockTriggerKeyword(String wholeKeyword) {
+/**
+ * @author William
+ * 
+ */
+public class EndLineKeyword extends SignTuneKeyword {
+
+	/**
+	 * @param wholeKeyword
+	 */
+	public EndLineKeyword(String wholeKeyword) {
 		super(wholeKeyword);
 	}
 
 	@Override
-	public boolean isFirstLineOnly() {
+	public boolean hasSpecialExecution() {
 		return true;
 	}
 

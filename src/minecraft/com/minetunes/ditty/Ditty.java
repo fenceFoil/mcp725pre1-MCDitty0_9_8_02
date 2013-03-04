@@ -36,7 +36,7 @@ import com.minetunes.config.MinetunesConfig;
 import com.minetunes.config.NoPlayTokens;
 import com.minetunes.disco.DiscoFloor;
 import com.minetunes.ditty.event.TimedDittyEvent;
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.SignDitty;
 
 /**
@@ -319,14 +319,14 @@ public class Ditty {
 				// Check tokens for errors
 				if (checkForErrors) {
 					try {
-						BlockSignMinetunes.musicStringParser.parseTokenStrict(token);
+						SignTuneParser.musicStringParser.parseTokenStrict(token);
 					} catch (JFugueException e) {
 						// Token is not a valid token
 						addErrorMessage("§b" + token + "§c: " + e.getMessage());
 						incrementBadTokens();
 						errorFree = false;
 						if (MinetunesConfig.DEBUG) {
-							BlockSignMinetunes
+							SignTuneParser
 									.simpleLog("addMusicStringTokens: Bad token found ("
 											+ token + "):");
 							e.printStackTrace();
@@ -338,7 +338,7 @@ public class Ditty {
 						incrementBadTokens();
 						errorFree = false;
 						if (MinetunesConfig.DEBUG) {
-							BlockSignMinetunes
+							SignTuneParser
 									.simpleLog("addMusicStringTokens: Really bad token found ("
 											+ token + "):");
 							e.printStackTrace();

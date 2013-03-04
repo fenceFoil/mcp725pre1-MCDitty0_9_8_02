@@ -1,5 +1,5 @@
-Pattern [number]
+Pattern ##
 
-Pattern repeats anything beneath itself [number] times (or once if no number is given). Notably, if there are Goto keywords on the sign, it will go where they point, play what's there, and come back to the pattern sign automatically when the pattern is done.
+## is the number of times to repeat (1 if not stated)
 
-§bSee:§r End, Repeat
+0.9.11: Same as §bRepeat

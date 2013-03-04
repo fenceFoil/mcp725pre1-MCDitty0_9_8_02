@@ -1,6 +1,5 @@
-
 /**
- * Copyright (c) 2012 William Karnavas 
+ * Copyright (c) 2012-2013 William Karnavas 
  * All Rights Reserved
  */
 
@@ -24,15 +23,34 @@
  */
 package com.minetunes.signs.keywords;
 
-public class NoteblockTriggerKeyword extends SignTuneKeyword {
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
 
-	public NoteblockTriggerKeyword(String wholeKeyword) {
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.signs.SignTuneParser;
+
+/**
+ * @author William
+ * 
+ */
+public class StaccatoOffKeyword extends SignTuneKeyword {
+
+	/**
+	 * @param wholeKeyword
+	 */
+	public StaccatoOffKeyword(String wholeKeyword) {
 		super(wholeKeyword);
 	}
 
 	@Override
-	public boolean isFirstLineOnly() {
-		return true;
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		ditty.addMusicStringTokens(readMusicString, SignTuneParser
+				.createNoteEffectToken(true,
+						SignTuneParser.NOTE_EFFECT_STACCATO), false);
+		return null;
 	}
 
 }

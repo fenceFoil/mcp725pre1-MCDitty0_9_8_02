@@ -36,10 +36,7 @@ import java.util.Random;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
-import net.minecraft.src.BlockSign;
 import net.minecraft.src.ChatAllowedCharacters;
-import net.minecraft.src.Entity;
-import net.minecraft.src.EntityItemFrame;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.TileEntity;
@@ -49,49 +46,25 @@ import net.minecraft.src.World;
 import org.jfugue.Player;
 import org.jfugue.parsers.MusicStringParser;
 
-import com.minetunes.CueScheduler;
 import com.minetunes.Minetunes;
 import com.minetunes.PlayDittyFromSignWorkThread;
 import com.minetunes.Point3D;
 import com.minetunes.RightClickCheckThread;
 import com.minetunes.config.MinetunesConfig;
-import com.minetunes.disco.DiscoFloor;
 import com.minetunes.ditty.Ditty;
 import com.minetunes.ditty.DittyPlayerThread;
-import com.minetunes.ditty.event.CreateBotEvent;
-import com.minetunes.ditty.event.CreateEmitterEvent;
-import com.minetunes.ditty.event.FireworkEvent;
 import com.minetunes.ditty.event.NoteStartEvent;
 import com.minetunes.ditty.event.PlayMidiDittyEvent;
-import com.minetunes.ditty.event.SFXEvent;
-import com.minetunes.ditty.event.SFXInstrumentEvent;
-import com.minetunes.ditty.event.SFXInstrumentOffEvent;
 import com.minetunes.ditty.event.VolumeEvent;
-import com.minetunes.gui.signEditor.GuiEditSignMinetunes;
+import com.minetunes.gui.signEditor.GuiEditSignBase;
 import com.minetunes.particle.ParticleRequest;
-import com.minetunes.signs.keywords.AccelerateKeyword;
-import com.minetunes.signs.keywords.DiscoKeyword;
-import com.minetunes.signs.keywords.EmitterKeyword;
+import com.minetunes.signs.keywords.EndKeyword;
+import com.minetunes.signs.keywords.EndLineKeyword;
 import com.minetunes.signs.keywords.ExplicitGotoKeyword;
-import com.minetunes.signs.keywords.FireworkKeyword;
 import com.minetunes.signs.keywords.GotoKeyword;
-import com.minetunes.signs.keywords.LyricKeyword;
-import com.minetunes.signs.keywords.MaxPlaysKeyword;
-import com.minetunes.signs.keywords.NewBotKeyword;
-import com.minetunes.signs.keywords.OctavesKeyword;
-import com.minetunes.signs.keywords.OctavesOffKeyword;
-import com.minetunes.signs.keywords.ParsedKeyword;
+import com.minetunes.signs.keywords.SignTuneKeyword;
 import com.minetunes.signs.keywords.PattKeyword;
 import com.minetunes.signs.keywords.PatternKeyword;
-import com.minetunes.signs.keywords.PreLyricKeyword;
-import com.minetunes.signs.keywords.RepeatKeyword;
-import com.minetunes.signs.keywords.SFXInstKeyword;
-import com.minetunes.signs.keywords.SFXInstOffKeyword;
-import com.minetunes.signs.keywords.SFXKeyword;
-import com.minetunes.signs.keywords.StaccatoKeyword;
-import com.minetunes.signs.keywords.SyncWithKeyword;
-import com.minetunes.signs.keywords.TransposeKeyword;
-import com.minetunes.signs.keywords.VolumeKeyword;
 
 /**
  * Contains members which were previously located in
@@ -99,7 +72,7 @@ import com.minetunes.signs.keywords.VolumeKeyword;
  * the fields Block.signWall and Block.signPost, does NOT extend BlockSign
  * 
  */
-public class BlockSignMinetunes {
+public class SignTuneParser {
 
 	private static boolean isMinetunesLoaded = false;
 	private static Random random = new Random();
@@ -116,11 +89,6 @@ public class BlockSignMinetunes {
 	 */
 	private static int nextSubpatternID = 0;
 	private static final int LINES_ON_A_SIGN = 4;
-	// /**
-	// * Timeouts when dealing with infinite loops
-	// */
-	// private static int infiniteLoopTimeout = 6;
-	// // private static int infiniteLoopDialog = 2;
 
 	/**
 	 * List of signs under a OneAtATime block from being activated.
@@ -140,6 +108,7 @@ public class BlockSignMinetunes {
 	public static final String KEYWORD_HIGHLIGHT_CODE = "§a";
 	public static final String COMMENT_HIGHLIGHT_CODE = "§b";
 	public static final String MUSICSTRING_HIGHLIGHT_CODE = "";
+
 	/**
 	 * For addMusicStringTokens: used to check validity of a MusicString token.
 	 * Static so that it only has to be created once.
@@ -147,6 +116,7 @@ public class BlockSignMinetunes {
 	 * Public so that the DittyXML parser can share.
 	 */
 	public static final MusicStringParser musicStringParser = new MusicStringParser();
+
 	public static final String SYNC_VOICES_TOKEN = "~syncC";
 	public static final String SYNC_WITH_TOKEN = "~syncW";
 	public static final String NOTE_EFFECT_TOKEN = "~M";
@@ -161,6 +131,7 @@ public class BlockSignMinetunes {
 	public static final String TIMED_EVENT_TOKEN = "~E";
 	public static final String SIGN_START_TOKEN = "~A";
 	public static final String SIGN_END_TOKEN = "~B";
+
 	// Mutex for saving midis
 	private static Object saveMidiPlayerMutex = new Object();
 
@@ -195,13 +166,13 @@ public class BlockSignMinetunes {
 				held = heldStack.itemID;
 				// System.out.println (held);
 			}
-			if ((held == 271) || MinetunesConfig.getMinetunesOff() || MinetunesConfig.getBoolean("signs.disabled")) {
+			if ((held == 271) || MinetunesConfig.getMinetunesOff()
+					|| MinetunesConfig.getBoolean("signs.disabled")) {
 				// Holding wooden axe or signs disabled: do nothing.
 			} else if (Minetunes.isIDShovel(held)) {
 				// Shovel! "Scoop up" sign text.
-				GuiEditSignMinetunes
-						.addTextToSavedSigns(((TileEntitySign) par1World
-								.getBlockTileEntity(parX, parY, parZ)).signText);
+				GuiEditSignBase.addTextToSavedSigns(((TileEntitySign) par1World
+						.getBlockTileEntity(parX, parY, parZ)).signText);
 				Minetunes.writeChatMessage(par1World,
 						"§2Sign's text has been saved.");
 			} else {
@@ -357,7 +328,7 @@ public class BlockSignMinetunes {
 		LinkedList<SignLogPoint> signsReadList = new LinkedList<SignLogPoint>();
 		SignDitty dittyProperties = new SignDitty();
 		StringBuilder musicStringToPlay = readPattern(startPoint, world,
-				signsReadList, dittyProperties, 0, signWhitelist);
+				signsReadList, dittyProperties, 0, signWhitelist, 0);
 
 		// If MaxPlays is exceeded somewhere in the ditty, cancel play
 		for (MaxPlaysLockPoint p : dittyProperties.getMaxPlayLockPoints()) {
@@ -573,28 +544,22 @@ public class BlockSignMinetunes {
 	 * @param signWhitelist
 	 *            only signs in this list will be acknowledged as existing: all
 	 *            other signs will not be played.
+	 * @param startLine
+	 *            Used with patterns, to start after the pattern keyword on the
+	 *            first sign. Note that behaviour for starting in the middle of
+	 *            multi-line keywords is undefined.
 	 * @return null if there's a problem, or a musicstring if the reading was
 	 *         successful.
 	 */
 	private static StringBuilder readPattern(Point3D startPoint, World world,
 			LinkedList<SignLogPoint> signsReadList, SignDitty ditty,
-			int subpatternLevel, LinkedList<Point3D> signWhitelist) {
-		// MCDitty.slowDownMC(2);
-
-		// Load the settings for lyrics
-		boolean lyricsEnabled = MinetunesConfig.getBoolean("lyrics.enabled");
-
+			int subpatternLevel, LinkedList<Point3D> signWhitelist,
+			int startLine) {
 		// Contains musicstring read from pattern
 		StringBuilder readMusicString = new StringBuilder();
 
 		// Get an ID for this subpattern
 		int subpatternID = getNextSubpatternID();
-
-		// // Make a clone of the signLog list, so that the one passed in does
-		// not
-		// // get contaminated
-		// LinkedList<Point3D> signLog = (LinkedList<Point3D>) signsReadList
-		// .clone();
 
 		// Do not make clone of log
 		LinkedList<SignLogPoint> signLog = signsReadList;
@@ -617,22 +582,8 @@ public class BlockSignMinetunes {
 		// as end)
 		boolean endPattern = false;
 
-		// // If this is true, loop is trying to find beginning of the current
-		// line
-		// // of signs by going left until it can't any more
-		// boolean forceReadNewLine = false;
-
 		// Loop through signs
 		while (true) {
-			// Get info and text of a sign
-			// On each line:
-			// Check for keywords
-			// If there is music, add it to the musicString
-
-			// When done, figure out what sign to read next
-
-			// ***
-
 			// Get info and text of a sign
 			currSignType = getSignBlockType(currSignPoint, world);
 			// Check to see if current block is really a sign
@@ -649,8 +600,6 @@ public class BlockSignMinetunes {
 			if (detectInfiniteLoop(signLog) != null) {
 				// return null to indicate subpattern cannot be read further.
 				return null;
-			} else {
-				// No infinite loop. All is well.
 			}
 
 			// Continue reading more sign info
@@ -680,46 +629,35 @@ public class BlockSignMinetunes {
 				// Current sign's tile entity... is not a sign entity or does
 				// not exist.
 				System.err
-						.println("In playDittyFromSigns: the tile entity of a sign we are attempting to read does not exist. Strange.");
-				System.err.println("Ending pattern: cannot continue.");
+						.println("In playDittyFromSigns: the tile entity of a sign we are attempting to read does not exist or is not a MineTunes Sign Entity. Strange.");
+				System.err.println("Ending pattern.");
 				break;
 			}
 
 			// If sign turned out to be blank, we can simply apply natural focus
 			// flow to it, saving a ton of time (?)
 			if (signIsEmpty) {
-				// System.out.println ("Sign was blank!");
 				nextSignPoint = applyNaturalFocusFlow(currSignPoint,
 						currSignFacing, world, signWhitelist);
 				// Swap the next sign's position in as the new current sign's
 				// position for next iteration
-				currSignPoint = nextSignPoint;
-				nextSignPoint = currSignPoint.clone();
+				currSignPoint = nextSignPoint.clone();
 				continue;
 			}
 
 			// Get sign id
 			int currSignIDNum = ditty.registerSignForID(currSignPoint);
-			// // Add sign playing start event
-			// int eventId = dittyProperties
-			// .addDittyEvent(new SignPlayingTimedEvent(true,
-			// currSignIDNum, dittyProperties.getDittyID()));
-			// addMusicStringTokens(readMusicString, dittyProperties,
-			// TIMED_EVENT_TOKEN + eventId, true);
 			// Add sign location token
 			ditty.addMusicStringTokens(readMusicString, SIGN_START_TOKEN
 					+ currSignIDNum, false);
 
 			// Process each line of a sign
-			// Unless this is turned off by a keyword, natural focus flow will
-			// occur
-
-			boolean naturalFocusFlowEnabled = true;
-			boolean gotosOnSign = false;
-			boolean musicOnSign = false;
 
 			// If a pattern is more than one sign, this is true.
+			// This affects whether a pattern is merely the rest of this sign or
+			// whether it is the start of a chain of signs
 			boolean patternIsMoreThanOneSign = false;
+
 			// In a pattern that IS more than one sign, this is obviously set to
 			// true.
 			if (!currSignPoint.equals(startPoint)) {
@@ -729,34 +667,60 @@ public class BlockSignMinetunes {
 			// Get sign text
 			String[] signText = currSignTileEntity.getSignTextNoCodes();
 
+			// Parse sign for keywords
+			ParsedSign parsedSign = SignParser.parseSign(signText);
+
 			// In a pattern that doesn't start on a pattern sign, the pattern
 			// must be more than one sign
-			String isPatternLine = SignParser.recognizeKeyword(signText[0]);
-			if (isPatternLine == null || !isPatternLine.equals("pattern")) {
-				// not a pattern sign
+			boolean patternKeywordFound = false;
+			for (int i = 0; i < LINES_ON_A_SIGN; i++) {
+				if (parsedSign.getLine(i) instanceof PatternKeyword) {
+					patternKeywordFound = true;
+					break;
+				}
+			}
+			if (!patternKeywordFound) {
 				patternIsMoreThanOneSign = true;
 			}
 
-			// Loop lines of the current sign
-			for (int line = 0; line < signText.length; line++) {
-				// Get the line of text to process
-				String currLine = signText[line];
-				// Trim whitespace
-				currLine = currLine.trim();
-				// Create lowercase version
-				String currLineLowercase = currLine.toLowerCase();
+			// "Memory" for not calling multi-line keywords twice
+			Object lastLineContents = null;
 
-				// Attempt to recognize a keyword
-				String keyword = SignParser.recognizeKeyword(currLine);
+			int lineStartValue = 0;
+			if (currSignPoint.equals(startPoint)) {
+				lineStartValue = startLine;
+			}
+			// Loop lines of the current sign, starting from the indicated line
+			for (int line = lineStartValue; line < signText.length; line++) {
+				Object lineContents = parsedSign.getLine(line);
 
-				// Handle comments
-				if (Comment.isLineComment(currLine)) {
+				// Avoid hitting multiline keywords twice
+				if (lineContents == lastLineContents) {
+					continue;
+				} else {
+					lastLineContents = lineContents;
+				}
+
+				// Handle line based on type
+				if (lineContents == null) {
+					// Do nothing. Duh.
+				} else if (lineContents instanceof Comment) {
 					// Line is a comment; ignore
 					ditty.addHighlight(currSignPoint, line,
 							COMMENT_HIGHLIGHT_CODE);
 					continue;
-				}
-				if (keyword != null) {
+				} else if (lineContents instanceof String) {
+					// Line contians music
+					boolean noErrors = ditty.addMusicStringTokens(
+							readMusicString, (String) lineContents, true);
+					if (!noErrors) {
+						ditty.addErrorHighlight(currSignPoint, line);
+					}
+					ditty.addHighlight(currSignPoint, line,
+							MUSICSTRING_HIGHLIGHT_CODE);
+				} else if (lineContents instanceof SignTuneKeyword) {
+					SignTuneKeyword keyword = (SignTuneKeyword) lineContents;
+
 					// Keywords count as tokens
 					ditty.incrementTotalTokens();
 
@@ -764,62 +728,55 @@ public class BlockSignMinetunes {
 					ditty.addHighlight(currSignPoint, line,
 							KEYWORD_HIGHLIGHT_CODE);
 
-					// Check for keywords; only if there is no keyword, read the
-					// line as music
-					if (keyword.equals("pattern")) {
-						// Pattern can only be on the first line of a
-						// sign; cast an error if it is misused
-						if (line != 0) {
-							// Pattern can only be used on first line of a sign
-							ditty.addErrorMessage("§cPattern keywords should be on first line of a sign.");
-							ditty.addErrorHighlight(currSignPoint, line);
-						} else {
-							// If this is the pattern sign that started the
-							// current pattern, ignore the keyword
-							// Fix: If this is the main song, read the keyword!
-							if (!currSignPoint.equals(startPoint)
-									|| subpatternLevel == 0) {
-								// Parse keyword
-								PatternKeyword patternKeyword = PatternKeyword
-										.parse(currLine);
+					// Check for a bad keyword
+					if (!keyword.isGoodKeyword()) {
+						showKeywordError(ditty, currSignPoint,
+								keyword.getWholeKeyword(), line, keyword);
+						break;
+					}
 
-								if (!patternKeyword.isGoodKeyword()) {
-									showKeywordError(ditty, currSignPoint,
-											currLine, line, patternKeyword);
-									break;
-								}
+					// Execute keyword
+					Point3D keywordNextSign = keyword.execute(ditty,
+							currSignPoint.clone(), currSignTileEntity,
+							nextSignPoint.clone(), world, readMusicString);
+					if (keywordNextSign != null) {
+						patternIsMoreThanOneSign = true;
+						nextSignPoint = keywordNextSign;
+					}
+
+					// Execute any special behaviours of the keyword
+					if (keyword.hasSpecialExecution()) {
+						// By type
+						if (keyword instanceof PatternKeyword) {
+							// If the pattern isn't on the last line of a sign
+							// (nothing below to repeat!)
+							if (line < LINES_ON_A_SIGN - 1) {
+								// Parse keyword
+								PatternKeyword patternKeyword = (PatternKeyword) keyword;
 
 								// Add the subpattern to this pattern the
 								// specified
 								// number of times
-								// TODO: Better trimming?
 								for (int i = 0; i < patternKeyword
 										.getRepeatCount(); i++) {
-
-									// Remove the current sign from the sign log
-									// to
-									// prevent duplicates: readPattern will
-									// re-add
-									// it
+									// readPattern will re-add it
 									signLog.removeLast();
-									// Read pattern
+									// Read pattern, starting with line after
+									// this keyword
 									LinkedList<Point3D> subPatternSignLog = (LinkedList<Point3D>) signLog
 											.clone();
 									StringBuilder subPatternMusicString = readPattern(
 											currSignPoint, world, signLog,
 											ditty, subpatternLevel + 1,
-											signWhitelist);
+											signWhitelist, line + 1);
 
 									// If a subpattern fails due to an infinte
-									// loop,
-									// pass the failure on
+									// loop, pass the failure on
 									if (subPatternMusicString == null) {
-										// simpleLog("PATTERN: null failure on pattern");
 										return null;
 									}
 
 									// Do not check for errors
-									// readMusicString.append(" ").append(subPatternMusicString);
 									ditty.addMusicStringTokens(readMusicString,
 											subPatternMusicString.toString(),
 											false);
@@ -829,759 +786,76 @@ public class BlockSignMinetunes {
 								// read by readPattern already.
 								break;
 							}
-						}
-					} else if (keyword.equals("patt")) {
-						// TODO: CHECK THAT THESE ARE NOT NECESSARY!!!!!!!!
-						// // Goto keyword; disable normal focus flow
-						// naturalFocusFlowEnabled = false;
-						// Gotos are on sign (obviously)
-						// gotosOnSign = true;
-						// A goto keyword automatically means a pattern is more
-						// than one sign
-						// patternIsMoreThanOneSign = true;
+						} else if (keyword instanceof PattKeyword) {
+							// Parse keyword
+							PattKeyword pattKeyword = (PattKeyword) keyword;
 
-						// Parse keyword
-						PattKeyword pattKeyword = PattKeyword.parse(currLine);
+							// Try to jump to sign with the given comment
+							Comment match = GotoKeyword
+									.getNearestMatchingComment(currSignPoint,
+											world, pattKeyword.getComment());
 
-						// Show any errors as necessary
-						if (!pattKeyword.isGoodKeyword()) {
-							showKeywordError(ditty, currSignPoint, currLine,
-									line, pattKeyword);
-							break;
-						}
-
-						// Try to jump to sign with the given comment
-						Comment match = GotoKeyword.getNearestMatchingComment(
-								currSignPoint, world, pattKeyword.getComment());
-
-						Point3D pattLocation;
-						if (match == null) {
-							// Simulate an explicit goto pointing at thin air
-							// TODO: This is a hack. Please come up with a more
-							// explicit solution.
-							pattLocation = new Point3D(0, -1, 0);
-						} else {
-							pattLocation = match.getLocation().clone();
-						}
-
-						// Add the subpattern to this pattern the
-						// specified
-						// number of times
-						// TODO: Better trimming?
-						for (int i = 0; i < pattKeyword.getRepeatCount(); i++) {
-							// Read pattern
-							LinkedList<SignLogPoint> subPatternSignLog = (LinkedList<SignLogPoint>) signLog
-									.clone();
-							StringBuilder subPatternMusicString = readPattern(
-									pattLocation, world, subPatternSignLog,
-									ditty, subpatternLevel + 1, signWhitelist);
-
-							// If a subpattern fails due to an infinte loop,
-							// pass the failure on
-							if (subPatternMusicString == null) {
-								// simpleLog("PATTERN: null failure on pattern");
-								return null;
-							}
-
-							if (!pattKeyword.isGoodKeyword()) {
-								showKeywordError(ditty, currSignPoint,
-										currLine, line, pattKeyword);
-								break;
-							}
-
-							// Do not check for errors
-							ditty.addMusicStringTokens(readMusicString,
-									subPatternMusicString.toString(), false);
-
-							// Note that we are back on the original sign in the
-							// musicstring
-							ditty.addMusicStringTokens(readMusicString,
-									SIGN_START_TOKEN + currSignIDNum, false);
-						}
-
-					} else if (keyword.equals("goto")) {
-						// Goto keyword; disable normal focus flow
-						naturalFocusFlowEnabled = false;
-						// Gotos are on sign (obviously)
-						gotosOnSign = true;
-						// A goto keyword automatically means a pattern is more
-						// than one sign
-						patternIsMoreThanOneSign = true;
-
-						// Parse keyword
-						GotoKeyword gotoKeyword = GotoKeyword.parse(currLine);
-
-						// Show any errors as necessary
-						if (!gotoKeyword.isGoodKeyword()) {
-							showKeywordError(ditty, currSignPoint, currLine,
-									line, gotoKeyword);
-							break;
-						}
-
-						// Try to jump to sign with the given comment
-						Comment match = GotoKeyword.getNearestMatchingComment(
-								currSignPoint, world, gotoKeyword.getComment());
-						if (match == null) {
-							// Simulate an explicit goto pointing at thin air
-							// TODO: This is a hack. Please come up with a more
-							// explicit solution.
-							nextSignPoint = new Point3D(0, -1, 0);
-						} else {
-							nextSignPoint = match.getLocation().clone();
-						}
-					} else if (keyword.equals("right")
-							|| keyword.equals("left") || keyword.equals("up")
-							|| keyword.equals("down") || keyword.equals("in")
-							|| keyword.equals("out")) {
-						// Goto keyword; disable normal focus flow
-						naturalFocusFlowEnabled = false;
-						// Gotos are on sign (obviously)
-						gotosOnSign = true;
-						// A goto keyword automatically means a pattern is more
-						// than one sign
-						patternIsMoreThanOneSign = true;
-
-						// Parse keyword
-						ExplicitGotoKeyword gotoKeyword = ExplicitGotoKeyword
-								.parse(currLine);
-
-						// Show any errors as necessary
-						if (!gotoKeyword.isGoodKeyword()) {
-							showKeywordError(ditty, currSignPoint, currLine,
-									line, gotoKeyword);
-							break;
-						}
-
-						int amount = gotoKeyword.getAmountMove();
-
-						Point3D pointedAtSign = nextSignPoint.clone();
-
-						// Decide the direction to move
-						if (keyword.equals("right") || keyword.equals("left")) {
-							// Handle moving left or right
-							if (keyword.equals("left")) {
-								amount = -amount;
-							}
-
-							// Adjust next sign position based on the amount to
-							// move and the current sign's facing
-							pointedAtSign = getCoordsRelativeToSign(
-									nextSignPoint, currSignFacing, amount, 0, 0);
-						}
-
-						if (keyword.equals("in") || keyword.equals("out")) {
-							// Handle moving up or down
-							if (keyword.equals("in")) {
-								amount = -amount;
-							}
-
-							// Adjust next sign position based on the amount to
-							// move and the current sign's facing
-							pointedAtSign = getCoordsRelativeToSign(
-									nextSignPoint, currSignFacing, 0, 0, amount);
-						}
-
-						if (keyword.equals("up") || keyword.equals("down")) {
-							// Handle moving up or down
-							if (keyword.equals("down")) {
-								amount = -amount;
-							}
-
-							// Adjust next sign position based on the amount to
-							// move and the current sign's facing
-							pointedAtSign = getCoordsRelativeToSign(
-									nextSignPoint, currSignFacing, 0, amount, 0);
-						}
-
-						nextSignPoint = pointedAtSign;
-					} else if (currLineLowercase.startsWith("end")
-							&& !currLineLowercase.contains("line")) {
-						// If the keyword is end, but NOT "end line" or
-						// "endline"
-						// End pattern
-						endPattern = true;
-						// Stop reading lines from sign
-						break;
-					} else if (currLineLowercase.startsWith("end")
-							&& currLineLowercase.contains("line")) {
-						// If keyword is either "endline" or "end line"
-						// Force a newline
-						naturalFocusFlowEnabled = false;
-						nextSignPoint = carriageReturn(world, currSignPoint,
-								signWhitelist);
-						// Stop reading lines from sign
-						break;
-					} else if (keyword.equals("mute")) {
-						// Set mute to on in the song's properties
-						ditty.setMuting(true);
-					} else if (keyword.equals("proximity")
-							|| keyword.equals("proxpad")
-							|| keyword.equals("area")) {
-						// Do nothing here; it does not affect ditty
-						// Just prevent the keyword from being read as music
-					} else if (keyword.equals("midi")
-							|| keyword.equals("savemidi")
-							|| keyword.equals("playmidi")) {
-						if ((line == 0) && !ditty.getMidiAlreadySaved()) {
-							// Line 2 contains the filename
-							String givenFilename = signText[1].trim();
-
-							if (SignParser.recognizeKeyword(signText[1]) != null) {
-								// If a keyword is found beneath the midi sign,
-								// notify user
-								ditty.addErrorHighlight(currSignPoint, 1);
-								ditty.addErrorMessage("§cA keyword (§b"
-										+ SignParser
-												.recognizeKeyword(signText[1])
-										+ "§c) was found on the second line of a midi sign instead of a filename.");
-								// Bad filename: non-alphanumeric characters
-								simpleLog("Bad filename is keyword: "
-										+ givenFilename);
-								ditty.setMidiAlreadySaved(true);
-								break;
-							} else if (!givenFilename.matches("[\\d\\w]*")
-									&& (!givenFilename.equals(""))) {
-								ditty.addErrorHighlight(currSignPoint, 1);
-								ditty.addErrorMessage("§cA midi file name should only contain letters and numbers (no spaces)");
-								// Bad filename: non-alphanumeric characters
-								simpleLog("Bad filename: " + givenFilename);
-								ditty.setMidiAlreadySaved(true);
-								break;
-							} else if (givenFilename.equals("")) {
-								// Empty filenames are frowned upon
-								ditty.addErrorHighlight(currSignPoint, 0);
-								ditty.addErrorMessage("§cNo file name was written on the second line of the midi sign");
-							}
-
-							// Otherwise, good filename. Note it, and move on.
-							// Will save later, once signs are read.
-							File midiSaveFile = new File(MinetunesConfig
-									.getMinetunesDir().getPath()
-									+ File.separator + "midi", givenFilename
-									+ ".mid");
-							simpleLog("Good filename: midi is "
-									+ midiSaveFile.getPath());
-
-							if (keyword.equals("midi")
-									|| keyword.equals("savemidi")) {
-								ditty.setMidiSaveFile(midiSaveFile);
-								// No music on this sign
-								// Saved as given filename: don't save any more
-								// midis of this song
-								ditty.setMidiAlreadySaved(true);
-							} else if (keyword.equals("playmidi")) {
-								// Play a midi
-								int eventID = ditty
-										.addDittyEvent(new PlayMidiDittyEvent(
-												midiSaveFile, ditty
-														.getDittyID()));
-								ditty.addMusicStringTokens(readMusicString,
-										TIMED_EVENT_TOKEN + eventID, false);
-							}
-
-							// Regardless of whether the sign is heeded:
-							// Ignore line 1 of sign; read rest of lines
-
-							// Will be incremented to 2 after the continue by
-							// the for loop
-							line = 1;
-							continue;
-						} else if (line != 0) {
-							// Tell user that you can only use midi on the first
-							// line of a sign
-							ditty.addErrorHighlight(currSignPoint, line);
-							ditty.addErrorMessage("§cA midi keyword must be at the top of a sign. The second line will have the name of the midi file to save.");
-						}
-					} else if (keyword.equals("loud")) {
-						// Word currently has no effect; this could change
-						// sometime
-						ditty.setLoud(true);
-					} else if (keyword.equals("oneline")) {
-						// Smash all lines below this keyword onto the one
-						// line
-						// (the one after this keyword)
-						// Throw an error if there are keywords below
-						String comboLine = "";
-						for (int i = line + 1; i < signText.length; i++) {
-							String onelineLine = signText[i];
-
-							// Check for keywords
-							String keywordFromOnelineLine = SignParser
-									.recognizeKeyword(onelineLine);
-							if (keywordFromOnelineLine != null) {
-								// Highlight both this keyword and the offending
-								// keyword being processed
-								ditty.addErrorHighlight(currSignPoint, i);
-								ditty.addErrorHighlight(currSignPoint, line);
-								ditty.addErrorMessage("§cOneline cannot deal with the keyword (§b"
-										+ keywordFromOnelineLine
-										+ "§c): oneline only works with MusicString tokens. Remove any keywords from beneath Oneline keywords.");
-								break;
-							}
-
-							// Check for comments; if line is not a comment, add
-							// it.
-							if (!Comment.isLineComment(onelineLine)) {
-								comboLine += onelineLine;
-
-								// TODO: Check for music
-								if (onelineLine.trim().length() > 0) {
-									musicOnSign = true;
-								}
-							}
-						}
-
-						// Add comboline to the music buffer
-						if (!ditty.addMusicStringTokens(readMusicString,
-								comboLine.trim(), true)) {
-							// If the comboline contained errors, highlight all
-							// lines in comboLine
-							for (int i = line + 1; i < signText.length; i++) {
-								ditty.addErrorHighlight(currSignPoint, i);
-							}
-						}
-
-						// Do not read any more lines from this sign
-						break;
-					} else if (keyword.equals("repeat")) {
-
-						int repetitions = 2;
-
-						RepeatKeyword repeatKeyword = RepeatKeyword
-								.parse(currLine);
-						repetitions = repeatKeyword.getRepeatCount();
-
-						// Read all lines of music below this keyword, and
-						// duplicate them as they are added to the musicstring
-						// Throw an error if there are keywords mixed in
-						String comboLine = "";
-						for (int i = line + 1; i < signText.length; i++) {
-							String repeatLine = signText[i];
-
-							// Check for keywords
-							String repeatLineKeyword = SignParser
-									.recognizeKeyword(repeatLine);
-							if (repeatLineKeyword != null) {
-								// Highlight both this keyword and the offending
-								// keyword being processed
-								ditty.addErrorHighlight(currSignPoint, i);
-								ditty.addErrorHighlight(currSignPoint, line);
-								ditty.addErrorMessage("§cRepeat cannot deal with the keyword (§b"
-										+ repeatLineKeyword
-										+ "§c): Repeat only works with MusicString tokens. Remove any keywords from beneath Repeat keywords, or try \"Pattern\" instead.");
-								break;
-							}
-
-							// Check for comments; if line is not a comment, add
-							// it.
-							if (!Comment.isLineComment(repeatLine)) {
-								comboLine += repeatLine + " ";
-							}
-						}
-
-						// Add comboline to the music buffer a number of times
-						for (int rep = 0; rep < repetitions; rep++) {
-							// Add comboline to the music buffer
-							boolean checkForErrors = true;
-							if (rep != 0) {
-								// Only check for errors on first append; this
-								// eliminates duplicate errors
-								checkForErrors = false;
-							}
-							if (!ditty.addMusicStringTokens(readMusicString,
-									comboLine.trim(), checkForErrors)) {
-								// If the comboline contained errors, highlight
-								// all lines in comboLine
-								for (int i = line + 1; i < signText.length; i++) {
-									ditty.addErrorHighlight(currSignPoint, i);
-								}
+							Point3D pattLocation;
+							if (match == null) {
+								// Simulate an explicit goto pointing at nothing
+								// TODO: This is a hack. Please come up with a
+								// more
+								// explicit solution.
+								pattLocation = new Point3D(0, -1, 0);
 							} else {
-								// Music on sign added succesfully
-								// TODO: Check for music
-								if (comboLine.trim().length() > 0) {
-									musicOnSign = true;
+								pattLocation = match.getLocation().clone();
+							}
+
+							// Add the subpattern to this pattern the
+							// specified
+							// number of times
+							for (int i = 0; i < pattKeyword.getRepeatCount(); i++) {
+								// Read pattern
+								LinkedList<SignLogPoint> subPatternSignLog = (LinkedList<SignLogPoint>) signLog
+										.clone();
+								StringBuilder subPatternMusicString = readPattern(
+										pattLocation, world, subPatternSignLog,
+										ditty, subpatternLevel + 1,
+										signWhitelist, 0);
+
+								// If a subpattern fails due to an infinte loop,
+								// pass the failure on
+								if (subPatternMusicString == null) {
+									// simpleLog("PATTERN: null failure on pattern");
+									return null;
 								}
+
+								// Do not check for errors
+								ditty.addMusicStringTokens(readMusicString,
+										subPatternMusicString.toString(), false);
+
+								// Note that we are back on the original sign in
+								// the
+								// musicstring
+								ditty.addMusicStringTokens(readMusicString,
+										SIGN_START_TOKEN + currSignIDNum, false);
 							}
-						}
-
-						// Do not read any more lines from this sign
-						break;
-					} else if (keyword.equals("reset")) {
-						// Reset keyword: replace with a more
-						// musicstring-neutral token
-						// Do not check for errors! The token is a
-						// MineTunes-only
-						// token.
-						ditty.addMusicStringTokens(readMusicString,
-								getResetToken(), false);
-					} else if (keyword.equals("lyric")) {
-						// Lyric keyword
-
-						// Parse keyword's arguments
-						LyricKeyword l = LyricKeyword.parse(currLine);
-
-						// Check that this isn't on the last line (no lyric text
-						// possible), after parsing arguments.
-						if (line >= LINES_ON_A_SIGN - 1) {
-							// If this is on the last line of a sign, don't
-							// bother to continue.
-							// Note that we did tell user about any errors
-							// before giving up here.
-
-							// Skip this line.
-							continue;
-						}
-
-						// Get lyric's text
-						String lyricText = readLyricFromSign(line + 1,
-								signText, l.getColorCode());
-
-						// Adding to existing lyric?
-						if (lyricsEnabled) {
-							CueScheduler lyrics = ditty.getLyricsStorage();
-							lyrics.addLyricText(l.getLabel(), lyricText,
-									l.getRepetition());
-						}
-
-						// No more keywords or music on a the sign.
-						break;
-					} else if (keyword.equals("prelyric")) {
-						// PreLyric keyword
-
-						// Parse keyword's arguments
-						PreLyricKeyword l = PreLyricKeyword.parse(currLine);
-
-						// Check that this isn't on the last line (no lyric text
-						// possible), after parsing arguments.
-						if (line >= LINES_ON_A_SIGN - 1) {
-							// If this is on the last line of a sign, don't
-							// bother to continue.
-							// Note that we did tell user about any errors
-							// before giving up here.
-
-							// Skip this line.
-							continue;
-						}
-
-						// Get lyric's text
-						String lyricText = readLyricFromSign(line + 1,
-								signText, l.getColorCode());
-
-						// Adding to existing lyric?
-						if (lyricsEnabled) {
-							CueScheduler lyrics = ditty.getLyricsStorage();
-							lyrics.addLyricPreText(l.getLabel(), lyricText);
-						}
-
-						// No more keywords or music on a the sign.
-						break;
-					} else if (keyword.equals("oneatatime")) {
-						// Set a flag in the dittyproperties
-						ditty.setOneAtATime(true);
-					} else if (keyword.equals("isditty")) {
-						// Set a flag in the dittyproperties
-						ditty.setForceGoodDittyDetect(true);
-					} else if (keyword.equals("syncvoices")) {
-						// Add a token
-						ditty.addMusicStringTokens(readMusicString,
-								SYNC_VOICES_TOKEN, false);
-					} else if (keyword.equals("syncwith")) {
-						// Read arguments
-						SyncWithKeyword k = SyncWithKeyword.parse(currLine);
-
-						// Finally, add token
-						if (k.getLayer() != -1000) {
-							ditty.addMusicStringTokens(readMusicString,
-									SYNC_WITH_TOKEN + "V" + k.getVoice() + "L"
-											+ k.getLayer(), false);
-						} else {
-							ditty.addMusicStringTokens(
-									readMusicString,
-									SYNC_WITH_TOKEN + "V" + k.getVoice() + "Lu",
-									false);
-						}
-					} else if (keyword.equals("sfx")) {
-						// Add fx event and token to musicstring
-
-						// Get argument
-						SFXKeyword k = SFXKeyword.parse(currLine);
-
-						// Add event
-						int eventID = ditty.addDittyEvent(new SFXEvent(k
-								.getEffectName(), -1, ditty.getDittyID()));
-						// Add token
-						ditty.addMusicStringTokens(readMusicString,
-								TIMED_EVENT_TOKEN + eventID, false);
-					} else if (keyword.equals("disco")) {
-						// Handle disco floors
-
-						DiscoKeyword k = DiscoKeyword.parse(currLine);
-						// Register a disco floor into the ditty properties
-						DiscoFloor newFloor = new DiscoFloor(
-								currSignTileEntity, k.getVoices());
-						ditty.addDiscoFloor(newFloor);
-						// System.out.println("DISCO FLOOR ADDED");
-					} else if (keyword.equals("tutorial")) {
-						// STUFF FOR THE TUTORIAL LEVEL
-						// Executes immediately, right here, for convenience
-						String[] args = currLineLowercase.split(" ");
-						if (args[1].equals("tex")) {
-							// Does nothing for now
-							// ModLoader.getMinecraftInstance().texturePackList.setTexturePack(new
-							// MineTunesTexturePack());
-						}
-					} else if (keyword.equals("volume")) {
-						// Inserts a volume token into the song
-						VolumeKeyword k = VolumeKeyword.parse(currLine);
-						ditty.addMusicStringTokens(readMusicString,
-								getAdjustedVolumeToken(k.getVolume(), ditty),
-								false);
-					} else if (keyword.equals("emitter")) {
-						// Creates a create emitter event in the ditty, with
-						// corresponding token
-						// TODO: Handle errors
-						ParsedSign parsedSign = SignParser.parseSign(signText);
-						SignParser.parseKeywordInContext(parsedSign, line);
-						EmitterKeyword k = (EmitterKeyword) parsedSign
-								.getLine(line);
-						if (k.isGoodKeyword() == false) {
-							// Bad emitter!
-							// Highlight this keyword
-							for (int i = 0; i < 4; i++) {
-								ditty.addErrorHighlight(currSignPoint, i);
+						} else if (keyword instanceof EndKeyword) {
+							// If the keyword is end, but NOT "end line" or
+							// "endline"
+							if (((EndKeyword) keyword).isEndLineReally()) {
+								nextSignPoint = carriageReturn(world,
+										currSignPoint, signWhitelist);
+							} else {
+								// End pattern
+								endPattern = true;
 							}
-							ditty.addErrorMessage("§c" + k.getErrorMessage());
+							// Stop reading lines from sign
 							break;
-						} else {
-							int eventID = ditty
-									.addDittyEvent(new CreateEmitterEvent(k,
-											-1, ditty.getDittyID(),
-											currSignPoint.clone()));
-							ditty.addMusicStringTokens(readMusicString,
-									TIMED_EVENT_TOKEN + eventID, false);
-						}
-						// No more music on sign
-						break;
-					} else if (keyword.equals("sfxinst")
-							|| keyword.equals("sfxinst2")) {
-						// TODO: Move sign parsing so that it happens just once
-						// per sign
-						// Creates a create emitter event in the ditty, with
-						// corresponding token
-						// TODO: Handle errors
-						ParsedSign parsedSign = SignParser.parseSign(signText);
-						SignParser.parseKeywordInContext(parsedSign, line);
-						SFXInstKeyword k = (SFXInstKeyword) parsedSign
-								.getLine(line);
-						if (k.isGoodKeyword() == false) {
-							// Bad keyword!
-							// Highlight this keyword
-							for (int i = line; i < line + 2; i++) {
-								ditty.addErrorHighlight(currSignPoint, i);
-							}
-							ditty.addErrorMessage("§c" + k.getErrorMessage());
+						} else if (keyword instanceof EndLineKeyword) {
+							// If keyword is either "endline" or "end line"
+							// Force a newline
+							// naturalFocusFlowEnabled = false;
+							nextSignPoint = carriageReturn(world,
+									currSignPoint, signWhitelist);
+							// Stop reading lines from sign
 							break;
-						} else {
-							int eventID = ditty
-									.addDittyEvent(new SFXInstrumentEvent(k,
-											-1, ditty.getDittyID()));
-							ditty.addMusicStringTokens(readMusicString,
-									TIMED_EVENT_TOKEN + eventID, false);
 						}
-						// Skip ahead a couple of lines (keyword is 2 lines
-						// long)
-						line += 1;
-					} else if (keyword.equals("sfxinstoff")) {
-						SFXInstOffKeyword k = (SFXInstOffKeyword) SignParser
-								.parseKeyword(currLine);
-
-						// Add keyword to schedule
-						int eventID = ditty
-								.addDittyEvent(new SFXInstrumentOffEvent(k, -1,
-										ditty.getDittyID()));
-						ditty.addMusicStringTokens(readMusicString,
-								TIMED_EVENT_TOKEN + eventID, false);
-					} else if (keyword.equals("newbot")) {
-						// TODO: Move sign parsing so that it happens just once
-						// per sign
-						// Creates a create emitter event in the ditty, with
-						// corresponding token
-						// TODO: Handle errors
-						ParsedSign parsedSign = SignParser.parseSign(signText);
-						SignParser.parseKeywordInContext(parsedSign, line);
-						NewBotKeyword k = (NewBotKeyword) parsedSign
-								.getLine(line);
-						if (k.isGoodKeyword() == false) {
-							// Bad keyword!
-							// Highlight this keyword
-							for (int i = line; i < line + 2; i++) {
-								ditty.addErrorHighlight(currSignPoint, i);
-							}
-							ditty.addErrorMessage("§c" + k.getErrorMessage());
-							break;
-						} else {
-							// If the position is null, search upwards for a
-							// space for the bot
-							boolean searchUp = (k.getPosition() == null);
-
-							int yOffset = 0;
-							if (k.getPosition() != null) {
-								yOffset = k.getPosition();
-							}
-
-							// Create the bot event
-							CreateBotEvent botEvent = new CreateBotEvent(
-									currSignPoint.x + 0.5f, currSignPoint.y
-											+ yOffset, currSignPoint.z + 0.5f,
-									k.getType(), getSignFacingDegrees(
-											currSignMetadata, currSignType),
-									searchUp, k.getName(), ditty.getDittyID());
-
-							// Add the event to the ditty
-							int eventID = ditty.addDittyEvent(botEvent);
-							ditty.addMusicStringTokens(readMusicString,
-									TIMED_EVENT_TOKEN + eventID, false);
-						}
-						// Skip ahead a couple of lines (keyword is 2 lines
-						// long)
-						line += 1;
-					} else if (keyword.equals("staccato")) {
-						// Create and add a staccato note effect token
-						StaccatoKeyword staccatoKeyword = (StaccatoKeyword) SignParser
-								.parseKeyword(currLine);
-
-						String staccatoToken = createNoteEffectToken(false,
-								NOTE_EFFECT_STACCATO,
-								staccatoKeyword.getEighths(),
-								staccatoKeyword.getDuration());
-
-						ditty.addMusicStringTokens(readMusicString,
-								staccatoToken, false);
-					} else if (keyword.equals("staccatooff")) {
-						ditty.addMusicStringTokens(
-								readMusicString,
-								createNoteEffectToken(true,
-										NOTE_EFFECT_STACCATO), false);
-					} else if (keyword.equals("tran")) {
-						// Add a transpose note effect token
-						TransposeKeyword k = (TransposeKeyword) SignParser
-								.parseKeyword(currLine);
-						String token = createNoteEffectToken(false,
-								NOTE_EFFECT_TRANSPOSE, k.getTones(),
-								k.getDuration());
-						ditty.addMusicStringTokens(readMusicString, token,
-								false);
-					} else if (keyword.equals("tranoff")) {
-						ditty.addMusicStringTokens(
-								readMusicString,
-								createNoteEffectToken(true,
-										NOTE_EFFECT_TRANSPOSE), false);
-					} else if (keyword.equals("octaves")) {
-						// Add an octaves note effect token
-						OctavesKeyword k = (OctavesKeyword) SignParser
-								.parseKeyword(currLine);
-						Object[] octaves = k.getOctaves().toArray(
-								new Integer[0]);
-						String token = createNoteEffectToken(false,
-								NOTE_EFFECT_OCTAVES, octaves);
-						ditty.addMusicStringTokens(readMusicString, token,
-								false);
-					} else if (keyword.equals("octavesoff")) {
-						// Add an octaves off note effect token
-						OctavesOffKeyword k = (OctavesOffKeyword) SignParser
-								.parseKeyword(currLine);
-						Object[] octaves = k.getOctaves().toArray(
-								new Integer[0]);
-						String token = createNoteEffectToken(true,
-								NOTE_EFFECT_OCTAVES, octaves);
-						ditty.addMusicStringTokens(readMusicString, token,
-								false);
-					} else if (keyword.equals("accel")) {
-						// Add a accelerate note effect token
-						AccelerateKeyword k = (AccelerateKeyword) SignParser
-								.parseKeyword(currLine);
-						String token = createNoteEffectToken(false,
-								NOTE_EFFECT_ACCELERATE, k.getBPM(),
-								k.getDuration());
-						ditty.addMusicStringTokens(readMusicString, token,
-								false);
-					} else if (keyword.equals("ditty")
-							|| keyword.equals("[ditty]") || keyword.equals("[signtune]")) {
-						// Do nothing here
-					} else if (keyword.equals("maxplays")) {
-						// Add maxplay lock point
-						MaxPlaysKeyword k = (MaxPlaysKeyword) SignParser
-								.parseKeyword(currLine);
-						ditty.addMaxPlayLockPoint(currSignPoint,
-								k.getMaxPlays());
-					} else if (keyword.equals("playlast")) {
-						// Set playlast to true
-						ditty.setPlayLast(true);
-					} else if (keyword.equals("firework")) {
-						FireworkKeyword k = (FireworkKeyword) SignParser
-								.parseKeyword(currLine);
-						// Find nearby fireworks in frames
-						LinkedList<ItemStack> fireworks = new LinkedList<ItemStack>();
-						for (Object entityObj : world.loadedEntityList) {
-							Entity entity = (Entity) entityObj;
-							if (Math.abs(entity.posX - currSignPoint.x) <= 2
-									&& Math.abs(entity.posY - currSignPoint.y) <= 2
-									&& Math.abs(entity.posZ - currSignPoint.z) <= 2) {
-
-								if (entity instanceof EntityItemFrame) {
-									EntityItemFrame frame = (EntityItemFrame) entity;
-									ItemStack framedItem = frame
-											.getDisplayedItem();
-
-									if (framedItem != null
-											&& framedItem.itemID == 401) {
-										fireworks.add(framedItem);
-									}
-								}
-							}
-						}
-
-						if (fireworks.size() > 0) {
-							// Choose a firework
-							ItemStack fireworkItem = fireworks.get(random
-									.nextInt(fireworks.size()));
-
-							// Create the event
-							int yOffset = k.getUp();
-							FireworkEvent event = new FireworkEvent(
-									currSignPoint.x + 0.5f, currSignPoint.y
-											+ yOffset, currSignPoint.z + 0.5f,
-									fireworkItem, ditty.getDittyID());
-
-							// Add the event to the ditty
-							int eventID = ditty.addDittyEvent(event);
-							ditty.addMusicStringTokens(readMusicString,
-									TIMED_EVENT_TOKEN + eventID, false);
-						} else {
-							// No fireworks :(
-							ditty.addErrorMessage("A firework sign has no fireworks in Item Frames nearby.");
-							ditty.addErrorHighlight(currSignPoint, line);
-						}
-					} else {
-						// Unrecognized keyword; announce with error
-						ditty.addErrorMessage("§b"
-								+ keyword
-								+ "§c was recognized as a keyword, but no action was given for it in readPattern. This is a bug in MineTunes.");
-						ditty.addErrorHighlight(currSignPoint, line);
-					}
-				} else {
-					// Line contians music
-					boolean noErrors = ditty.addMusicStringTokens(
-							readMusicString, currLine, true);
-					if (!noErrors) {
-						ditty.addErrorHighlight(currSignPoint, line);
-					}
-					ditty.addHighlight(currSignPoint, line,
-							MUSICSTRING_HIGHLIGHT_CODE);
-
-					// Confirm that sign contains music
-					if (currLine.trim().length() > 0) {
-						musicOnSign = true;
 					}
 				}
 			}
@@ -1589,17 +863,12 @@ public class BlockSignMinetunes {
 			// Add sign hit end token
 			ditty.addMusicStringTokens(readMusicString, SIGN_END_TOKEN
 					+ currSignIDNum, false);
-			// // Add sign hit end ditty event
-			// int eventId2 = dittyProperties
-			// .addDittyEvent(new SignPlayingTimedEvent(false,
-			// currSignIDNum, dittyProperties.getDittyID()));
-			// addMusicStringTokens(readMusicString, dittyProperties,
-			// TIMED_EVENT_TOKEN + eventId2, false);
 
 			// Account for a one-sign pattern with no gotos
 			// (Does not have natural focus flow, and ends on the sign it
 			// started at)
-			// FIXED: If main song contains a pattern sign (which is the first
+			// FIXED: If main song contains a pattern sign (which is the
+			// first
 			// sign in a song)
 			// that has no gotos on it, do not end song here
 			if (!patternIsMoreThanOneSign && !(subpatternLevel == 0)) {
@@ -1612,51 +881,55 @@ public class BlockSignMinetunes {
 			}
 
 			// If natural focus flow hasn't been interrupted, flow.
-			if (naturalFocusFlowEnabled) {
-				nextSignPoint = applyNaturalFocusFlow(currSignPoint,
+			if (nextSignPoint.equals(currSignPoint)) {
+				nextSignPoint = applyNaturalFocusFlow(currSignPoint.clone(),
 						currSignFacing, world, signWhitelist);
 			}
-
-			// If natural focus flow is not enabled (i.e. the song contains
-			// gotos), throw an error if the gotos are pointing at thin air
-			// And there isn't a whitelist
-			if (gotosOnSign && !naturalFocusFlowEnabled
-					&& signWhitelist == null) {
-				// Save myself a null pointer exception by only coming up with
-				// the next block type if nextSignPoint isn't null
-				int nextBlockType = 0;
-				if (nextSignPoint != null) {
-					nextBlockType = world.getBlockId(nextSignPoint.x,
-							nextSignPoint.y, nextSignPoint.z);
-				}
-				if (!(nextBlockType == Block.signPost.blockID || nextBlockType == Block.signWall.blockID)) {
-					// Thin air. Throw error.
-					String signText2 = "";
-					for (String s : currSignTileEntity.signText) {
-						if (s.trim().length() > 0) {
-							signText2 += "/" + s.trim();
-						}
-					}
-					// Remove first /
-					try {
-						signText2 = signText2.substring(1, signText2.length());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					ditty.addErrorMessage("§b" + signText2
-							+ "§c: The gotos don't point at a sign.");
-					// Highlight all lines of the offending sign
-					for (int i = 0; i < LINES_ON_A_SIGN; i++) {
-						ditty.addErrorHighlight(currSignPoint, 0);
-					}
-				}
-			}
+//			else if (!nextSignPoint.equals(currSignPoint)
+//					&& signWhitelist == null) {
+//				// If natural focus flow is not enabled (i.e. the song
+//				// contains
+//				// gotos), throw an error if the gotos are pointing at thin
+//				// air
+//				// And there isn't a whitelist
+//
+//				// Save myself a null pointer exception by only coming up
+//				// with
+//				// the next block type if nextSignPoint isn't null
+//				int nextBlockType = 0;
+//				if (nextSignPoint != null) {
+//					nextBlockType = world.getBlockId(nextSignPoint.x,
+//							nextSignPoint.y, nextSignPoint.z);
+//				}
+//
+//				if (!(nextBlockType == Block.signPost.blockID || nextBlockType == Block.signWall.blockID)) {
+//					// Thin air. Throw error.
+//					String signText2 = "";
+//					for (String s : currSignTileEntity.signText) {
+//						if (s.trim().length() > 0) {
+//							signText2 += "/" + s.trim();
+//						}
+//					}
+//					// Remove first /
+//					try {
+//						signText2 = signText2.substring(1, signText2.length());
+//					} catch (Exception e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					ditty.addErrorMessage("§b" + signText2
+//							+ "§c: The gotos don't point at a sign.");
+//					// Highlight all lines of the offending sign
+//					for (int i = 0; i < LINES_ON_A_SIGN; i++) {
+//						ditty.addErrorHighlight(currSignPoint, 0);
+//					}
+//				}
+//			}
 
 			// Swap the next sign's position in as the new current sign's
 			// position for next iteration
 			currSignPoint = nextSignPoint;
-			nextSignPoint = currSignPoint.clone();
+			nextSignPoint = nextSignPoint.clone();
 
 			// Enforce the sign whitelist, signWhitelist
 			if (signWhitelist != null) {
@@ -1730,12 +1003,12 @@ public class BlockSignMinetunes {
 
 	private static void showKeywordError(SignDitty dittyProperties,
 			Point3D currSignPoint, String currLine, int line,
-			ParsedKeyword keyword) {
+			SignTuneKeyword keyword) {
 		dittyProperties.addErrorHighlight(currSignPoint, line);
-		if (keyword.getErrorMessageType() == ParsedKeyword.ERROR) {
+		if (keyword.getErrorMessageType() == SignTuneKeyword.ERROR) {
 			dittyProperties.addErrorMessage("§b" + currLine + "§c: "
 					+ keyword.getErrorMessage());
-		} else if (keyword.getErrorMessageType() == ParsedKeyword.WARNING) {
+		} else if (keyword.getErrorMessageType() == SignTuneKeyword.WARNING) {
 			dittyProperties.addErrorMessage("§b" + currLine + "§e: "
 					+ keyword.getErrorMessage());
 		}
@@ -2289,15 +1562,7 @@ public class BlockSignMinetunes {
 		File midiDir = saveFile.getParentFile();
 		midiDir.mkdirs();
 
-		// Clear old midis
-		clearMidis(saveFile.getName().substring(0,
-				saveFile.getName().lastIndexOf(".")));
-
 		// Only one midi can be saved at any given instant
-		// TODO: Consider delay
-		// TODO: Remove delay
-		// TODO: Consider moving the actual mutexed saving code to
-		// JFuguePlayerThread
 		synchronized (DittyPlayerThread.staticPlayerMutex) {
 			// Save midi of tune to saveFile
 			Player p = new Player();
@@ -2308,113 +1573,7 @@ public class BlockSignMinetunes {
 
 			// Close player used for saving midis
 			p.close();
-
-			// The oft-considered delay
-			// Thread.sleep(25);
 		}
-	}
-
-	/**
-	 * This is not obsolete yet: old versions used to create tons of midi files,
-	 * splitting at resets. This clears those legacy files.
-	 * 
-	 * @param dittyName
-	 */
-	private static void clearMidis(String dittyName) {
-		File midiDir = new File(Minecraft.getMinecraftDir().getPath()
-				+ "/midi/");
-		// Clear first file, if it exists
-		File firstFile = new File(midiDir.getPath() + File.separator
-				+ dittyName + ".mid");
-		simpleLog("Checking for file: " + firstFile.getPath());
-		if (firstFile.exists()) {
-			simpleLog("Clearing midi file: " + firstFile.getPath());
-			firstFile.delete();
-
-			// Look for any consecutive subsequent files
-			for (int i = 1; true; i++) {
-				File nextFile = new File(midiDir.getPath() + File.separator
-						+ dittyName + "-" + String.format("%03d", i) + ".mid");
-				simpleLog("Checking for file: " + nextFile.getPath());
-				if (nextFile.exists()) {
-					simpleLog("Clearing midi file: " + nextFile.getPath());
-					nextFile.delete();
-				} else {
-					break;
-				}
-			}
-		}
-	}
-
-	public static ArrayList<String[]> importSignsFromFile(File f)
-			throws IOException {
-		BufferedReader in = new BufferedReader(new FileReader(f));
-		// Check first line to see if this file is valid
-		String firstLine = in.readLine();
-		if (firstLine != null) {
-			if (!firstLine.trim().equalsIgnoreCase("Exported Signs")) {
-				in.close();
-				return null;
-			}
-		} else {
-			in.close();
-			return null;
-		}
-
-		ArrayList<String[]> signTexts = new ArrayList<String[]>();
-		String lineIn = "";
-		while (lineIn != null) {
-			String[] signText = new String[4];
-			for (int i = 0; i < 4; i++) {
-				lineIn = in.readLine();
-				if (lineIn == null) {
-					break;
-				} else if (lineIn.equalsIgnoreCase("###############x")) {
-					// Ignore line.
-					i--;
-					continue;
-				} else if (lineIn.equalsIgnoreCase("End of Exported Signs")) {
-					// End of file.
-					lineIn = null;
-					break;
-				} else {
-					signText[i] = lineIn;
-					// Truncate string to length
-					if (signText[i].length() > 15) {
-						signText[i] = signText[i].substring(0, 15);
-					}
-					// Filter out extra characters
-					for (int loc = 0; loc < signText[i].length(); loc++) {
-						if (!ChatAllowedCharacters
-								.isAllowedCharacter((signText[i].toCharArray()[loc]))) {
-							signText[i].replace(signText[i].toCharArray()[loc],
-									' ');
-						}
-					}
-				}
-			}
-			signTexts.add(signText);
-		}
-
-		in.close();
-		return signTexts;
-	}
-
-	public static void exportSignsToFile(List<String[]> signs, File f)
-			throws IOException {
-		BufferedWriter out = new BufferedWriter(new FileWriter(f));
-		out.write("Exported Signs");
-		out.newLine();
-		for (String[] sign : signs) {
-			out.write("###############X");
-			out.newLine();
-			for (String line : sign) {
-				out.write(line);
-				out.newLine();
-			}
-		}
-		out.write("End of Exported Signs");
-		out.close();
 	}
 
 	public static void simpleLog(String logString) {

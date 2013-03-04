@@ -23,13 +23,20 @@
  */
 package com.minetunes.signs.keywords;
 
+import net.minecraft.src.TileEntitySign;
+import net.minecraft.src.World;
+
+import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
+import com.minetunes.ditty.event.SFXEvent;
 import com.minetunes.sfx.SFXManager;
+import com.minetunes.signs.SignTuneParser;
 
 /**
  * @author William
  * 
  */
-public class SFXKeyword extends ParsedKeyword {
+public class SFXKeyword extends SignTuneKeyword {
 
 	String effectName = "";
 	String effectShorthand = "";
@@ -41,17 +48,16 @@ public class SFXKeyword extends ParsedKeyword {
 		super(wholeKeyword);
 	}
 
-	public static SFXKeyword parse(String currLine) {
-		SFXKeyword k = new SFXKeyword(currLine);
-
-		String[] arguments = currLine.split(" ");
+	@Override
+	public void parse() {
+		String[] arguments = getWholeKeyword().split(" ");
 
 		String effectName = "";
 
 		if (arguments.length <= 1) {
-			k.setGoodKeyword(false);
-			k.setErrorMessageType(ERROR);
-			k.setErrorMessage("Follow SFX with an effect to play. Zombie is fun.");
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Follow SFX with an effect to play. Zombie is fun.");
 		} else {
 			effectName = arguments[1];
 			for (int i = 2; i < arguments.length; i++) {
@@ -59,21 +65,20 @@ public class SFXKeyword extends ParsedKeyword {
 			}
 		}
 
-		k.setEffectShorthand(effectName);
+		setEffectShorthand(effectName);
 
-		String soundEffect = SFXManager.getEffectForShorthandName(effectName, SFXManager.getLatestSource());
+		String soundEffect = SFXManager.getEffectForShorthandName(effectName,
+				SFXManager.getLatestSource());
 		if (soundEffect == null) {
-			k.setGoodKeyword(true);
-			k.setErrorMessageType(WARNING);
+			setGoodKeyword(true);
+			setErrorMessageType(WARNING);
 			if (!effectName.trim().equals("")) {
-				k.setErrorMessage("No SFX named " + effectName + " was found.");
+				setErrorMessage("No SFX named " + effectName + " was found.");
 			} else {
-				k.setErrorMessage("Add an effect name.");
+				setErrorMessage("Add an effect name.");
 			}
 		}
-		k.setEffectName(soundEffect);
-
-		return k;
+		setEffectName(soundEffect);
 	}
 
 	/**
@@ -104,6 +109,20 @@ public class SFXKeyword extends ParsedKeyword {
 	 */
 	public void setEffectShorthand(String effectShorthand) {
 		this.effectShorthand = effectShorthand;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location,
+			TileEntitySign signTileEntity, Point3D nextSign, World world,
+			StringBuilder readMusicString) {
+		// Add event
+		int eventID = ditty.addDittyEvent(new SFXEvent(getEffectName(), -1,
+				ditty.getDittyID()));
+		// Add token
+		ditty.addMusicStringTokens(readMusicString,
+				SignTuneParser.TIMED_EVENT_TOKEN + eventID, false);
+
+		return null;
 	}
 
 }

@@ -28,7 +28,7 @@ import com.minetunes.signs.ParsedSign;
 /**
  *
  */
-public class CueKeyword extends ParsedKeyword {
+public class CueKeyword extends SignTuneKeyword {
 
 	private String label = "";
 	private int repetition = 1;
@@ -37,36 +37,35 @@ public class CueKeyword extends ParsedKeyword {
 		super(wholeKeyword);
 	}
 
-	public static CueKeyword parse(String currLine) {
-		CueKeyword keyword = new CueKeyword(currLine);
-
+	@Override
+	public void parse() {
 		// Read arguments
-		int numArgs = currLine.split(" ").length;
+		int numArgs = getWholeKeyword().split(" ").length;
 
 		// Get arguments
 		// Get label (required)
 		if (numArgs >= 2) {
-			keyword.label = currLine.split(" ")[1];
-			if (!LyricKeyword.isValidCueLabel(keyword.label)) {
+			label = getWholeKeyword().split(" ")[1];
+			if (!LyricKeyword.isValidCueLabel(label)) {
 				// Illegal label
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ParsedKeyword.WARNING);
-				keyword.setErrorMessage("Cue names should only contain letters, numbers, and underscores.");
+				setGoodKeyword(false);
+				setErrorMessageType(WARNING);
+				setErrorMessage("Cue names should only contain letters, numbers, and underscores.");
 			}
 		} else {
 			// No label; this results in an error
-			keyword.setGoodKeyword(false);
-			keyword.setErrorMessageType(ParsedKeyword.ERROR);
-			keyword.setErrorMessage("Follow the Cue keyword with a cue name: e.g., 'Cue chorus'.");
+			setGoodKeyword(false);
+			setErrorMessageType(ERROR);
+			setErrorMessage("Follow the Cue keyword with a cue name: e.g., 'Cue chorus'.");
 		}
 
 		// Check for third argument (color code or repetition)
 
 		// Default values for the ensuing (optional) arguments
-		int repetition = keyword.getRepetition();
+		int repetition = getRepetition();
 
 		if (numArgs >= 3) {
-			String argument = currLine.split(" ")[2];
+			String argument = getWholeKeyword().split(" ")[2];
 			if (argument.matches("\\d+")) {
 				// Repetition!
 				repetition = Integer.parseInt(argument);
@@ -75,47 +74,44 @@ public class CueKeyword extends ParsedKeyword {
 				// not a number -- probably someone putting a
 				// space in a label.
 				// Throw error
-				keyword.setGoodKeyword(false);
-				keyword.setErrorMessageType(ParsedKeyword.ERROR);
-				keyword.setErrorMessage("A cue's name can't contain spaces.");
+				setGoodKeyword(false);
+				setErrorMessageType(ERROR);
+				setErrorMessage("A cue's name can't contain spaces.");
 			}
-		} 
-		
-		// Too many arguments
-		if (numArgs > 3) {
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("At most, Cue only needs to be followed with a name and repetition.");
 		}
 
-		// Set the read (or default) color codes and repetitions
-		keyword.repetition = repetition;
+		// Too many arguments
+		if (numArgs > 3) {
+			setErrorMessageType(INFO);
+			setErrorMessage("At most, Cue only needs to be followed with a name and repetition.");
+		}
 
-		return keyword;
+		return;
 	}
 
 	@Override
-	public <T extends ParsedKeyword> void parseWithMultiline(
+	public <T extends SignTuneKeyword> void parseWithMultiline(
 			ParsedSign parsedSign, int keywordLine, T k) {
 		super.parseWithMultiline(parsedSign, keywordLine, k);
-		
+
 		// Figure out how many lines are beneath the first line of the cue
 		int linesAfterFirst = 4 - keywordLine;
-		
+
 		// Tag all lines on and below the keyword
 		if (linesAfterFirst <= 0) {
 			return;
 		} else {
-			for (int i=keywordLine;i<4;i++) {
+			for (int i = keywordLine; i < 4; i++) {
 				parsedSign.getLines()[i] = this;
 			}
 		}
-		
+
 		// Line 1 beneath the sign is the target
 		// Form: [target type]
 		// if [target] == bot, the next argument is the bots affected
-		String targetLine = parsedSign.getSignText()[keywordLine+1];
+		String targetLine = parsedSign.getSignText()[keywordLine + 1];
 		String[] targetLineTokens = targetLine.split("\\s+");
-		
+
 	}
 
 	@Override

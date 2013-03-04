@@ -39,7 +39,7 @@ import com.minetunes.ditty.Ditty;
 import com.minetunes.ditty.event.SFXInstrumentEvent;
 import com.minetunes.ditty.event.SFXInstrumentOffEvent;
 import com.minetunes.sfx.SFXManager;
-import com.minetunes.signs.BlockSignMinetunes;
+import com.minetunes.signs.SignTuneParser;
 
 /**
  * Accepts a list of DittyXML container elements, and creates a Ditty from them.
@@ -321,12 +321,12 @@ public class DittyXMLParser {
 					// Reset element
 					// Add reset token to musicstring
 					ditty.addMusicStringTokens(musicStringBuffer,
-							BlockSignMinetunes.getResetToken(ditty), false);
+							SignTuneParser.getResetToken(ditty), false);
 				} else if (currNodeName.equals("syncVoices")) {
 					// SyncVoices element
 					// Add token to musicstring
 					ditty.addMusicStringTokens(musicStringBuffer,
-							BlockSignMinetunes.SYNC_VOICES_TOKEN, false);
+							SignTuneParser.SYNC_VOICES_TOKEN, false);
 				} else if (currNodeName.equals("syncWith")) {
 					// SyncWith element
 					// Add syncwith token to musicstring
@@ -346,11 +346,11 @@ public class DittyXMLParser {
 					// Finally, add token
 					if (layer != -1000) {
 						ditty.addMusicStringTokens(musicStringBuffer,
-								BlockSignMinetunes.SYNC_WITH_TOKEN + "V" + voice + "L"
+								SignTuneParser.SYNC_WITH_TOKEN + "V" + voice + "L"
 										+ layer, false);
 					} else {
 						ditty.addMusicStringTokens(musicStringBuffer,
-								BlockSignMinetunes.SYNC_WITH_TOKEN + "V" + voice + "Lu",
+								SignTuneParser.SYNC_WITH_TOKEN + "V" + voice + "Lu",
 								false);
 					}
 				} else if (currNodeName.equals("volume")) {
@@ -369,7 +369,7 @@ public class DittyXMLParser {
 
 					// Finally, add token
 					ditty.addMusicStringTokens(musicStringBuffer,
-							BlockSignMinetunes.getAdjustedVolumeToken(percent, ditty),
+							SignTuneParser.getAdjustedVolumeToken(percent, ditty),
 							false);
 				} else if (currNodeName.equals("repeat")) {
 					// Repeat element
@@ -563,7 +563,7 @@ public class DittyXMLParser {
 							sfxNameIncomplete, sfxNumber, tuning, -1, ditty
 									.getDittyID(), 0));
 					ditty.addMusicStringTokens(musicStringBuffer,
-							BlockSignMinetunes.TIMED_EVENT_TOKEN + eventID, false);
+							SignTuneParser.TIMED_EVENT_TOKEN + eventID, false);
 				} else if (currNodeName.equals("sfxInstOff")) {
 					int instrument = 0;
 
@@ -593,7 +593,7 @@ public class DittyXMLParser {
 							.addDittyEvent(new SFXInstrumentOffEvent(
 									instrument, -1, ditty.getDittyID()));
 					ditty.addMusicStringTokens(musicStringBuffer,
-							BlockSignMinetunes.TIMED_EVENT_TOKEN + eventID, false);
+							SignTuneParser.TIMED_EVENT_TOKEN + eventID, false);
 				}
 			}
 		}

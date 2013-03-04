@@ -28,8 +28,10 @@ import java.util.LinkedList;
 
 import com.minetunes.Minetunes;
 import com.minetunes.Point3D;
+import com.minetunes.ditty.Ditty;
 import com.minetunes.signs.Comment;
 
+import net.minecraft.src.TileEntitySign;
 import net.minecraft.src.World;
 
 /**
@@ -45,17 +47,16 @@ public class PattKeyword extends GotoKeyword {
 		super(wholeKeyword);
 	}
 
-	public static PattKeyword parse(String rawLine) {
-		PattKeyword keyword = new PattKeyword(rawLine);
-
-		String[] args = rawLine.split(" ");
+	@Override
+	public void parse() {
+		String[] args = getWholeKeyword().split(" ");
 		int numArgs = args.length;
 		if (numArgs <= 1) {
 			// No argument
-			keyword.setGoodKeyword(true);
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("Add a comment.");
-			return keyword;
+			setGoodKeyword(true);
+			setErrorMessageType(INFO);
+			setErrorMessage("Add a comment.");
+			return;
 		}
 
 		int currArg = 1;
@@ -64,37 +65,37 @@ public class PattKeyword extends GotoKeyword {
 		String repeatCountString = args[currArg];
 		if (repeatCountString.matches("\\d+")) {
 			// found
-			keyword.setRepeatCount(Integer.parseInt(args[currArg]));
+			setRepeatCount(Integer.parseInt(args[currArg]));
 			currArg++;
 		}
-		
+
 		// Read the comment
 		if (numArgs <= currArg) {
 			// Missing comment
-			keyword.setGoodKeyword(true);
-			keyword.setErrorMessageType(INFO);
-			keyword.setErrorMessage("Add a comment.");
-			return keyword;
+			setGoodKeyword(true);
+			setErrorMessageType(INFO);
+			setErrorMessage("Add a comment.");
+			return;
 		} else {
-			int commentStartIndex = rawLine.indexOf("#");
+			int commentStartIndex = getWholeKeyword().indexOf("#");
 			if (commentStartIndex <= 0) {
 				// Missing comment
-				keyword.setGoodKeyword(true);
-				keyword.setErrorMessageType(INFO);
-				keyword.setErrorMessage("Add a comment.");
-				return keyword;
+				setGoodKeyword(true);
+				setErrorMessageType(INFO);
+				setErrorMessage("Add a comment.");
+				return;
 			}
-			keyword.setComment(rawLine.substring(commentStartIndex));
+			setComment(getWholeKeyword().substring(commentStartIndex));
 		}
 
 		// try {
-		// keyword.setComment(rawLine.substring("patt ".length()));
+		// setComment(getWholeKeyword().substring("patt ".length()));
 		// } catch (Exception e) {
 		// // In case of string bounds errors
 		// e.printStackTrace();
 		// }
 
-		return keyword;
+		return;
 	}
 
 	public void setRepeatCount(int count) {
@@ -103,5 +104,18 @@ public class PattKeyword extends GotoKeyword {
 
 	public int getRepeatCount() {
 		return repeatCount;
+	}
+
+	@Override
+	public boolean hasSpecialExecution() {
+		return true;
+	}
+
+	@Override
+	public Point3D execute(Ditty ditty, Point3D location, TileEntitySign sign,
+			Point3D r, World world, StringBuilder readMusicString) {
+		// Unlike parent class, this one does not change the next sign's
+		// location
+		return null;
 	}
 }
