@@ -40,9 +40,10 @@ public class KeysGui extends GuiScreen {
 	private LinkedList<Boolean> settingKey = new LinkedList<Boolean>();
 	private LinkedList<KeyBinding> keyBindings;
 	private LinkedList<GuiButton> keyModButtons = new LinkedList<GuiButton>();
+	private GuiScreen backScreen = null;
 
-	public KeysGui() {
-
+	public KeysGui(GuiScreen backScreen) {
+		this.backScreen = backScreen;
 	}
 
 	public void updateButtonLabels() {
@@ -53,7 +54,7 @@ public class KeysGui extends GuiScreen {
 				keyButtons.get(i).displayString = "§a "
 						+ Keyboard.getKeyName(keyBindings.get(i).getMainKey());
 			}
-			
+
 			String modLabel = "§a";
 			int[] keyMods = keyBindings.get(i).getModifierKeys();
 			if (keyMods.length == 2) {
@@ -101,8 +102,9 @@ public class KeysGui extends GuiScreen {
 			keyButtons.add(button);
 			controlList.add(button);
 			settingKey.add(false);
-			
-			GuiButton modButton = new GuiButton(i+500, (width / 2), 20 + 30 * i, 70, 20, "");
+
+			GuiButton modButton = new GuiButton(i + 500, (width / 2),
+					20 + 30 * i, 70, 20, "");
 			keyModButtons.add(modButton);
 			controlList.add(modButton);
 		}
@@ -125,9 +127,9 @@ public class KeysGui extends GuiScreen {
 		drawDefaultBackground();
 		updateButtonLabels();
 
-//		// Draw label at top of screen
-//		drawCenteredString(fontRenderer, "Keyboard Commands", width / 2, 25,
-//				0x4444bb);
+		// // Draw label at top of screen
+		// drawCenteredString(fontRenderer, "Keyboard Commands", width / 2, 25,
+		// 0x4444bb);
 
 		// Draw button labels
 		for (int i = 0; i < keyButtons.size(); i++) {
@@ -140,11 +142,12 @@ public class KeysGui extends GuiScreen {
 			}
 
 			int labelWidth = fontRenderer.getStringWidth(labelString);
-			fontRenderer.drawString(labelString, width / 8 * 2 - (labelWidth / 2),
-					26 + 30 * i, 0xffffff);
-			
+			fontRenderer.drawString(labelString, width / 8 * 2
+					- (labelWidth / 2), 26 + 30 * i, 0xffffff);
+
 			// Draw + between mod button and main key button
-			fontRenderer.drawString("+", (width / 2) + 72, 26+30*i, 0xffffff);
+			fontRenderer.drawString("+", (width / 2) + 72, 26 + 30 * i,
+					0xffffff);
 		}
 
 		super.drawScreen(par1, par2, par3);
@@ -210,7 +213,7 @@ public class KeysGui extends GuiScreen {
 	protected void actionPerformed(GuiButton guibutton) {
 		if (guibutton.id == 100) {
 			// Exit screen
-			mc.displayGuiScreen(new MinetunesGui(this));
+			mc.displayGuiScreen(backScreen);
 		} else if (guibutton.id >= 0 && guibutton.id <= 99) {
 			for (int i = 0; i < keyBindings.size(); i++) {
 				if (guibutton.id == i) {
@@ -218,7 +221,7 @@ public class KeysGui extends GuiScreen {
 				}
 			}
 		} else if (guibutton.id >= 500) {
-			for (int i=0;i < keyBindings.size();i++) {
+			for (int i = 0; i < keyBindings.size(); i++) {
 				if (guibutton.id - 500 == i) {
 					cycleModButton(i);
 				}
@@ -234,6 +237,7 @@ public class KeysGui extends GuiScreen {
 
 	/**
 	 * Ctrl --> Shift --> LCtrl --> LShift --> RCtrl --> RShift --> Nothing
+	 * 
 	 * @param button
 	 */
 	private void cycleModButton(int button) {
@@ -243,18 +247,18 @@ public class KeysGui extends GuiScreen {
 			if (keyMods[0] == Keyboard.KEY_LCONTROL) {
 				binding.setModifierKeys(KeyBinding.SHIFT_KEYS);
 			} else if (keyMods[0] == Keyboard.KEY_LSHIFT) {
-				int[] keys = {Keyboard.KEY_LCONTROL};
+				int[] keys = { Keyboard.KEY_LCONTROL };
 				binding.setModifierKeys(keys);
 			}
 		} else if (keyMods.length == 1) {
 			if (keyMods[0] == Keyboard.KEY_LCONTROL) {
-				int[] keys = {Keyboard.KEY_LSHIFT};
+				int[] keys = { Keyboard.KEY_LSHIFT };
 				binding.setModifierKeys(keys);
 			} else if (keyMods[0] == Keyboard.KEY_RCONTROL) {
-				int[] keys = {Keyboard.KEY_RSHIFT};
+				int[] keys = { Keyboard.KEY_RSHIFT };
 				binding.setModifierKeys(keys);
 			} else if (keyMods[0] == Keyboard.KEY_LSHIFT) {
-				int[] keys = {Keyboard.KEY_RCONTROL};
+				int[] keys = { Keyboard.KEY_RCONTROL };
 				binding.setModifierKeys(keys);
 			} else if (keyMods[0] == Keyboard.KEY_RSHIFT) {
 				int[] keys = {};
