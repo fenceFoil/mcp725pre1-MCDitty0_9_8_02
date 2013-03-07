@@ -29,12 +29,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedList;
+import javax.swing.JComboBox;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.EnumOS;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.GuiButton;
-import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.Timer;
 
@@ -64,13 +64,13 @@ public class MinetunesGui extends GuiScreen {
 	private GuiButton turnedOffButton;
 	private GuiButton autoUpdateButton;
 	private GuiButton tutorialButton;
-	private GuiButton cancelTutorialButton;
+	private GuiButtonL cancelTutorialButton;
 	private LinkedList<TuneTileGui> tiles = new LinkedList<TuneTileGui>();
 	private String typedKeys = "";
 	private boolean showingTiles = true;
-	private GuiButton graphicsButton;
-	private GuiButton soundfontsButton;
-	private GuiButton midiButton;
+	private GuiButtonL graphicsButton;
+	private GuiButtonL soundfontsButton;
+	private GuiButtonL midiButton;
 	private GuiScreen backScreen;
 
 	public MinetunesGui(GuiScreen backScreen) {
@@ -217,46 +217,20 @@ public class MinetunesGui extends GuiScreen {
 			// Check for updates
 			mc.displayGuiScreen(new MinetunesUpdateGui());
 		} else if (guibutton.id == 200) {
-			mc.displayGuiScreen(new KeysGui());
+			mc.displayGuiScreen(new KeysGui(this));
 		} else if (guibutton.id == 300) {
 			mc.displayGuiScreen(new OldSettingsGui());
-		} else if (guibutton.id == 400) {
-			// Exit
-			mc.displayGuiScreen(backScreen);
-		} else if (guibutton.id == 500) {
-			// Open midi folder
-			openMidiFolder();
 		} else if (guibutton.id == 600) {
 			// Open sound check
 			mc.displayGuiScreen(new SoundTestGui(this));
-		} else if (guibutton.id == 700) {
-			// Open graphics
-			mc.displayGuiScreen(new GraphicsGui(this));
 		} else if (guibutton.id == 800) {
 			// Tutorial world menu
 			mc.displayGuiScreen(new TutorialGui(this));
-		} else if (guibutton.id == 900) {
-			// Soundbank selection
-			mc.displayGuiScreen(new SoundfontGui(this));
 		} else if (guibutton.id == 1000) {
 			// Toggle MineTunes on
 			MinetunesConfig.incrementMCDittyOffState();
 			turnedOffButton.displayString = MinetunesConfig
 					.getMCDittyTurnedOffText();
-			try {
-				MinetunesConfig.flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else if (guibutton.id == 1100) {
-			// Reset tutorial updated button
-			MinetunesConfig
-					.setString(
-							"tutorial.lastDownload",
-							Minetunes.tutorialUpdater
-									.getLatestVersion(MinetunesConfig.MC_CURRENT_VERSION));
-			tutorialUpdated = false;
 			try {
 				MinetunesConfig.flush();
 			} catch (IOException e) {
@@ -325,41 +299,96 @@ public class MinetunesGui extends GuiScreen {
 	public void initGui() {
 		// Add buttons
 		// if (backScreen instanceof GuiOptions) {
-		controlList.add(new GuiButton(400, 2, 10, 80, 20, "§bBack"));
+		// controlList.add(new GuiButton(400, 2, 10, 80, 20, "§bBack"));
 		// }
+
+		int tex = Minecraft.getMinecraft().renderEngine
+				.getTexture("/com/minetunes/resources/textures/mineTunesLogo.png");
+		final GuiScreen thisGui = this;
+
+		GuiButtonL backButton = new GuiButtonL("back", 10, 10, 60, 20, tex,
+				48 + 1, "Done");
+		controlList.add(backButton);
+		backButton.addListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				mc.displayGuiScreen(backScreen);
+			}
+		});
 
 		// controlList.add(new GuiButton(300, width / 3 - 55, height - 130, 110,
 		// 20, "Settings"));
 
-		controlList.add(new GuiButton(200, width / 6 - 55, height - 30, 110,
-				20, "Keyboard"));
+		// GuiButton keyboardButton = new GuiButton(200, width / 6 - 55, height
+		// - 30, 110,
+		// 20, "Keyboard");
+		GuiButtonL keyboardButton = new GuiButtonL("keys", width / 6 - 55,
+				height - 30, 110, 20, tex, 48+0, "Keyboard");
+		keyboardButton.id = 200;
+		controlList.add(keyboardButton);
+
 		autoUpdateButton = new GuiButton(100, width / 2 - 55, height - 30, 110,
 				20, "Auto-Update");
 		controlList.add(autoUpdateButton);
+
 		tutorialButton = new GuiButton(800, width / 6 * 5 - 55, height - 30,
 				100, 20, "MineTunesLand");
 		controlList.add(tutorialButton);
 
-		controlList.add(new GuiButton(2000, width - 85, 10, 80, 20, "Switch"));
+		// GuiButton switchButton = new GuiButton(2000, width - 85, 10, 80, 20,
+		// "Switch");
+		GuiButtonL switchButton = new GuiButtonL("switch", width - 30, 10, 20,
+				20, tex, 48 + 4);
+		switchButton.id = 2000;
+		controlList.add(switchButton);
 
 		addTutorialCancel();
 
 		// controlList.add(new GuiButton(600, width / 3 * 2 - 55, height - 70,
 		// 110, 20, "Sound Test"));
-		graphicsButton = new GuiButton(700, width / 6 * 3 - 55, TILE_RETRACT_Y,
-				110, 20, "Graphics");
+		// graphicsButton = new GuiButtonL(700, width / 6 * 3 - 55,
+		// TILE_RETRACT_Y,
+		// 110, 20, "Graphics");
+		graphicsButton = new GuiButtonL("graphics", width / 6 * 3 - 55,
+				TILE_RETRACT_Y, 110, 20, tex, 48 + 5, "Graphics");
+		graphicsButton.addListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Open graphics
+				mc.displayGuiScreen(new GraphicsGui(thisGui));
+			}
+		});
 		controlList.add(graphicsButton);
-		midiButton = new GuiButton(500, width / 6 * 5 - 55, TILE_RETRACT_Y,
-				110, 20, "MIDI Folder");
+		
+		midiButton = new GuiButtonL("midiFolder", width / 6 * 5 - 55,
+				TILE_RETRACT_Y, 110, 20, tex, 48 + 2, "MIDI Folder");
+		midiButton.addListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Open midi folder
+				openMidiFolder();
+			}
+		});
 		controlList.add(midiButton);
-		soundfontsButton = new GuiButton(900, width / 6 - 55, TILE_RETRACT_Y,
-				110, 20, "SoundFonts");
+		
+		soundfontsButton = new GuiButtonL("soundFonts", width / 6 - 55, TILE_RETRACT_Y,
+				110, 20, tex, 48+15, "SoundFonts");
+		soundfontsButton.addListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Soundbank selection
+				mc.displayGuiScreen(new SoundfontGui(thisGui));
+			}
+		});
 		controlList.add(soundfontsButton);
 		// turnedOffButton = new GuiButton(1000, 15, 15, 110, 20,
 		// MinetunesConfig.getMCDittyTurnedOffText());
 		// controlList.add(turnedOffButton);
 
-		controlList.add(new MinetunesVersionGuiElement(100));
+		// controlList.add(new MinetunesVersionGuiElement(100));
 
 		// Check for updates
 		// outdated = GuiMineTunesUpdates.checkForUpdates();
@@ -367,8 +396,6 @@ public class MinetunesGui extends GuiScreen {
 
 		// Add tiles
 		tiles.clear();
-
-		final MinetunesGui thisGui = this;
 
 		final TuneTileGui noteblockTile = new TuneTileGui(width / 4 - 32,
 				TILE_RETRACT_Y, TuneTileType.NOTEBLOCKS,
@@ -553,10 +580,40 @@ public class MinetunesGui extends GuiScreen {
 		controlList.remove(cancelTutorialButton);
 		cancelTutorialButton = null;
 		if (tutorialUpdated) {
-			cancelTutorialButton = new GuiButton(1100,
+			// cancelTutorialButton = new GuiButton(1100,
+			// tutorialButton.xPosition + 100 + 2,
+			// tutorialButton.yPosition, 20, 20, "§cX");
+			// controlList.add(cancelTutorialButton);
+
+			cancelTutorialButton = new GuiButtonL(
+					"cancelTutorial",
 					tutorialButton.xPosition + 100 + 2,
-					tutorialButton.yPosition, 20, 20, "§cX");
+					tutorialButton.yPosition,
+					20,
+					20,
+					mc.renderEngine
+							.getTexture("/com/minetunes/resources/textures/mineTunesLogo.png"),
+					15);
 			controlList.add(cancelTutorialButton);
+			cancelTutorialButton.addListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					// Reset tutorial updated button
+					MinetunesConfig
+							.setString(
+									"tutorial.lastDownload",
+									Minetunes.tutorialUpdater
+											.getLatestVersion(MinetunesConfig.MC_CURRENT_VERSION));
+					tutorialUpdated = false;
+					try {
+						MinetunesConfig.flush();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			});
 		}
 	}
 

@@ -54,8 +54,8 @@ public class TuneTileGui extends Gui {
 
 	private boolean on;
 
-	private GuiButton settingsButton;
-	private GuiButton helpButton;
+	private GuiButtonL settingsButton;
+	private GuiButtonL helpButton;
 
 	private boolean mouseOver;
 
@@ -73,8 +73,13 @@ public class TuneTileGui extends Gui {
 		this.type = type;
 		this.on = on;
 
-		helpButton = new GuiButton(1, x + 32 - 10, 0, 20, 20, "§b?");
-		settingsButton = new GuiButton(2, x, 0, 64, 20, "Settings");
+		int tex = Minecraft.getMinecraft().renderEngine
+				.getTexture("/com/minetunes/resources/textures/mineTunesLogo.png");
+		
+		//helpButton = new GuiButton(1, x + 32 - 10, 0, 20, 20, "§b?");
+		helpButton = new GuiButtonL("help", x+32 - 10, 0, 20, 20, tex, 16+15);
+		//settingsButton = new GuiButton(2, x, 0, 64, 20, "Settings");
+		settingsButton = new GuiButtonL ("settings", x, 0, 64, 20, /*tex, 32+15,*/ "Settings");
 
 		setY(y);
 		setX(x);
