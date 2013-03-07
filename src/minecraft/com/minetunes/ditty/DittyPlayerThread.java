@@ -33,6 +33,7 @@ import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -73,8 +74,8 @@ import com.minetunes.ditty.event.TempoDittyEvent;
 import com.minetunes.ditty.event.TimedDittyEvent;
 import com.minetunes.ditty.event.VolumeEvent;
 import com.minetunes.sfx.SFXManager;
-import com.minetunes.signs.SignTuneParser;
 import com.minetunes.signs.SignDitty;
+import com.minetunes.signs.SignTuneParser;
 import com.sun.media.sound.SF2Instrument;
 import com.sun.media.sound.SF2InstrumentRegion;
 import com.sun.media.sound.SF2Layer;
@@ -143,8 +144,8 @@ public class DittyPlayerThread extends Thread implements
 						return;
 					}
 
-					SignTuneParser.oneAtATimeSignsBlocked.add(((SignDitty) ditty)
-							.getStartPoint());
+					SignTuneParser.oneAtATimeSignsBlocked
+							.add(((SignDitty) ditty).getStartPoint());
 				}
 			}
 		}
@@ -178,8 +179,8 @@ public class DittyPlayerThread extends Thread implements
 			// If queueing, wait for turn before playing
 			// If muting, move on
 			queuedPlayers.add(this);
-			//System.out.println(dittyPlayers.size());
-			//System.out.println(queuedPlayers.size());
+			// System.out.println(dittyPlayers.size());
+			// System.out.println(queuedPlayers.size());
 			while ((dittyPlayers.size() > queuedPlayers.size() || queuedPlayers
 					.poll() != this) && !muting) {
 				try {
@@ -198,6 +199,7 @@ public class DittyPlayerThread extends Thread implements
 		SignTuneParser.simpleLog("Starting ditty!");
 		if (!muting) {
 			try {
+				initAnySFXInsts();
 				synchronized (staticPlayerMutex) {
 					this.sleep(20);
 				}
@@ -221,8 +223,8 @@ public class DittyPlayerThread extends Thread implements
 				// }
 				// Handles the synth; closes it if it wants
 			}
-			Minetunes.getSynthPool().returnUsedSynth(synth, cachedSFXInstruments,
-					originalSynthInstruments);
+			Minetunes.getSynthPool().returnUsedSynth(synth,
+					cachedSFXInstruments, originalSynthInstruments);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -238,7 +240,8 @@ public class DittyPlayerThread extends Thread implements
 			// Remove this tune from the list of blocked tunes
 			// (Loop until all copies are removed)
 			synchronized (SignTuneParser.oneAtATimeSignsBlocked) {
-				for (int i = 0; i < SignTuneParser.oneAtATimeSignsBlocked.size(); i++) {
+				for (int i = 0; i < SignTuneParser.oneAtATimeSignsBlocked
+						.size(); i++) {
 					Point3D blockedPoint = SignTuneParser.oneAtATimeSignsBlocked
 							.get(i);
 					if (blockedPoint
@@ -252,6 +255,31 @@ public class DittyPlayerThread extends Thread implements
 
 		// Turn off muting flag
 		muting = false;
+	}
+
+	/**
+	 * 
+	 */
+	private void initAnySFXInsts() {
+		LinkedList<TimedDittyEvent> events = ditty.getDittyEvents();
+		for (TimedDittyEvent e : events) {
+			if (e.getTime() == 0 && e instanceof SFXInstrumentEvent) {
+				// Better get started early chaps!
+				// Otherwise there's a chance the first note will sound
+				// simultaneously with the request to change instruments:
+				// normally overcome by changing a few ticks early, this does
+				// the same thing for the very first notes
+				try {
+					loadSFXInstrument((SFXInstrumentEvent) e, synth);
+				} catch (UnsupportedAudioFileException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		}
 	}
 
 	private Player setUpPlayer() {
@@ -319,7 +347,7 @@ public class DittyPlayerThread extends Thread implements
 		if (MinetunesConfig.DEBUG) {
 			SignTuneParser.simpleLog("playerHook() called: time=" + time);
 		}
-		//System.out.println ("Latency: "+synth.getLatency());
+		// System.out.println ("Latency: "+synth.getLatency());
 
 		Minetunes.onDittyTick(ditty.getDittyID(), time);
 
@@ -528,7 +556,8 @@ public class DittyPlayerThread extends Thread implements
 		// System.out.println(sf2.getInstruments()[0].getName());
 		for (SF2Instrument i : sf2.getInstruments()) {
 			if (MinetunesConfig.DEBUG) {
-				SignTuneParser.simpleLog(i.getPatch() + ": " + i.getName() + ",");
+				SignTuneParser.simpleLog(i.getPatch() + ": " + i.getName()
+						+ ",");
 			}
 		}
 	}
@@ -754,7 +783,8 @@ public class DittyPlayerThread extends Thread implements
 	public static void playDitty(Ditty prop) {
 		DittyPlayerThread playerThread = new DittyPlayerThread(prop);
 		if (MinetunesConfig.DEBUG) {
-			SignTuneParser.simpleLog("Playing MusicString: " + prop.getMusicString());
+			SignTuneParser.simpleLog("Playing MusicString: "
+					+ prop.getMusicString());
 		}
 		playerThread.setPriority(Thread.MAX_PRIORITY);
 		playerThread.start();

@@ -361,4 +361,8 @@ public class Ditty {
 		this.playLast = playLast;
 	}
 
+	public LinkedList<TimedDittyEvent> getDittyEvents() {
+		return dittyEvents;
+	}
+
 }
