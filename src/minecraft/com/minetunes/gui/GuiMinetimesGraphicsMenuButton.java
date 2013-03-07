@@ -30,12 +30,15 @@ import net.minecraft.src.GuiVideoSettings;
 
 import com.minetunes.Finder;
 
-public class GuiMinetimesGraphicsMenuButton extends GuiButton {
+public class GuiMinetimesGraphicsMenuButton extends GuiButtonL {
 
 	private GuiScreen backscreen;
+	
+	private int texNum = -1;
 
 	public GuiMinetimesGraphicsMenuButton(GuiScreen backscreen) {
-		super(19087892, 5, 5, 60, 20, "Signs");
+		super("signGraphics", 5, 5, 20, 20, -100000, 12);
+		id = 1923129982;
 		this.backscreen = backscreen;
 	}
 
@@ -56,5 +59,15 @@ public class GuiMinetimesGraphicsMenuButton extends GuiButton {
 
 	public void setBackscreen(GuiScreen backscreen) {
 		this.backscreen = backscreen;
+	}
+
+	@Override
+	public void drawButton(Minecraft mc, int mx, int my) {
+		if (texNum == -1) {
+			texNum = Minecraft.getMinecraft().renderEngine
+					.getTexture("/com/minetunes/resources/textures/signEditor1.png");
+			setIconTex(texNum);
+		}
+		super.drawButton(mc, mx, my);
 	}
 }
