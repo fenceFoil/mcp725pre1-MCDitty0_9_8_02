@@ -30,6 +30,8 @@ import com.minetunes.Point3D;
 import com.minetunes.ditty.Ditty;
 import com.minetunes.signs.ParsedSign;
 import com.minetunes.signs.SignParser;
+import com.minetunes.signs.keywords.argparser.ArgParseError;
+import com.minetunes.signs.keywords.argparser.ArgParser;
 
 /**
  * Represents a single parsed keyword read from a sign.
@@ -37,7 +39,7 @@ import com.minetunes.signs.SignParser;
  * TODO: Move stuff to SignParser that doesn't belong here
  * 
  */
-public class SignTuneKeyword {
+public abstract class SignTuneKeyword {
 	public static final int NO_ERRORS = 100;
 	public static final int ERROR = 42;
 	public static final int WARNING = 24601;
@@ -53,12 +55,21 @@ public class SignTuneKeyword {
 	private String wholeKeyword = null;
 	private boolean deprecated = false;
 
+	protected ArgParser argParser;
+
 	public SignTuneKeyword(String wholeKeyword) {
 		setWholeKeyword(wholeKeyword);
 	}
 
 	public void parse() {
-		return;
+		if (argParser != null) {
+			argParser.parse(wholeKeyword);
+			if (argParser.getParseErrors().size() > 0) {
+				setGoodKeyword(false);
+			} else {
+				setGoodKeyword(true);
+			}
+		}
 	}
 
 	/**
@@ -80,7 +91,16 @@ public class SignTuneKeyword {
 	 * @return the errorMessage
 	 */
 	public String getErrorMessage() {
-		return errorMessage;
+		if (argParser != null) {
+			ArgParseError e = argParser.getParseErrors().peekFirst();
+			if (e != null) {
+				return e.getMessage();
+			} else {
+				return null;
+			}
+		} else {
+			return errorMessage;
+		}
 	}
 
 	/**
@@ -95,7 +115,16 @@ public class SignTuneKeyword {
 	 * @return the errorMessageType
 	 */
 	public int getErrorMessageType() {
-		return errorMessageType;
+		if (argParser != null) {
+			ArgParseError e = argParser.getParseErrors().peekFirst();
+			if (e != null) {
+				return (e.isFatal())? ERROR : WARNING;
+			} else {
+				return NO_ERRORS;
+			}
+		} else {
+			return errorMessageType;
+		}
 	}
 
 	/**
@@ -156,6 +185,14 @@ public class SignTuneKeyword {
 		this.deprecated = deprecated;
 	}
 
+	public ArgParser getArgParser() {
+		return argParser;
+	}
+
+	public void setArgParser(ArgParser argParser) {
+		this.argParser = argParser;
+	}
+
 	public static boolean isKeywordDeprecated(String s) {
 		for (String deprecatedEntry : SignParser.deprecatedKeywords) {
 			if (s.equalsIgnoreCase(deprecatedEntry)) {
@@ -207,8 +244,14 @@ public class SignTuneKeyword {
 				linesRemaining--;
 			}
 		}
-		
-		// TODO: Check that signs that require a certain number of lines have space beneath
+
+		// Use argparser
+		if (argParser != null) {
+			argParser.parse(parsedSign.getSignText(), keywordLine);
+		}
+
+		// TODO: Check that signs that require a certain number of lines have
+		// space beneath
 
 		// Insert any other checks here later, and override with
 		// Keyword-specific checks

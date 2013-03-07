@@ -29,6 +29,8 @@ import net.minecraft.src.World;
 import com.minetunes.Point3D;
 import com.minetunes.ditty.Ditty;
 import com.minetunes.signs.SignTuneParser;
+import com.minetunes.signs.keywords.argparser.ArgParser;
+import com.minetunes.signs.keywords.argparser.IntArg;
 
 /**
  * An Explicit Goto keyword is one of 'up, down, in, out, left, or right.' Not
@@ -38,31 +40,37 @@ import com.minetunes.signs.SignTuneParser;
 public class ExplicitGotoKeyword extends SignTuneKeyword {
 
 	private int amountMove = 1;
+	private IntArg amountArg = new IntArg("Blocks to Move", true, 1);
 
 	public ExplicitGotoKeyword(String wholeKeyword) {
 		super(wholeKeyword);
+		
+		argParser = new ArgParser().addLine(amountArg);
 	}
 
 	@Override
 	public void parse() {
-		// Get number of blocks to move; default is 1 if not specified
-		int numArgs = getWholeKeyword().split(" ").length;
-		if (numArgs == 2) {
-			String argument = getWholeKeyword().split(" ")[1];
-			if (argument.trim().matches("\\d+")) {
-				setAmountMove(Integer.parseInt(argument.trim()));
-			} else {
-				// Error: invalid agument
-				setGoodKeyword(false);
-				setErrorMessageType(ERROR);
-				setErrorMessage("Follow this go-to with a number of blocks to move.");
-			}
-		} else if (numArgs > 2) {
-			// Warning: Too Many Arguments
-			setGoodKeyword(true);
-			setErrorMessageType(INFO);
-			setErrorMessage("Only one number is needed.");
-		}
+		super.parse();
+		setAmountMove(amountArg.getParsedInt());
+		
+//		// Get number of blocks to move; default is 1 if not specified
+//		int numArgs = getWholeKeyword().split(" ").length;
+//		if (numArgs == 2) {
+//			String argument = getWholeKeyword().split(" ")[1];
+//			if (argument.trim().matches("\\d+")) {
+//				setAmountMove(Integer.parseInt(argument.trim()));
+//			} else {
+//				// Error: invalid agument
+//				setGoodKeyword(false);
+//				setErrorMessageType(ERROR);
+//				setErrorMessage("Follow this go-to with a number of blocks to move.");
+//			}
+//		} else if (numArgs > 2) {
+//			// Warning: Too Many Arguments
+//			setGoodKeyword(true);
+//			setErrorMessageType(INFO);
+//			setErrorMessage("Only one number is needed.");
+//		}
 	}
 
 	/**

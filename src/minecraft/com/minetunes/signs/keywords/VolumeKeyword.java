@@ -29,6 +29,8 @@ import net.minecraft.src.World;
 import com.minetunes.Point3D;
 import com.minetunes.ditty.Ditty;
 import com.minetunes.signs.SignTuneParser;
+import com.minetunes.signs.keywords.argparser.ArgParser;
+import com.minetunes.signs.keywords.argparser.IntArg;
 
 /**
  * @author William
@@ -37,38 +39,43 @@ import com.minetunes.signs.SignTuneParser;
 public class VolumeKeyword extends SignTuneKeyword {
 
 	private int volume = 1;
+	private IntArg volumeArg = new IntArg("Percent", false, 0, 100, 100);
 
 	public VolumeKeyword(String wholeKeyword) {
 		super(wholeKeyword);
+		argParser = new ArgParser().addLine(volumeArg);
 	}
 
 	@Override
 	public void parse() {
-		// Get volume; it must be specified
-		int numArgs = getWholeKeyword().split(" ").length;
-		if (numArgs >= 2) {
-			String argument = getWholeKeyword().split(" ")[1];
-			if (argument.trim().matches("\\d+")) {
-				setVolume(Integer.parseInt(argument.trim()));
-			} else {
-				// Error: invalid agument
-				setGoodKeyword(false);
-				setErrorMessageType(ERROR);
-				setErrorMessage("Follow Volume with a number from 0 to 100.");
-			}
-		}
-
-		if (numArgs > 2) {
-			// Error: Too many arguments
-			setGoodKeyword(true);
-			setErrorMessageType(INFO);
-			setErrorMessage("Only one number is needed.");
-		} else if (numArgs < 2) {
-			// Error: No arguemnts
-			setGoodKeyword(false);
-			setErrorMessageType(ERROR);
-			setErrorMessage("Follow Volume with a number from 0 to 100.");
-		}
+		super.parse();
+		setVolume (volumeArg.getParsedInt());
+		
+//		// Get volume; it must be specified
+//		int numArgs = getWholeKeyword().split(" ").length;
+//		if (numArgs >= 2) {
+//			String argument = getWholeKeyword().split(" ")[1];
+//			if (argument.trim().matches("\\d+")) {
+//				setVolume(Integer.parseInt(argument.trim()));
+//			} else {
+//				// Error: invalid agument
+//				setGoodKeyword(false);
+//				setErrorMessageType(ERROR);
+//				setErrorMessage("Follow Volume with a number from 0 to 100.");
+//			}
+//		}
+//
+//		if (numArgs > 2) {
+//			// Error: Too many arguments
+//			setGoodKeyword(true);
+//			setErrorMessageType(INFO);
+//			setErrorMessage("Only one number is needed.");
+//		} else if (numArgs < 2) {
+//			// Error: No arguemnts
+//			setGoodKeyword(false);
+//			setErrorMessageType(ERROR);
+//			setErrorMessage("Follow Volume with a number from 0 to 100.");
+//		}
 	}
 
 	public int getVolume() {
