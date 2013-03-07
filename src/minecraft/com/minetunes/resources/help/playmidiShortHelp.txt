@@ -3,6 +3,9 @@ PlayMIDI
 
 Plays a saved MIDI file from /.minecraft/mineTunes/midi/ 
 
+§cSORRY! 
+§bThis keyword is out of order :(
+
 The filename should be letters and numbers, with no symbols or spaces. ".mid" is automatically added to the end. Note that currently ".midi" files should be renamed to end with ".mid" if you want to play them with PlayMIDI.
 
 Note that there is no guarantee that the MIDI played will be in sync with the current ditty. There will be a pause before the MIDI begins playing.

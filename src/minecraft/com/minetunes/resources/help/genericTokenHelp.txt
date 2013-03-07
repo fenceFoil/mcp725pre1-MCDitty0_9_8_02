@@ -11,10 +11,10 @@ Show Lyric: §dY
 
 Switch Layer: §dL
 
-§dAdvanced Tokens (No Help):§r
+§dAdvanced Tokens:§r
 
-Collection: §d(§r, §d)§r
-Number Notes: Number in []
+Collection: ( )
+Number Notes: [64]
 Polyphonic Pressure: *
 Channel Pressure: +
 Time: @
