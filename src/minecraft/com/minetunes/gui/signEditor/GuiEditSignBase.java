@@ -26,8 +26,12 @@
  */
 package com.minetunes.gui.signEditor;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.LinkedList;
+
+import javax.swing.JComboBox;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
@@ -46,6 +50,7 @@ import org.lwjgl.opengl.GL11;
 import com.minetunes.Minetunes;
 import com.minetunes.RightClickCheckThread;
 import com.minetunes.config.MinetunesConfig;
+import com.minetunes.gui.GuiButtonL;
 import com.minetunes.gui.MinetunesGui;
 import com.minetunes.gui.MinetunesVersionGuiElement;
 import com.minetunes.sfx.SFXManager;
@@ -59,9 +64,9 @@ public class GuiEditSignBase extends GuiEditSign {
 	 */
 	private static final String allowedCharacters = ChatAllowedCharacters.allowedCharacters;
 
-	public static final int SIGN_EDITOR_MODE_MINETUNES = 24601;
-	public static final int SIGN_EDITOR_MODE_NORMAL = 0;
-	public static final int SIGN_EDITOR_MODE_INVISIBLE = 1;
+	public static final int MODE_SIGNTUNES = 24601;
+	public static final int MODE_RETRO = 0;
+	public static final int MODE_DISCREET = 1;
 
 	/** Reference to the sign object. */
 	protected TileEntitySignMinetunes sign;
@@ -75,7 +80,7 @@ public class GuiEditSignBase extends GuiEditSign {
 	/**
 	 * Current index in the list of saved signs
 	 */
-	private int bufferPosition = savedSigns.size();
+	protected int bufferPosition = savedSigns.size();
 
 	private boolean placingBlankSign = false;
 
@@ -83,26 +88,16 @@ public class GuiEditSignBase extends GuiEditSign {
 
 	private boolean overwrite = false;
 
-	private GuiButton editorModeButton;
-
-	private GuiButton doneButton;
-
-	private GuiButton recallButton;
-
-	private GuiButton clearButton;
-
-	private GuiButton lockButton;
+	protected GuiButtonL editorModeButton;
 
 	/**
 	 * MineTunes's buffer of saved signs.
 	 */
-	private static LinkedList<String[]> savedSigns = new LinkedList<String[]>();
+	protected static LinkedList<String[]> savedSigns = new LinkedList<String[]>();
 
 	private static boolean bufferInitalized = false;
 
-	private static String lockedCode = null;
-
-	private TileEntitySign[] signsHereBefore = null;
+	protected TileEntitySign[] signsHereBefore = null;
 
 	protected int recalledSignCount;
 
@@ -113,6 +108,8 @@ public class GuiEditSignBase extends GuiEditSign {
 	private int bottomMessageColor = 0xffffff;
 
 	private GuiScreen queuedGui = null;
+
+	protected GuiButtonL doneButton;
 
 	public GuiEditSignBase(TileEntitySign par1TileEntitySign) {
 		super(par1TileEntitySign);
@@ -137,11 +134,10 @@ public class GuiEditSignBase extends GuiEditSign {
 			bufferInitalized = true;
 		}
 
-		if (lockedCode != null) {
-			// Set up the locked color code
-			if (sign.signText[2].length() <= 13) {
-				sign.signText[2] += "%" + lockedCode;
-			}
+		// Update number of signs available to recall
+		if (signsHereBefore == null) {
+			signsHereBefore = Minetunes.getUniqueSignsForPos(sign.xCoord,
+					sign.yCoord, sign.zCoord, true);
 		}
 	}
 
@@ -163,15 +159,16 @@ public class GuiEditSignBase extends GuiEditSign {
 	 * Draws the screen and all the components in it.
 	 */
 	public void drawScreen(int par1, int par2, float par3) {
+		// Avoid flicker
 		if (placingBlankSign) {
 			return;
 		}
 
-		if (MinetunesConfig.getInt("signeditor.mode") != SIGN_EDITOR_MODE_INVISIBLE) {
+		if (MinetunesConfig.getInt("signeditor.mode") != MODE_DISCREET) {
 			drawDefaultBackground();
 
-			drawCenteredString(fontRenderer, "Edit Sign Text", width / 2, 10,
-					0xffffff);
+			// drawCenteredString(fontRenderer, "Edit Sign Text", width / 2, 10,
+			// 0xffffff);
 			// drawCenteredString(fontRenderer,
 			// "(PgUp and PgDown Scroll Saved Signs)", width / 2, 30, 0xcccccc);
 
@@ -198,7 +195,7 @@ public class GuiEditSignBase extends GuiEditSign {
 					drawString += " + %" + sign.signColorCode;
 				}
 
-				drawCenteredString(fontRenderer, drawString, width / 2, 40,
+				drawCenteredString(fontRenderer, drawString, width / 2, 25,
 						charsLeftColor);
 			}
 
@@ -212,24 +209,25 @@ public class GuiEditSignBase extends GuiEditSign {
 			drawCenteredString(fontRenderer,
 					TileEntitySignMinetunes
 							.getNameForSignColorCode(sign.signColorCode),
-					width - 60, height - 44, 0xffffff);
+					width - 45, height - 44, 0xffffff);
 
 			// Draw insert/overwrite display
 			// drawRect (20, 20, 20+fontRenderer.getStringWidth("Overwrite"),
 			// 20+10,
 			// 0x44888888);
 			if (overwrite) {
-				drawString(fontRenderer, "Overwrite", 20, 20, 0xff8800);
+				drawString(fontRenderer, "Overwrite", 20, 12, 0xff8800);
 			} else {
-				drawString(fontRenderer, "Insert", 20, 20, 0xffff00);
+				// drawString(fontRenderer, "Insert", 20, 20, 0xffff00);
 			}
 
-			if (bufferPosition > 0 && bufferPosition <= savedSigns.size() - 1) {
-				drawString(fontRenderer, "Loaded Sign #" + bufferPosition, 20,
-						40, 0x88ff00);
-			} else {
-				drawString(fontRenderer, "New Sign", 20, 40, 0x0000ff);
-			}
+			// if (bufferPosition > 0 && bufferPosition <= savedSigns.size() -
+			// 1) {
+			// drawString(fontRenderer, "Loaded Sign #" + bufferPosition, 20,
+			// 22, 0x88ff00);
+			// } else {
+			// //drawString(fontRenderer, "New Sign", 20, 40, 0x0000ff);
+			// }
 			// Need to reset color after this?
 			GL11.glColor4f(0Xff, 0Xff, 0Xff, 0xff);
 
@@ -305,78 +303,62 @@ public class GuiEditSignBase extends GuiEditSign {
 		}
 
 		controlList.clear();
-		// Changed button label
-		// X is defined in the draw method
-		doneButton = new GuiButton(0, 0,
-				Math.min(height / 4 + 120, height - 40), 120, 20, "Done & Save");
-		controlList.add(doneButton);
 
-		// controlList.add(new MinetunesVersionGuiElement(-100));
+		int iconTexture = mc.renderEngine
+				.getTexture("/com/minetunes/resources/textures/signEditor1.png");
+		// editorModeButton = new GuiButton(1000, width - 100, 10, 80, 20, "");
+		editorModeButton = new GuiButtonL("editorMode", width - 30, 10, 20, 20,
+				iconTexture, 13);
+		editorModeButton.addListener(new ActionListener() {
 
-		// // Added new buttons
-		// controlList.add(new GuiButton(400, 5, height - 150, 80, 20,
-		// "Clear Signs"));
-		// controlList.add(new GuiButton(100, 5, height - 120, 80, 20,
-		// "Import"));
-		// controlList.add(new GuiButton(200, 5, height - 90, 80, 20,
-		// "Export"));
-		// controlList.add(new GuiButton(300, 5, height - 60, 80, 20,
-		// "Open Folder"));
-
-		editorModeButton = new GuiButton(1000, width - 100, 10, 80, 20, "");
-		controlList.add(new GuiButton(1100, width - 100, 35, 80, 20, "Keys"));
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Switch gui mode
+				if (MinetunesConfig.getInt("signeditor.mode") == MODE_RETRO) {
+					MinetunesConfig.setInt("signeditor.mode", MODE_SIGNTUNES);
+					setQueuedGUI(new GuiEditSignTune(sign, recalledSignCount,
+							editLine, editChar));
+				} else if (MinetunesConfig.getInt("signeditor.mode") == MODE_SIGNTUNES) {
+					MinetunesConfig.setInt("signeditor.mode", MODE_DISCREET);
+					setQueuedGUI(queuedGui = new GuiEditSignBase(sign,
+							recalledSignCount, editLine, editChar));
+				} else {
+					MinetunesConfig.setInt("signeditor.mode", MODE_RETRO);
+					setQueuedGUI(queuedGui = new GuiEditSignBase(sign,
+							recalledSignCount, editLine, editChar));
+				}
+				try {
+					// Save mode change
+					MinetunesConfig.flush();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
 		controlList.add(editorModeButton);
-		recallButton = new GuiButton(1400, width - 100, 60, 80, 20, "Recall");
-		controlList.add(recallButton);
-		clearButton = new GuiButton(1500, width - 100, 85, 80, 20, "Clear");
-		controlList.add(clearButton);
 
-		// Set up the sign color code controls
-		controlList.add(new GuiButton(2000, width - 100, height - 50, 20, 20,
-				"+"));
-		controlList.add(new GuiButton(2100, width - 40, height - 50, 20, 20,
-				"-"));
-		lockButton = new GuiButton(2200, width - 80, height - 70, 40, 20,
-				"Lock");
-		controlList.add(lockButton);
-		controlList.add(new GuiButton(2300, width - 80, height - 30, 40, 20,
-				"Clear"));
+		doneButton = new GuiButtonL("done", width / 2 - 100, height - 50, 200,
+				20, "Done");
+		controlList.add(doneButton);
+		doneButton.addListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				sendSignAndCloseSignGui();
+			}
+		});
+
 	}
 
 	protected void updateButtons() {
 		// Switch modes button
-		if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES) {
-			editorModeButton.displayString = "SignTunes";
-		} else if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_NORMAL) {
-			editorModeButton.displayString = "Normal";
-		} else {
-			editorModeButton.displayString = "Invisible";
-		}
-
-		doneButton.xPosition = width / 2 - 60;
-
-		// Update number of signs available to recall
-		if (signsHereBefore == null) {
-			signsHereBefore = Minetunes.getUniqueSignsForPos(sign.xCoord,
-					sign.yCoord, sign.zCoord, true);
-		}
-		if (signsHereBefore.length <= 0) {
-			recallButton.enabled = false;
-			recallButton.drawButton = false;
-			recallButton.displayString = "Recall (0)";
-		} else {
-			recallButton.enabled = true;
-			recallButton.displayString = "Recall (" + signsHereBefore.length
-					+ ")";
-		}
-
-		// Update sign color code buttons
-		if (lockedCode == null) {
-			lockButton.displayString = "Lock";
-		} else {
-			lockButton.displayString = TileEntitySignMinetunes
-					.getNameForSignColorCode(lockedCode);
-		}
+		// if (MinetunesConfig.getInt("signeditor.mode") == MODE_SIGNTUNES) {
+		// editorModeButton.displayString = "SignTune";
+		// } else if (MinetunesConfig.getInt("signeditor.mode") == MODE_RETRO) {
+		// editorModeButton.displayString = "";
+		// } else {
+		// editorModeButton.displayString = "Invisible";
+		// }
 	}
 
 	/**
@@ -413,7 +395,7 @@ public class GuiEditSignBase extends GuiEditSign {
 		updateCounter++;
 
 		// Check whether the SignTunes gui should be opened instead
-		if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES
+		if (MinetunesConfig.getInt("signeditor.mode") == MODE_SIGNTUNES
 				&& !(mc.currentScreen instanceof GuiEditSignTune)) {
 			mc.displayGuiScreen(new GuiEditSignTune(sign, recalledSignCount,
 					editLine, editChar));
@@ -436,114 +418,6 @@ public class GuiEditSignBase extends GuiEditSign {
 			setQueuedGUI(new MinetunesGui(this));
 		} else if (par1GuiButton.id == 0) {
 			sendSignAndCloseSignGui();
-		} else if (par1GuiButton.id == 400) {
-			// Clear signs buffer; leave only the empty sign at the top of the
-			// buffer
-			String[] emptySign = savedSigns.get(0);
-			savedSigns.clear();
-			savedSigns.add(emptySign);
-			editChar = sign.signText[editLine].length();
-			bufferPosition = 0;
-		} else if (par1GuiButton.id == 1000) {
-			// Switch gui mode
-			if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_NORMAL) {
-				MinetunesConfig.setInt("signeditor.mode",
-						SIGN_EDITOR_MODE_MINETUNES);
-				setQueuedGUI(new GuiEditSignTune(sign, recalledSignCount,
-						editLine, editChar));
-			} else if (MinetunesConfig.getInt("signeditor.mode") == SIGN_EDITOR_MODE_MINETUNES) {
-				MinetunesConfig.setInt("signeditor.mode",
-						SIGN_EDITOR_MODE_INVISIBLE);
-				setQueuedGUI(queuedGui = new GuiEditSignBase(sign,
-						recalledSignCount, editLine, editChar));
-			} else {
-				MinetunesConfig.setInt("signeditor.mode",
-						SIGN_EDITOR_MODE_NORMAL);
-				setQueuedGUI(queuedGui = new GuiEditSignBase(sign,
-						recalledSignCount, editLine, editChar));
-			}
-			try {
-				// Save mode change
-				MinetunesConfig.flush();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else if (par1GuiButton.id == 1100) {
-			// Show guide
-			SignEditorGuideGui guideGui = new SignEditorGuideGui(this);
-			mc.displayGuiScreen(guideGui);
-		} else if (par1GuiButton.id == 1400) {
-			// Recall sign button
-			recallSignHereBefore();
-		} else if (par1GuiButton.id == 1500) {
-			// Clear sign button
-			copyTextToEditor(savedSigns.get(0));
-		} else if (par1GuiButton.id == 2000) {
-			// Inc color
-
-			// Clear old code
-			String currCode = sign.signColorCode;
-			TileEntitySignMinetunes.removeSignColorCodes(sign.signText);
-
-			if (sign.signText[2].length() <= 13) {
-				String newCode = "f";
-				// Decide on new code
-				if (currCode == null) {
-					newCode = "1";
-				} else {
-					newCode = TileEntitySignMinetunes.nextCodeInCycle(currCode);
-				}
-
-				// add new code
-				sign.signText[2] += "%" + newCode;
-			} else {
-				if (sign.signText[2].length() == 14) {
-					setBottomMessage("Take a letter off of Line 3 first.",
-							0xffffff);
-				} else {
-					setBottomMessage("Take 2 letters out of Line 3.", 0xffffff);
-				}
-			}
-			sign.updateEntity();
-		} else if (par1GuiButton.id == 2100) {
-			// Dec color
-
-			// Clear old code
-			String currCode = sign.signColorCode;
-			TileEntitySignMinetunes.removeSignColorCodes(sign.signText);
-
-			if (sign.signText[2].length() <= 13) {
-				String newCode = "f";
-				// Decide on new code
-				if (currCode == null) {
-					newCode = "1";
-				} else {
-					newCode = TileEntitySignMinetunes.prevCodeInCycle(currCode);
-				}
-
-				// add new code
-				sign.signText[2] += "%" + newCode;
-			} else {
-				if (sign.signText[2].length() == 14) {
-					bottomMessage = "Take a letter off of Line 3.";
-				} else {
-					bottomMessage = "Take 2 letters out of Line 3.";
-				}
-				bottomMessageColor = 0xffffff;
-			}
-			sign.updateEntity();
-		} else if (par1GuiButton.id == 2200) {
-			// Lock color
-			if (lockedCode == null) {
-				lockedCode = sign.signColorCode;
-			} else {
-				lockedCode = null;
-			}
-			updateButtons();
-		} else if (par1GuiButton.id == 2300) {
-			// Clear color
-			TileEntitySignMinetunes.removeSignColorCodes(sign.signText);
-			sign.updateEntity();
 		}
 	}
 
@@ -552,7 +426,7 @@ public class GuiEditSignBase extends GuiEditSign {
 	 * switching between different sign editors: the sign finished packet can
 	 * only be sent once.
 	 */
-	private void sendSignAndCloseSignGui() {
+	protected void sendSignAndCloseSignGui() {
 		// Strip the sign of color codes
 		for (int i = 0; i < sign.signText.length; i++) {
 			sign.signText[i] = sign.signText[i].replaceAll("§.", "");
@@ -701,6 +575,7 @@ public class GuiEditSignBase extends GuiEditSign {
 
 		if (keyCode == Keyboard.KEY_M) {
 			if (isCtrlKeyDown()) {
+				// XXX: Broken
 				actionPerformed(editorModeButton);
 			}
 		}
@@ -922,17 +797,9 @@ public class GuiEditSignBase extends GuiEditSign {
 		copyTextToEditor(savedSigns.get(bufferPosition));
 	}
 
-	public void copyTextToEditor(String[] strings) {
+	protected void copyTextToEditor(String[] strings) {
 		sign.signText = TileEntitySignMinetunes.copyOfSignText(strings);
 		editChar = sign.getSignTextNoCodes()[editLine].length();
-
-		// Add any locked color code
-		if (lockedCode != null) {
-			TileEntitySignMinetunes.removeSignColorCodes(sign.signText);
-			if (sign.signText[2].length() <= 13) {
-				sign.signText[2] += "%" + lockedCode;
-			}
-		}
 	}
 
 	public void recallSignHereBefore() {

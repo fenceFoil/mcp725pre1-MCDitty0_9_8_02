@@ -23,6 +23,8 @@
  */
 package com.minetunes.gui.signEditor;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +35,7 @@ import java.util.Set;
 
 import net.minecraft.src.Block;
 import net.minecraft.src.GuiButton;
+import net.minecraft.src.GuiScreen;
 import net.minecraft.src.TileEntity;
 import net.minecraft.src.TileEntitySign;
 
@@ -45,11 +48,14 @@ import org.jfugue.elements.Tempo;
 import org.jfugue.parsers.MusicStringParser;
 import org.jfugue.util.MapUtils;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
 
 import com.minetunes.MidiFileFilter;
 import com.minetunes.Point3D;
 import com.minetunes.config.MinetunesConfig;
+import com.minetunes.gui.GuiButtonL;
 import com.minetunes.gui.GuiScrollingTextPanel;
+import com.minetunes.gui.MinetunesVersionGuiElement;
 import com.minetunes.resources.ResourceManager;
 import com.minetunes.sfx.SFXManager;
 import com.minetunes.signs.Comment;
@@ -76,6 +82,13 @@ public class GuiEditSignTune extends GuiEditSignBase {
 	 */
 	public GuiEditSignTune(TileEntitySign signTileEntity) {
 		super(signTileEntity);
+
+		if (lockedCode != null) {
+			// Set up the locked color code
+			if (sign.signText[2].length() <= 13) {
+				sign.signText[2] += "%" + lockedCode;
+			}
+		}
 	}
 
 	/**
@@ -87,6 +100,13 @@ public class GuiEditSignTune extends GuiEditSignBase {
 	public GuiEditSignTune(TileEntitySignMinetunes entitySign,
 			int recalledSignCount, int editLine, int editChar) {
 		super(entitySign, recalledSignCount, editLine, editChar);
+
+		if (lockedCode != null) {
+			// Set up the locked color code
+			if (sign.signText[2].length() <= 13) {
+				sign.signText[2] += "%" + lockedCode;
+			}
+		}
 	}
 
 	private static final int HELP_STATE_KEYWORD = 0;
@@ -102,9 +122,19 @@ public class GuiEditSignTune extends GuiEditSignBase {
 
 	private GuiScrollingTextPanel helpTextArea;
 
-	private GuiButton testButton;
+	private GuiButtonL testButton;
 
 	private GuiButton selectHelpButton;
+
+	// private GuiButton doneButton;
+
+	private GuiButtonL recallButton;
+
+	private GuiButtonL clearButton;
+
+	private GuiButton lockButton;
+
+	protected static String lockedCode = null;
 
 	static {
 		INSTRUMENT_NAMES_MAP = MapUtils
@@ -237,24 +267,173 @@ public class GuiEditSignTune extends GuiEditSignBase {
 
 		// Draw the help text area
 		helpTextArea.draw(mx, my);
+
+		// Draw shovel icon
+		GL11.glColor4f(1, 1, 1, 1);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, iconTexture);
+		int iconIndex = 17;
+		drawTexturedModalRect(shovelButtonDown.xPosition - 16,
+				shovelButtonDown.yPosition + 2, (iconIndex % 16) * 16,
+				(iconIndex / 16) * 16, 16, 16);
+		if (savedSigns.size() > 1) {
+			int posToShow = bufferPosition;
+			
+			if (bufferPosition >= savedSigns.size()) {
+				posToShow = 0;
+			}
+			
+			drawCenteredString(fontRenderer, posToShow + " / "
+					+ (savedSigns.size() - 1), shovelButtonDown.xPosition - 7,
+					shovelButtonDown.yPosition - 10, 0xffffff);
+		}
 	}
 
 	@Override
 	public void initGui() {
 		super.initGui();
 
+		iconTexture = mc.renderEngine
+				.getTexture("/com/minetunes/resources/textures/signEditor1.png");
+
+		// Changed button label
+		// X is defined in the draw method
+		controlList.remove(doneButton);
+		doneButton = new GuiButtonL("done", width / 2 - 60, Math.min(
+				height / 4 + 120, height - 40), 120, 20, "Done & Save");
+		controlList.add(doneButton);
+		doneButton.addListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				sendSignAndCloseSignGui();
+			}
+		});
+
+		controlList.add(new MinetunesVersionGuiElement(-100));
+
+		// // Added new buttons
+		// controlList.add(new GuiButton(400, 5, height - 150, 80, 20,
+		// "Clear Signs"));
+		// controlList.add(new GuiButton(100, 5, height - 120, 80, 20,
+		// "Import"));
+		// controlList.add(new GuiButton(200, 5, height - 90, 80, 20,
+		// "Export"));
+		// controlList.add(new GuiButton(300, 5, height - 60, 80, 20,
+		// "Open Folder"));
+
+		// recallButton = new GuiButton(1400, width - 100, 60, 80, 20,
+		// "Recall");
+		recallButton = new GuiButtonL("recall", width - 50, 110, 40, 20,
+				iconTexture, 2);
+		recallButton.addListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				recallSignHereBefore();
+			}
+		});
+		controlList.add(recallButton);
+
+		// clearButton = new GuiButton(1500, width - 100, 85, 80, 20, "Clear");
+		clearButton = new GuiButtonL("clear", width - 30, 60, 20, 20,
+				iconTexture, 14);
+		controlList.add(clearButton);
+		clearButton.addListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				copyTextToEditor(savedSigns.get(0));
+			}
+		});
+
+		GuiButtonL keysButton = new GuiButtonL("keys", width - 30, 35, 20, 20,
+				iconTexture, 1);
+		controlList.add(keysButton);
+		final GuiScreen thisGui = this;
+		keysButton.addListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SignEditorGuideGui guideGui = new SignEditorGuideGui(thisGui);
+				mc.displayGuiScreen(guideGui);
+			}
+		});
+
+		shovelButtonDown = new GuiButtonL("shovelDown", width - 25, 145, 20,
+				20, iconTexture, 4);
+		shovelButtonDown.addListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				scrollSavedBufferUp();
+			}
+		});
+		controlList.add(shovelButtonDown);
+
+		shovelButtonUp = new GuiButtonL("shovelUp",
+				shovelButtonDown.xPosition - 16 - 20,
+				shovelButtonDown.yPosition, 20, 20, iconTexture, 5);
+		shovelButtonUp.addListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				scrollSavedBufferDown();
+			}
+		});
+		controlList.add(shovelButtonUp);
+
+		// Set up the sign color code controls
+		controlList.add(new GuiButton(2000, width - 85, height - 50, 20, 20,
+				"+"));
+		controlList.add(new GuiButton(2100, width - 25, height - 50, 20, 20,
+				"-"));
+		lockButton = new GuiButton(2200, width - 65, height - 70, 40, 20,
+				"Lock");
+		controlList.add(lockButton);
+		controlList.add(new GuiButton(2300, width - 65, height - 30, 40, 20,
+				"Clear"));
+
 		// Add the test sign button
-		testButton = new GuiButton(1200, width - 100, 110, 80, 20, "Test Sign");
+		// testButton = new GuiButton(1200, width - 100, 110, 80, 20,
+		// "Test Sign");
+		testButton = new GuiButtonL("test", width - 30, 85, 20, 20,
+				iconTexture, 0);
+		testButton.addListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Play the sign
+				LinkedList<Point3D> signsToPlay = new LinkedList<Point3D>();
+				signsToPlay.add(new Point3D(sign.xCoord, sign.yCoord,
+						sign.zCoord));
+				LinkedList<String> testErrors = SignTuneParser
+						.playDittyFromSignsQuietly(mc.theWorld, sign.xCoord,
+								sign.yCoord, sign.zCoord, true, signsToPlay);
+
+				// Display any errors, or success if there aren't any
+				// Strip all color codes as well from the error message
+				StringBuilder testErrorsFormatted = new StringBuilder();
+				testErrorsFormatted.append("Test Result:\n\n");
+				if (testErrors != null && testErrors.size() >= 1) {
+					testErrorsFormatted.append(testErrors.get(0).replaceAll(
+							"§.", ""));
+					helpTextArea.setText(testErrorsFormatted.toString());
+				} else if (testErrors == null || testErrors.size() <= 0) {
+					testErrorsFormatted.append("§aSuccess!");
+					// NOTE: DO NOT DISPLAY THIS STRING: IT IS ANNOYING
+					// ONLY DISPLAY FAILURES
+				}
+			}
+		});
 		controlList.add(testButton);
 
 		// Set up the keyword text area
-		helpTextArea = new GuiScrollingTextPanel(10, 65, 125, height - 60 - 40,
+		helpTextArea = new GuiScrollingTextPanel(10, 32, 125, height - 60,
 				false, fontRenderer, true);
 
 		// Position the change suggestion mode button below the keywordtextarea
 		selectHelpButton = new GuiButton(1300, helpTextArea.getX(),
-				helpTextArea.getY() + helpTextArea.getHeight() + 5,
-				helpTextArea.getWidth(), 20, "");
+				helpTextArea.getY() + helpTextArea.getHeight() + 5, 70, 20, "");
 		controlList.add(selectHelpButton);
 
 		// Set up minetunes elements
@@ -265,15 +444,47 @@ public class GuiEditSignTune extends GuiEditSignBase {
 	protected void updateButtons() {
 		super.updateButtons();
 
+		doneButton.xPosition = width / 2 - 60;
+
+		if (signsHereBefore.length <= 0) {
+			recallButton.enabled = false;
+			recallButton.drawButton = false;
+			recallButton.displayString = "(0)";
+		} else {
+			recallButton.enabled = true;
+			recallButton.displayString = "(" + signsHereBefore.length + ")";
+		}
+
+		// Update sign color code buttons
+		if (lockedCode == null) {
+			lockButton.displayString = "Lock";
+		} else {
+			lockButton.displayString = TileEntitySignMinetunes
+					.getNameForSignColorCode(lockedCode);
+		}
+
 		// Update helpstate button
 		if (helpState == HELP_STATE_KEYWORD) {
-			selectHelpButton.displayString = "Keywords";
+			selectHelpButton.displayString = "Keyword";
 		} else if (helpState == HELP_STATE_TOKEN) {
-			selectHelpButton.displayString = "MusicStrings";
+			selectHelpButton.displayString = "MusicString";
 		} else if (helpState == HELP_STATE_DETECT) {
-			selectHelpButton.displayString = "Detect";
+			selectHelpButton.displayString = "";
 		} else if (helpState == HELP_STATE_HIDDEN) {
-			selectHelpButton.displayString = "Hidden";
+			selectHelpButton.displayString = "Hide";
+		}
+
+		// Update shovel buttons
+		if (bufferPosition <= 0 || savedSigns.size() <= 1) {
+			shovelButtonUp.enabled = false;
+		} else {
+			shovelButtonUp.enabled = true;
+		}
+
+		if (bufferPosition >= savedSigns.size() - 1 || savedSigns.size() <= 1) {
+			shovelButtonDown.enabled = false;
+		} else {
+			shovelButtonDown.enabled = true;
 		}
 	}
 
@@ -281,29 +492,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 	protected void actionPerformed(GuiButton par1GuiButton) {
 		super.actionPerformed(par1GuiButton);
 
-		if (par1GuiButton.id == 1200) {
-			// Play the sign
-			LinkedList<Point3D> signsToPlay = new LinkedList<Point3D>();
-			signsToPlay.add(new Point3D(sign.xCoord, sign.yCoord, sign.zCoord));
-			LinkedList<String> testErrors = SignTuneParser
-					.playDittyFromSignsQuietly(mc.theWorld, sign.xCoord,
-							sign.yCoord, sign.zCoord, true, signsToPlay);
-
-			// Display any errors, or success if there aren't any
-			// Strip all color codes as well from the error message
-			StringBuilder testErrorsFormatted = new StringBuilder();
-			testErrorsFormatted.append("Test Result:\n\n");
-			if (testErrors != null && testErrors.size() >= 1) {
-				testErrorsFormatted.append(testErrors.get(0).replaceAll("§.",
-						""));
-				helpTextArea.setText(testErrorsFormatted.toString());
-			} else if (testErrors == null || testErrors.size() <= 0) {
-				testErrorsFormatted.append("§aSuccess!");
-				// NOTE: DO NOT DISPLAY THIS STRING: IT IS ANNOYING
-				// ONLY DISPLAY FAILURES
-			}
-		} else if (par1GuiButton.id == 1300) {
-
+		if (par1GuiButton.id == 1300) {
 			// Help pane button -- until detect is working right
 			if (helpState == HELP_STATE_DETECT) {
 				helpState = HELP_STATE_KEYWORD;
@@ -322,6 +511,79 @@ public class GuiEditSignTune extends GuiEditSignBase {
 
 			// Acknowledge changes
 			updateMineTunesElements();
+		} else if (par1GuiButton.id == 2000) {
+			// Inc color
+
+			// Clear old code
+			String currCode = sign.signColorCode;
+			TileEntitySignMinetunes.removeSignColorCodes(sign.signText);
+
+			if (sign.signText[2].length() <= 13) {
+				String newCode = "f";
+				// Decide on new code
+				if (currCode == null) {
+					newCode = "1";
+				} else {
+					newCode = TileEntitySignMinetunes.nextCodeInCycle(currCode);
+				}
+
+				// add new code
+				sign.signText[2] += "%" + newCode;
+			} else {
+				if (sign.signText[2].length() == 14) {
+					setBottomMessage("Take a letter off of Line 3 first.",
+							0xffffff);
+				} else {
+					setBottomMessage("Take 2 letters out of Line 3.", 0xffffff);
+				}
+			}
+			sign.updateEntity();
+		} else if (par1GuiButton.id == 2100) {
+			// Dec color
+
+			// Clear old code
+			String currCode = sign.signColorCode;
+			TileEntitySignMinetunes.removeSignColorCodes(sign.signText);
+
+			if (sign.signText[2].length() <= 13) {
+				String newCode = "f";
+				// Decide on new code
+				if (currCode == null) {
+					newCode = "1";
+				} else {
+					newCode = TileEntitySignMinetunes.prevCodeInCycle(currCode);
+				}
+
+				// add new code
+				sign.signText[2] += "%" + newCode;
+			} else {
+				if (sign.signText[2].length() == 14) {
+					setBottomMessage("Take a letter off of Line 3.", 0xffffff);
+				} else {
+					setBottomMessage("Take 2 letters out of Line 3.", 0xffffff);
+				}
+			}
+			sign.updateEntity();
+		} else if (par1GuiButton.id == 2200) {
+			// Lock color
+			if (lockedCode == null) {
+				lockedCode = sign.signColorCode;
+			} else {
+				lockedCode = null;
+			}
+			updateButtons();
+		} else if (par1GuiButton.id == 2300) {
+			// Clear color
+			TileEntitySignMinetunes.removeSignColorCodes(sign.signText);
+			sign.updateEntity();
+		} else if (par1GuiButton.id == 400) {
+			// Clear signs buffer; leave only the empty sign at the top of the
+			// buffer
+			String[] emptySign = savedSigns.get(0);
+			savedSigns.clear();
+			savedSigns.add(emptySign);
+			editChar = sign.signText[editLine].length();
+			bufferPosition = 0;
 		}
 	}
 
@@ -331,6 +593,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 
 		if (keyCode == Keyboard.KEY_T) {
 			if (isCtrlKeyDown()) {
+				// XXX: Broken
 				actionPerformed(testButton);
 			}
 		}
@@ -338,6 +601,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 		if (keyCode == Keyboard.KEY_K) {
 			if (isCtrlKeyDown()) {
 				// Click select help button
+				// XXX: Broken
 				actionPerformed(selectHelpButton);
 			}
 		}
@@ -355,6 +619,14 @@ public class GuiEditSignTune extends GuiEditSignBase {
 	@Override
 	public void copyTextToEditor(String[] strings) {
 		super.copyTextToEditor(strings);
+
+		// Add any locked color code
+		if (lockedCode != null) {
+			TileEntitySignMinetunes.removeSignColorCodes(sign.signText);
+			if (sign.signText[2].length() <= 13) {
+				sign.signText[2] += "%" + lockedCode;
+			}
+		}
 
 		updateMineTunesElements();
 	}
@@ -1142,7 +1414,7 @@ public class GuiEditSignTune extends GuiEditSignBase {
 			// proximity help
 			if (sign.signText[line].trim().toLowerCase()
 					.startsWith("proximity")) {
-				showDefaultKeywordHelp(new SignTuneKeyword("proximity"));
+				showDefaultKeywordHelp(keyword);
 			} else {
 				// If the keyword is not the special case of a proximity
 				// keyword
@@ -1367,8 +1639,8 @@ public class GuiEditSignTune extends GuiEditSignBase {
 						.setText("§6Put the MIDI to play §6on the next line.");
 			} else {
 				//
-				File[] midiFileList = new File(MinetunesConfig
-						.getMinetunesDir().getPath(), "midi")
+				File[] midiFileList = new File(
+						MinetunesConfig.getMinetunesDir(), "midi")
 						.listFiles(new MidiFileFilter());
 
 				LinkedList<File> matchingMidis = new LinkedList<File>();
@@ -1672,6 +1944,9 @@ public class GuiEditSignTune extends GuiEditSignBase {
 	}
 
 	private static String genericKeywordHelpText = null;
+	private int iconTexture;
+	private GuiButtonL shovelButtonUp;
+	private GuiButtonL shovelButtonDown;
 
 	// private void showGenericKeywordHelp() {
 	// // Set text area to a list of all available keywords
