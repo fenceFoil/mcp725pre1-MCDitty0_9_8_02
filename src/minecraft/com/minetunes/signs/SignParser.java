@@ -219,6 +219,9 @@ public class SignParser {
 			int keywordLine) {
 		SignTuneKeyword keyword = SignParser.parseKeyword(parsedSign
 				.getSignText()[keywordLine]);
+		if (keyword == null) {
+			return;
+		}
 
 		parsedSign.getLines()[keywordLine] = keyword;
 
@@ -251,7 +254,7 @@ public class SignParser {
 	 * TODO: Features the hack of replacing "Proximity" with "Area 1 1"
 	 * 
 	 * @param rawLine
-	 * @return
+	 * @return null if no keyword found
 	 */
 	public static SignTuneKeyword parseKeyword(String rawLine) {
 		String keyword = SignParser.recognizeKeyword(rawLine);
@@ -291,70 +294,8 @@ public class SignParser {
 			return keywordInstance;
 		}
 
-		// Unknown or simple (no arguments) keyword
-		SignTuneKeyword k = new SignTuneKeyword(rawLine);
-		return k;
-
-		// if (keyword == null) {
-		// return null;
-		// } else if (keyword.equals("sfx")) {
-		// return SFXKeyword.parse(rawLine);
-		// } else if (keyword.equals("left") || keyword.equals("right")
-		// || keyword.equals("up") || keyword.equals("down")
-		// || keyword.equals("in") || keyword.equals("out")) {
-		// // Goto keyword
-		// return ExplicitGotoKeyword.parse(rawLine);
-		// } else if (keyword.equals("lyric")) {
-		// return LyricKeyword.parse(rawLine);
-		// } else if (keyword.equals("pattern") || keyword.equals("repeat")) {
-		// return PatternKeyword.parse(rawLine);
-		// } else if (keyword.equals("syncwith")) {
-		// return SyncWithKeyword.parse(rawLine);
-		// } else if (keyword.equals("proxpad") || keyword.equals("area")
-		// || keyword.equals("proximity")) {
-		// return ProxPadKeyword.parse(rawLine);
-		// } else if (keyword.equals("disco")) {
-		// return DiscoKeyword.parse(rawLine);
-		// } else if (keyword.equals("goto")) {
-		// return GotoKeyword.parse(rawLine);
-		// } else if (keyword.equals("midi") || keyword.equals("savemidi")) {
-		// return SaveMidiKeyword.parse(rawLine);
-		// } else if (keyword.equals("playmidi")) {
-		// return PlayMidiKeyword.parse(rawLine);
-		// } else if (keyword.equals("emitter")) {
-		// return EmitterKeyword.parse(rawLine);
-		// } else if (keyword.equals("sfxinst") || keyword.equals("sfxinst2")) {
-		// return SFXInstKeyword.parse(rawLine);
-		// } else if (keyword.equals("sfxinstoff")) {
-		// return SFXInstOffKeyword.parse(rawLine);
-		// } else if (keyword.equals("newbot")) {
-		// return NewBotKeyword.parse(rawLine);
-		// } else if (keyword.equals("staccato")) {
-		// return StaccatoKeyword.parse(rawLine);
-		// } else if (keyword.equals("tran")) {
-		// return TransposeKeyword.parse(rawLine);
-		// } else if (keyword.equals("octaves")) {
-		// return OctavesKeyword.parse(rawLine);
-		// } else if (keyword.equals("octavesoff")) {
-		// return OctavesOffKeyword.parse(rawLine);
-		// } else if (keyword.equals("prelyric")) {
-		// return PreLyricKeyword.parse(rawLine);
-		// } else if (keyword.equals("accel")) {
-		// return AccelerateKeyword.parse(rawLine);
-		// } else if (keyword.equals("patt")) {
-		// return PattKeyword.parse(rawLine);
-		// } else if (keyword.equals("ditty") || keyword.equals("[ditty]")
-		// || keyword.equals("[signtune]")) {
-		// return new NoteblockTriggerKeyword(rawLine);
-		// } else if (keyword.equals("maxplays")) {
-		// return MaxPlaysKeyword.parse(rawLine);
-		// } else if (keyword.equals("firework")) {
-		// return FireworkKeyword.parse(rawLine);
-		// } else if (keyword.equals("mute")) {
-		// return new MuteKeyword(rawLine);
-		// } else {
-
-		// }
+		// Unknown keyword
+		return null;
 	}
 
 	/**
