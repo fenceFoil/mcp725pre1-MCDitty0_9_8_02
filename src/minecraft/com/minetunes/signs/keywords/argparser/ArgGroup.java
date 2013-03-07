@@ -21,18 +21,43 @@
  * along with MineTunes. If not, see <http://www.gnu.org/licenses/>.
  * 
  */
-package com.minetunes.signs.keywords;
+package com.minetunes.signs.keywords.argparser;
+
+import java.util.LinkedList;
 
 /**
  * @author William
- *
+ * 
  */
-public class ArgParser {
+public class ArgGroup extends Arg {
+	private ArgGroupOrder ordered = ArgGroupOrder.ORDERED;
 
-	/**
-	 * 
-	 */
-	public ArgParser() {
+	private LinkedList<Arg> subArgs = new LinkedList<Arg>();
+
+	@Override
+	public void reset() {
+		super.reset();
+		for (Arg a : subArgs) {
+			a.reset();
+		}
 	}
 
+	/**
+	 * Adds an Arg to the group
+	 * 
+	 * @param a
+	 * @return this object, for chaining calls
+	 */
+	public ArgGroup addArg(Arg a) {
+		subArgs.add(a);
+		return this;
+	}
+
+	public ArgGroupOrder getOrdered() {
+		return ordered;
+	}
+
+	public void setOrdered(ArgGroupOrder ordered) {
+		this.ordered = ordered;
+	}
 }
