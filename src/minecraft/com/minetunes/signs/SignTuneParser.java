@@ -175,6 +175,16 @@ public class SignTuneParser {
 						.getBlockTileEntity(parX, parY, parZ)).signText);
 				Minetunes.writeChatMessage(par1World,
 						"§2Sign's text has been saved.");
+				for (int i = 0; i < 10; i++) {
+					Minecraft.getMinecraft().renderGlobal.spawnParticle(
+							"enchantmenttable",
+							(float) parX + Minetunes.rand.nextFloat(),
+							(float) parY + Minetunes.rand.nextFloat(),
+							(float) parZ + Minetunes.rand.nextFloat(),
+							Minetunes.rand.nextFloat() - 0.5f,
+							Minetunes.rand.nextFloat() - 0.5f,
+							Minetunes.rand.nextFloat() - 0.5f);
+				}
 			} else {
 				playDittyFromSigns(par1World, parX, parY, parZ);
 			}
@@ -328,7 +338,7 @@ public class SignTuneParser {
 		LinkedList<SignLogPoint> signsReadList = new LinkedList<SignLogPoint>();
 		SignDitty dittyProperties = new SignDitty();
 		StringBuilder musicStringToPlay = readPattern(startPoint, world,
-				signsReadList, dittyProperties, 0, signWhitelist, 0);
+				signsReadList, dittyProperties, 0, signWhitelist, 0, false);
 
 		// If MaxPlays is exceeded somewhere in the ditty, cancel play
 		for (MaxPlaysLockPoint p : dittyProperties.getMaxPlayLockPoints()) {
@@ -554,7 +564,7 @@ public class SignTuneParser {
 	private static StringBuilder readPattern(Point3D startPoint, World world,
 			LinkedList<SignLogPoint> signsReadList, SignDitty ditty,
 			int subpatternLevel, LinkedList<Point3D> signWhitelist,
-			int startLine) {
+			int startLine, boolean pattStarted) {
 		// Contains musicstring read from pattern
 		StringBuilder readMusicString = new StringBuilder();
 
@@ -656,12 +666,12 @@ public class SignTuneParser {
 			// If a pattern is more than one sign, this is true.
 			// This affects whether a pattern is merely the rest of this sign or
 			// whether it is the start of a chain of signs
-			boolean patternIsMoreThanOneSign = false;
+			boolean applyFocusFlow = false;
 
 			// In a pattern that IS more than one sign, this is obviously set to
 			// true.
 			if (!currSignPoint.equals(startPoint)) {
-				patternIsMoreThanOneSign = true;
+				applyFocusFlow = true;
 			}
 
 			// Get sign text
@@ -672,15 +682,19 @@ public class SignTuneParser {
 
 			// In a pattern that doesn't start on a pattern sign, the pattern
 			// must be more than one sign
-			boolean patternKeywordFound = false;
-			for (int i = 0; i < LINES_ON_A_SIGN; i++) {
-				if (parsedSign.getLine(i) instanceof PatternKeyword) {
-					patternKeywordFound = true;
-					break;
+			if (pattStarted) {
+				applyFocusFlow = true;
+			} else {
+				boolean patternKeywordFound = false;
+				for (int i = 0; i < LINES_ON_A_SIGN; i++) {
+					if (parsedSign.getLine(i) instanceof PatternKeyword) {
+						patternKeywordFound = true;
+						break;
+					}
 				}
-			}
-			if (!patternKeywordFound) {
-				patternIsMoreThanOneSign = true;
+				if (!patternKeywordFound) {
+					applyFocusFlow = true;
+				}
 			}
 
 			// "Memory" for not calling multi-line keywords twice
@@ -740,7 +754,7 @@ public class SignTuneParser {
 							currSignPoint.clone(), currSignTileEntity,
 							nextSignPoint.clone(), world, readMusicString);
 					if (keywordNextSign != null) {
-						patternIsMoreThanOneSign = true;
+						applyFocusFlow = true;
 						nextSignPoint = keywordNextSign;
 					}
 
@@ -768,7 +782,7 @@ public class SignTuneParser {
 									StringBuilder subPatternMusicString = readPattern(
 											currSignPoint, world, signLog,
 											ditty, subpatternLevel + 1,
-											signWhitelist, line + 1);
+											signWhitelist, line + 1, false);
 
 									// If a subpattern fails due to an infinte
 									// loop, pass the failure on
@@ -816,7 +830,7 @@ public class SignTuneParser {
 								StringBuilder subPatternMusicString = readPattern(
 										pattLocation, world, subPatternSignLog,
 										ditty, subpatternLevel + 1,
-										signWhitelist, 0);
+										signWhitelist, 0, true);
 
 								// If a subpattern fails due to an infinte loop,
 								// pass the failure on
@@ -871,7 +885,7 @@ public class SignTuneParser {
 			// first
 			// sign in a song)
 			// that has no gotos on it, do not end song here
-			if (!patternIsMoreThanOneSign && !(subpatternLevel == 0)) {
+			if (!applyFocusFlow && !(subpatternLevel == 0)) {
 				break;
 			}
 
@@ -885,46 +899,47 @@ public class SignTuneParser {
 				nextSignPoint = applyNaturalFocusFlow(currSignPoint.clone(),
 						currSignFacing, world, signWhitelist);
 			}
-//			else if (!nextSignPoint.equals(currSignPoint)
-//					&& signWhitelist == null) {
-//				// If natural focus flow is not enabled (i.e. the song
-//				// contains
-//				// gotos), throw an error if the gotos are pointing at thin
-//				// air
-//				// And there isn't a whitelist
-//
-//				// Save myself a null pointer exception by only coming up
-//				// with
-//				// the next block type if nextSignPoint isn't null
-//				int nextBlockType = 0;
-//				if (nextSignPoint != null) {
-//					nextBlockType = world.getBlockId(nextSignPoint.x,
-//							nextSignPoint.y, nextSignPoint.z);
-//				}
-//
-//				if (!(nextBlockType == Block.signPost.blockID || nextBlockType == Block.signWall.blockID)) {
-//					// Thin air. Throw error.
-//					String signText2 = "";
-//					for (String s : currSignTileEntity.signText) {
-//						if (s.trim().length() > 0) {
-//							signText2 += "/" + s.trim();
-//						}
-//					}
-//					// Remove first /
-//					try {
-//						signText2 = signText2.substring(1, signText2.length());
-//					} catch (Exception e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//					ditty.addErrorMessage("§b" + signText2
-//							+ "§c: The gotos don't point at a sign.");
-//					// Highlight all lines of the offending sign
-//					for (int i = 0; i < LINES_ON_A_SIGN; i++) {
-//						ditty.addErrorHighlight(currSignPoint, 0);
-//					}
-//				}
-//			}
+			// else if (!nextSignPoint.equals(currSignPoint)
+			// && signWhitelist == null) {
+			// // If natural focus flow is not enabled (i.e. the song
+			// // contains
+			// // gotos), throw an error if the gotos are pointing at thin
+			// // air
+			// // And there isn't a whitelist
+			//
+			// // Save myself a null pointer exception by only coming up
+			// // with
+			// // the next block type if nextSignPoint isn't null
+			// int nextBlockType = 0;
+			// if (nextSignPoint != null) {
+			// nextBlockType = world.getBlockId(nextSignPoint.x,
+			// nextSignPoint.y, nextSignPoint.z);
+			// }
+			//
+			// if (!(nextBlockType == Block.signPost.blockID || nextBlockType ==
+			// Block.signWall.blockID)) {
+			// // Thin air. Throw error.
+			// String signText2 = "";
+			// for (String s : currSignTileEntity.signText) {
+			// if (s.trim().length() > 0) {
+			// signText2 += "/" + s.trim();
+			// }
+			// }
+			// // Remove first /
+			// try {
+			// signText2 = signText2.substring(1, signText2.length());
+			// } catch (Exception e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
+			// ditty.addErrorMessage("§b" + signText2
+			// + "§c: The gotos don't point at a sign.");
+			// // Highlight all lines of the offending sign
+			// for (int i = 0; i < LINES_ON_A_SIGN; i++) {
+			// ditty.addErrorHighlight(currSignPoint, 0);
+			// }
+			// }
+			// }
 
 			// Swap the next sign's position in as the new current sign's
 			// position for next iteration
@@ -1566,12 +1581,7 @@ public class SignTuneParser {
 		synchronized (DittyPlayerThread.staticPlayerMutex) {
 			// Save midi of tune to saveFile
 			Player p = new Player();
-
-			// Ding dong resets are dead!
-			// Midi saving is sane again!
 			p.saveMidi(tune, saveFile);
-
-			// Close player used for saving midis
 			p.close();
 		}
 	}
