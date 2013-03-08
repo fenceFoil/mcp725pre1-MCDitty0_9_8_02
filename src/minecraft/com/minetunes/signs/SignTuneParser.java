@@ -23,20 +23,14 @@
  */
 package com.minetunes.signs;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.Block;
-import net.minecraft.src.ChatAllowedCharacters;
+import net.minecraft.src.EntityClientPlayerMP;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.TileEntity;
@@ -54,17 +48,16 @@ import com.minetunes.config.MinetunesConfig;
 import com.minetunes.ditty.Ditty;
 import com.minetunes.ditty.DittyPlayerThread;
 import com.minetunes.ditty.event.NoteStartEvent;
-import com.minetunes.ditty.event.PlayMidiDittyEvent;
 import com.minetunes.ditty.event.VolumeEvent;
 import com.minetunes.gui.signEditor.GuiEditSignBase;
+import com.minetunes.particle.MinetunesParticleRequest;
 import com.minetunes.particle.ParticleRequest;
 import com.minetunes.signs.keywords.EndKeyword;
 import com.minetunes.signs.keywords.EndLineKeyword;
-import com.minetunes.signs.keywords.ExplicitGotoKeyword;
 import com.minetunes.signs.keywords.GotoKeyword;
-import com.minetunes.signs.keywords.SignTuneKeyword;
 import com.minetunes.signs.keywords.PattKeyword;
 import com.minetunes.signs.keywords.PatternKeyword;
+import com.minetunes.signs.keywords.SignTuneKeyword;
 
 /**
  * Contains members which were previously located in
@@ -173,17 +166,56 @@ public class SignTuneParser {
 				// Shovel! "Scoop up" sign text.
 				GuiEditSignBase.addTextToSavedSigns(((TileEntitySign) par1World
 						.getBlockTileEntity(parX, parY, parZ)).signText);
-				Minetunes.writeChatMessage(par1World,
-						"§2Sign's text has been saved.");
-				for (int i = 0; i < 10; i++) {
-					Minecraft.getMinecraft().renderGlobal.spawnParticle(
-							"enchantmenttable",
-							(float) parX + Minetunes.rand.nextFloat(),
-							(float) parY + Minetunes.rand.nextFloat(),
-							(float) parZ + Minetunes.rand.nextFloat(),
-							Minetunes.rand.nextFloat() - 0.5f,
-							Minetunes.rand.nextFloat() - 0.5f,
-							Minetunes.rand.nextFloat() - 0.5f);
+				// Minetunes.writeChatMessage(par1World,
+				// "§2Sign's text has been saved.");
+				for (int i = 0; i < 20; i++) {
+					// Minecraft.getMinecraft().renderGlobal.spawnParticle(
+					// "enchantmenttable",
+					// (float) parX + Minetunes.rand.nextFloat(),
+					// (float) parY + Minetunes.rand.nextFloat(),
+					// (float) parZ + Minetunes.rand.nextFloat(),
+					// Minetunes.rand.nextFloat() - 0.5f,
+					// Minetunes.rand.nextFloat() - 0.5f,
+					// Minetunes.rand.nextFloat() - 0.5f);
+
+					// par1World
+					// .spawnParticle(
+					// "enchantmenttable",
+					// (double) parX + 0.5D,
+					// (double) parY + 2.0D,
+					// (double) parZ + 0.5D,
+					// (double) ((float)
+					// (Minecraft.getMinecraft().thePlayer.posX - parX) +
+					// Minetunes.rand
+					// .nextFloat()) - 1.0D,
+					// (double) ((float) (Minecraft.getMinecraft().thePlayer
+					// .getEyeHeight()
+					// + Minecraft.getMinecraft().thePlayer.posY - parY)
+					// - Minetunes.rand.nextFloat() - 2.0F),
+					// (double) ((float)
+					// (Minecraft.getMinecraft().thePlayer.posZ - parZ) +
+					// Minetunes.rand
+					// .nextFloat()) - 1.0D);
+
+					EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
+
+					par1World
+							.spawnParticle(
+									"enchantmenttable",
+									player.posX,
+									player.posY + player.getEyeHeight() + 0.9,
+									player.posZ,
+									(double) -((float) (Minecraft
+											.getMinecraft().thePlayer.posX - parX) + Minetunes.rand
+											.nextFloat()) + 1.0,
+									(double) -((float) (Minecraft
+											.getMinecraft().thePlayer
+											.getEyeHeight()
+											+ Minecraft.getMinecraft().thePlayer.posY - parY)
+											- Minetunes.rand.nextFloat() + 1.0),
+									(double) -((float) (Minecraft
+											.getMinecraft().thePlayer.posZ - parZ) + Minetunes.rand
+											.nextFloat()) + 1.0);
 				}
 			} else {
 				playDittyFromSigns(par1World, parX, parY, parZ);
@@ -435,7 +467,9 @@ public class SignTuneParser {
 				if (dittyProperties.getMidiSaveFile() != null
 						&& MinetunesConfig.getBoolean("signs.saveMidiEnabled")) {
 					try {
-						saveMidiFile(dittyProperties.getMidiSaveFile(), ditty);
+
+						saveMidiFile(dittyProperties.getMidiSaveFile(), ditty,
+								dittyProperties.getMidiSavePoint());
 						if (!silent
 								&& MinetunesConfig
 										.getBoolean("midiSavedMessage")) {
@@ -1571,8 +1605,8 @@ public class SignTuneParser {
 		}
 	}
 
-	private static void saveMidiFile(File saveFile, String tune)
-			throws IOException, Exception {
+	private static void saveMidiFile(File saveFile, String tune,
+			Point3D location) throws IOException, Exception {
 		// Create midi save dir
 		File midiDir = saveFile.getParentFile();
 		midiDir.mkdirs();
@@ -1583,6 +1617,12 @@ public class SignTuneParser {
 			Player p = new Player();
 			p.saveMidi(tune, saveFile);
 			p.close();
+		}
+
+		// Particle
+		for (int i = 0; i < 1; i++) {
+			Minetunes.requestParticle(new MinetunesParticleRequest(location,
+					"save", 0.0, 0.03, 0.03, 0.05, 0.2));
 		}
 	}
 

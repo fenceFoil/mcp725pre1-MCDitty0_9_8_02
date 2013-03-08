@@ -28,9 +28,7 @@ import net.minecraft.src.World;
 
 import com.minetunes.Point3D;
 import com.minetunes.ditty.Ditty;
-import com.minetunes.ditty.event.PlayMidiDittyEvent;
-import com.minetunes.signs.SignTuneParser;
-import com.minetunes.signs.ParsedSign;
+import com.minetunes.signs.SignDitty;
 
 /**
  * 
@@ -47,6 +45,9 @@ public class SaveMidiKeyword extends BaseMidiKeyword {
 			StringBuilder readMusicString) {
 		if (!ditty.getMidiAlreadySaved()) {
 			ditty.setMidiSaveFile(getMidiFile());
+			if (ditty instanceof SignDitty) {
+				((SignDitty) ditty).setMidiSavePoint(location);
+			}
 			// No music on this sign
 			// Saved as given filename: don't save any more
 			// midis of this song

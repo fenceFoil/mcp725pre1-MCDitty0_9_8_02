@@ -41,7 +41,7 @@ public class SignDitty extends Ditty {
 	 */
 	private LinkedList<SignLine> highlightedErrorLines = new LinkedList<SignLine>();
 
-
+	private Point3D midiSavePoint = null;
 
 	/**
 	 * The sign clicked to start the ditty.
@@ -73,11 +73,8 @@ public class SignDitty extends Ditty {
 	 * All lines that should be highlighted to denote keywords etc.
 	 */
 	private LinkedList<SignLineHighlight> highlightedLines = new LinkedList<SignLineHighlight>();
-	
 
 	private boolean oneAtATime;
-
-
 
 	private LinkedList<MaxPlaysLockPoint> maxPlayLockPoints = new LinkedList<MaxPlaysLockPoint>();
 
@@ -103,7 +100,7 @@ public class SignDitty extends Ditty {
 	public LinkedList<SignLineHighlight> getHighlightedLines() {
 		return highlightedLines;
 	}
-	
+
 	/**
 	 * @return the startPoint
 	 */
@@ -145,7 +142,6 @@ public class SignDitty extends Ditty {
 	public Point3D getPointForID(int id) {
 		return signIDs.get((Integer) id);
 	}
-	
 
 	public boolean isContainsNoPlayTokens() {
 		return containsNoPlayTokens;
@@ -154,7 +150,7 @@ public class SignDitty extends Ditty {
 	public void setContainsNoPlayTokens(boolean containsNoPlayTokens) {
 		this.containsNoPlayTokens = containsNoPlayTokens;
 	}
-	
+
 	public void setOneAtATime(boolean b) {
 		oneAtATime = b;
 	}
@@ -172,6 +168,14 @@ public class SignDitty extends Ditty {
 
 	public LinkedList<MaxPlaysLockPoint> getMaxPlayLockPoints() {
 		return maxPlayLockPoints;
+	}
+
+	public Point3D getMidiSavePoint() {
+		return midiSavePoint;
+	}
+
+	public void setMidiSavePoint(Point3D midiSavePoint) {
+		this.midiSavePoint = midiSavePoint;
 	}
 
 }
