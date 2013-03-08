@@ -58,10 +58,12 @@ import net.minecraft.src.AxisAlignedBB;
 import net.minecraft.src.Block;
 import net.minecraft.src.BlockSign;
 import net.minecraft.src.DestroyBlockProgress;
+import net.minecraft.src.Entity;
 import net.minecraft.src.EntityClientPlayerMP;
 import net.minecraft.src.EntityFX;
 import net.minecraft.src.EntityFireworkRocket;
 import net.minecraft.src.EntityHeartFX;
+import net.minecraft.src.EntityItemFrame;
 import net.minecraft.src.EntityPlayerSP;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.GuiButton;
@@ -112,6 +114,7 @@ import com.minetunes.ditty.event.DittyEndedEvent;
 import com.minetunes.ditty.event.FireworkEvent;
 import com.minetunes.ditty.event.HighlightSignPlayingEvent;
 import com.minetunes.ditty.event.NoteStartEvent;
+import com.minetunes.ditty.event.ParticleEvent;
 import com.minetunes.ditty.event.PlayMidiDittyEvent;
 import com.minetunes.ditty.event.SFXEvent;
 import com.minetunes.ditty.event.TempoDittyEvent;
@@ -130,7 +133,9 @@ import com.minetunes.noteblocks.EntityNoteBlockTooltip;
 import com.minetunes.noteblocks.RenderNoteBlockTooltip;
 import com.minetunes.noteblocks.TileEntityNoteMinetunes;
 import com.minetunes.particle.BubbleParticleRequest;
+import com.minetunes.particle.EntityFXMinetunes;
 import com.minetunes.particle.HeartParticleRequest;
+import com.minetunes.particle.MinetunesParticleRequest;
 import com.minetunes.particle.NoteParticleRequest;
 import com.minetunes.particle.ParticleRequest;
 import com.minetunes.resources.UpdateResourcesThread;
@@ -1089,6 +1094,28 @@ public class Minetunes {
 						((EntityFX) customFX).setParticleTextureIndex(83);
 						((EntityFX) customFX).setRBGColorF(1.0F, 1.0F, 1.0F);
 						minecraft.effectRenderer.addEffect(customFX);
+					} else if (particleRequest instanceof MinetunesParticleRequest) {
+						MinetunesParticleRequest r = (MinetunesParticleRequest) particleRequest;
+						// Specially-textured particle
+						double locationVariance = particleRequest
+								.getLocationVariance();
+						double centerOffset = 0.5f;
+						double partX = (double) pos.x + centerOffset
+								+ locationVariance * getBoundedGaussian(1);
+						double partY = (double) pos.y + centerOffset
+								+ locationVariance * getBoundedGaussian(1);
+						double partZ = (double) pos.z + centerOffset
+								+ locationVariance * getBoundedGaussian(1);
+						// Velocity
+						double velX = r.getXzMean() + rand.nextGaussian()
+								* r.getXzSD();
+						double velY = r.getyMean() + rand.nextGaussian()
+								* r.getySD();
+						double velZ = r.getXzMean() + rand.nextGaussian()
+								* r.getXzSD();
+
+						spawnMinetunesParticle(minecraft, partX, partY, partZ,
+								velX, velY, velZ);
 					} else {
 						// Generic particle
 						// Determine location
@@ -1347,7 +1374,8 @@ public class Minetunes {
 					// Get proxpad size
 
 					// Check this line for the keyword proxpad
-					SignTuneKeyword candidateKeyword = SignParser.parseKeyword(s);
+					SignTuneKeyword candidateKeyword = SignParser
+							.parseKeyword(s);
 					if (!(candidateKeyword instanceof ProxPadKeyword)) {
 						// If there really appears to be no proxpad, continue
 						continue;
@@ -1589,6 +1617,10 @@ public class Minetunes {
 			// Handle any lyrics
 			if (cue.getLyricText() != null && cue.getLyricText().length() > 0) {
 				addLyricToQueue(cue);
+			}
+		} else if (nextEventToFire instanceof ParticleEvent) {
+			if (((ParticleEvent) nextEventToFire).getParticle() != null) {
+				requestParticle(((ParticleEvent) nextEventToFire).getParticle());
 			}
 		} else if (nextEventToFire instanceof CreateBotEvent) {
 			CreateBotEvent botEvent = (CreateBotEvent) nextEventToFire;
@@ -2125,7 +2157,7 @@ public class Minetunes {
 		if (MinetunesConfig.getBoolean("signs.disco.disabled")) {
 			return;
 		}
-		
+
 		// It is here that a disco floor is measured and readied to be used.
 		MeasureDiscoFloorThread t = new MeasureDiscoFloorThread(d,
 				Minecraft.getMinecraft().theWorld);
@@ -2476,5 +2508,82 @@ public class Minetunes {
 			sixteenBitVolume = (int) ((float) sixteenBitVolume * ((float) volumePercent / 100f));
 		}
 		return sixteenBitVolume;
+	}
+
+	public static void spawnMinetunesParticle(Minecraft mc, double x, double y,
+			double z, double xVel, double yVel, double zVel) {
+		// Apply minimal or diabled particle settings
+		int lessParticleSetting = mc.gameSettings.particleSetting;
+		if (lessParticleSetting == 0) {
+			// Full particles -- we're good to go
+		} else if (lessParticleSetting == 1) {
+			// Reduced particles: 1/3 chance of particle not appearing
+			if (rand.nextInt(3) == 0) {
+				return;
+			}
+		} else if (lessParticleSetting == 2) {
+			// No particles. Hang up your hat and leave.
+			return;
+		}
+
+		// Apply distance check; pythagorian theorm
+		double distanceLimit = 16;
+		double xDist = mc.thePlayer.posX - x;
+		double yDist = mc.thePlayer.posY - y;
+		double zDist = mc.thePlayer.posZ - z;
+		if (xDist * xDist + yDist * yDist + zDist * zDist > distanceLimit
+				* distanceLimit) {
+			// Too far from player
+			return;
+		}
+		// Spawn your particle here!
+		// Substitute the particle of your choice for EntityNoteFX.
+
+		// Note particles ignore yVel and zVel and use xVel to determine their
+		// color. Weird, yes :P
+		EntityFXMinetunes particle = new EntityFXMinetunes(mc.theWorld, x, y,
+				z, xVel, yVel, zVel);
+		// Spawn particle
+		mc.effectRenderer.addEffect(particle);
+	}
+
+	/**
+	 * Returns a list of all matching items in itemframes within a given
+	 * distance from location.
+	 * 
+	 * @param world
+	 * @param location
+	 *            place to begin search from
+	 * @param distance
+	 *            2 is a good value for finding "adjacent" frames
+	 * @param item
+	 *            item ids that you wish to search for
+	 * @return a list, possibly empty, of found items
+	 */
+	public static LinkedList<ItemStack> getFramedItemsNearby(World world,
+			Point3D location, int distance, int... item) {
+		LinkedList<ItemStack> found = new LinkedList<ItemStack>();
+		for (Object entityObj : world.loadedEntityList) {
+			Entity entity = (Entity) entityObj;
+			if (Math.abs(entity.posX - location.x) <= distance
+					&& Math.abs(entity.posY - location.y) <= distance
+					&& Math.abs(entity.posZ - location.z) <= distance) {
+	
+				if (entity instanceof EntityItemFrame) {
+					EntityItemFrame frame = (EntityItemFrame) entity;
+					ItemStack framedItem = frame.getDisplayedItem();
+	
+					if (framedItem != null) {
+						for (int i : item) {
+							if (i == framedItem.itemID) {
+								found.add(framedItem);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		return found;
 	}
 }

@@ -108,32 +108,35 @@ public class ArgParser {
 			}
 
 			// Attempt to parse each argument of the line in order
-			for (Arg arg : lines.get(currLine)) {
-				// Parse
-				int readTokens = arg.parse(tokens);
+			if (currLine < lines.size()) {
+				for (Arg arg : lines.get(currLine)) {
+					// Parse
+					int readTokens = arg.parse(tokens);
 
-				// Check for errors
-				if (arg.hasFatalErrors()) {
-					if (arg.isOptional()) {
-						// Ignore and move on
-						continue;
+					// Check for errors
+					if (arg.hasFatalErrors()) {
+						if (arg.isOptional()) {
+							// Ignore and move on
+							continue;
+						}
+					}
+
+					// Note any errors
+					parseErrors.addAll(arg.getParseErrors());
+
+					// Remove tokens
+					for (int i = 0; i < readTokens; i++) {
+						tokens.pollFirst();
 					}
 				}
 
-				// Note any errors
-				parseErrors.addAll(arg.getParseErrors());
-
-				// Remove tokens
-				for (int i = 0; i < readTokens; i++) {
-					tokens.pollFirst();
-				}
-			}
-
-			// Check for unparsed, but non-optional, keywords
-			for (Arg a : lines.get(currLine)) {
-				if (!a.isParsed() && !a.isOptional()) {
-					// Uh oh: missing arg!
-					parseErrors.add(new ArgParseError(a, "is missing.", true));
+				// Check for unparsed, but non-optional, keywords
+				for (Arg a : lines.get(currLine)) {
+					if (!a.isParsed() && !a.isOptional()) {
+						// Uh oh: missing arg!
+						parseErrors.add(new ArgParseError(a, "is missing.",
+								true));
+					}
 				}
 			}
 

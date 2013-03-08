@@ -49,8 +49,8 @@ public class DittyXMLParser {
 	/**
 	 * Attempts to parse the given DittyXML container.
 	 * 
-	 * @param dittyXMLContainer Null elements are
-	 *            allowed.
+	 * @param dittyXMLContainer
+	 *            Null elements are allowed.
 	 * @param ditty
 	 *            a ditty to append read music to, or null to create a new one
 	 * @return null if there is no ditty in the first container in the list, or
@@ -58,9 +58,9 @@ public class DittyXMLParser {
 	 * @throws UnnumberedLyricException
 	 * @throws UnnamedLyricsException
 	 */
-	public static Ditty parseDittyXMLContainer(Element dittyXMLContainer, Ditty ditty)
-			throws MissingContainerException, UnnamedLyricsException,
-			UnnumberedLyricException {
+	public static Ditty parseDittyXMLContainer(Element dittyXMLContainer,
+			Ditty ditty) throws MissingContainerException,
+			UnnamedLyricsException, UnnumberedLyricException {
 		LinkedList<Element> l = new LinkedList();
 		l.add(dittyXMLContainer);
 		return parseDittyXMLContainers(l, ditty);
@@ -216,8 +216,10 @@ public class DittyXMLParser {
 					int currLyric = 1;
 					String[] lines = n.getNodeValue().split("\\n");
 					for (String s : lines) {
-						lyricsStorage.addLyricText(lyricsName, lyricPrefix + s,
-								currLyric);
+						if (s != null && !s.trim().equals("")) {
+							lyricsStorage.addLyricText(lyricsName, lyricPrefix
+									+ s, currLyric);
+						}
 						currLyric++;
 					}
 				}
@@ -346,12 +348,12 @@ public class DittyXMLParser {
 					// Finally, add token
 					if (layer != -1000) {
 						ditty.addMusicStringTokens(musicStringBuffer,
-								SignTuneParser.SYNC_WITH_TOKEN + "V" + voice + "L"
-										+ layer, false);
+								SignTuneParser.SYNC_WITH_TOKEN + "V" + voice
+										+ "L" + layer, false);
 					} else {
 						ditty.addMusicStringTokens(musicStringBuffer,
-								SignTuneParser.SYNC_WITH_TOKEN + "V" + voice + "Lu",
-								false);
+								SignTuneParser.SYNC_WITH_TOKEN + "V" + voice
+										+ "Lu", false);
 					}
 				} else if (currNodeName.equals("volume")) {
 					// Volume element
@@ -369,8 +371,8 @@ public class DittyXMLParser {
 
 					// Finally, add token
 					ditty.addMusicStringTokens(musicStringBuffer,
-							SignTuneParser.getAdjustedVolumeToken(percent, ditty),
-							false);
+							SignTuneParser.getAdjustedVolumeToken(percent,
+									ditty), false);
 				} else if (currNodeName.equals("repeat")) {
 					// Repeat element
 					// Look for times to repeat

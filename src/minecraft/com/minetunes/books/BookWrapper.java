@@ -128,7 +128,7 @@ public class BookWrapper {
 		// Strings
 		for (int i = 0; i < totalPages; i++) {
 			String pageText = pagesTagList.tagAt(i).toString();
-			
+
 			// To maintain compatability with older music books,
 			// Replace MCDitty tags with BookTune references
 			pageText = replaceOldMCDittyReferences(pageText);
@@ -136,16 +136,21 @@ public class BookWrapper {
 			pages.add(pageText);
 		}
 	}
-	
+
 	/**
-	 * Replaces old BookTune books' main tags ("<MCDitty>") with ("<BookTune") tags
+	 * Replaces old BookTune books' main tags ("<MCDitty>") with ("<BookTune")
+	 * tags
+	 * 
 	 * @param in
 	 * @return
 	 */
-	private String replaceOldMCDittyReferences (String in) {
+	private String replaceOldMCDittyReferences(String in) {
 		return in.replaceAll("<MCDitty", "<bookTune")
-				.replaceAll("<mcditty", "<bookTune>")
-				.replaceAll("<mcDitty", "<bookTune>");
+				.replaceAll("<mcditty", "<bookTune")
+				.replaceAll("<mcDitty", "<bookTune")
+				.replaceAll("</MCDitty", "</bookTune")
+				.replaceAll("</mcditty", "</bookTune")
+				.replaceAll("</mcDitty", "</bookTune");
 	}
 
 	/**

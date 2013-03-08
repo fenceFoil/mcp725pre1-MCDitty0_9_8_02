@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 import com.minetunes.signs.keywords.AccelerateKeyword;
+import com.minetunes.signs.keywords.BookKeyword;
 import com.minetunes.signs.keywords.DiscoKeyword;
 import com.minetunes.signs.keywords.EmitterKeyword;
 import com.minetunes.signs.keywords.EndKeyword;
@@ -140,6 +141,7 @@ public class SignParser {
 		keywordClasses.put("playlast", PlayLastKeyword.class);
 		// keywordClasses.put("flare", FlareKeyword.class);
 		keywordClasses.put("firework", FireworkKeyword.class);
+		keywordClasses.put("book", BookKeyword.class);
 
 		// Create the array of keywords
 		keywords = keywordClasses.keySet().toArray(new String[0]);

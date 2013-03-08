@@ -1,8 +1,8 @@
 §bKeywords:
 §aFlow:
-Patt, Pattern, GoTo, #, End, EndLine, Left, Right, Up, Down, In, Out
+Patt, Pattern, Repeat, GoTo, #, End, EndLine, Left, Right, Up, Down, In, Out
 §aMusic:
-Repeat, Volume, Staccato, StaccatoOff, Tran, TranOff, Octaves, OctavesOff, Accel
+Volume, Staccato, StaccatoOff, Tran, TranOff, Octaves, OctavesOff, Accel
 §aSync:
 Reset, SyncVoices, SyncWith
 §aTriggers:
@@ -14,7 +14,7 @@ Lyric, PreLyric, Emitter, SFX, SFXInst, SFXInst2, SFXInstOff, PlayMIDI, Firework
 §aMisc:
 OneLine
 §aExperimental:
-Disco, NewBot
+Disco, NewBot, Book
 
 §bNew:
-PlayLast, MaxPlays, Firework, [SignTune] 
+Book, [SignTune] 

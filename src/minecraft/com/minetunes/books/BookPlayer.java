@@ -53,20 +53,20 @@ import com.minetunes.particle.ParticleRequest;
  */
 public class BookPlayer {
 	public static void playHeldBook(final EntityClientPlayerMP player) {
-		Thread t = new Thread (new Runnable() {
+		Thread t = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				doPlayHeldBook(player);
 			}
-			
+
 		});
 		t.setName("MineTunes Held Book Player");
 		t.start();
 	}
-	
+
 	public static void doPlayHeldBook(EntityClientPlayerMP player) {
-		//System.out.println("PlayBookInHand called.");
+		// System.out.println("PlayBookInHand called.");
 
 		// Get book in hand
 		ItemStack heldBookItem = player.getCurrentEquippedItem();
@@ -78,11 +78,11 @@ public class BookPlayer {
 			// item given was not a writable book
 			return;
 		}
-		
+
 		// Give confirmation click
 		Minetunes.executeTimedDittyEvent(new SFXEvent("random.click", 0, 0));
 
-		//System.out.println("Parsing book...");
+		// System.out.println("Parsing book...");
 
 		// Attempt to parse the book's DittyXML container
 		LinkedList<Element> heldBookDittyXMLContainers;
@@ -92,10 +92,8 @@ public class BookPlayer {
 		} catch (SAXException e1) {
 			// Error parsing XML.
 			e1.printStackTrace();
-			Minetunes.writeChatMessage(
-					Minecraft.getMinecraft().theWorld,
-					"Book contains XML problems. This might help: "
-							+ e1.getMessage());
+			Minetunes.writeChatMessage(Minecraft.getMinecraft().theWorld,
+					"Book contains XML problems: " + e1.getMessage());
 			return;
 		}
 
@@ -123,8 +121,8 @@ public class BookPlayer {
 
 		if (firstBookPart == null) {
 			// Assume set is complete, as it is only one container long
-			//System.out
-			//		.println("Assuming no more containers: firstBook's part == null");
+			// System.out
+			// .println("Assuming no more containers: firstBook's part == null");
 		} else {
 			// Part is present. Try to figure out whether we need more parts to
 			// the set.
@@ -155,7 +153,7 @@ public class BookPlayer {
 				for (ItemStack itemStack : inventory) {
 					// Has this item already been read as it was in your hand?
 					if (itemStack == heldBookItem) {
-						//System.out.println("*** Book in hand being skipped...");
+						// System.out.println("*** Book in hand being skipped...");
 						continue;
 					}
 
@@ -267,7 +265,7 @@ public class BookPlayer {
 				// Have all parts been found?
 				if (arrayHasNoNulls(partsFound)) {
 					// All have been found! Hurrah!
-					//System.out.println("All parts found!");
+					// System.out.println("All parts found!");
 					// Clear the item in your hand from the list if it has
 					// already been added
 					allElementsInDitty.clear();
@@ -323,7 +321,7 @@ public class BookPlayer {
 			}
 		}
 
-		//System.out.println("No errors: showing success...");
+		// System.out.println("No errors: showing success...");
 		// Show success
 		// GetMinecraft.instance().displayGuiScreen(
 		// new ParsedBookErrorGui(parsedBook));
@@ -337,11 +335,12 @@ public class BookPlayer {
 		// Parse ditty from containers
 		Ditty ditty = null;
 		try {
-			ditty = DittyXMLParser.parseDittyXMLContainers(allElementsInDitty, null);
+			ditty = DittyXMLParser.parseDittyXMLContainers(allElementsInDitty,
+					null);
 		} catch (MissingContainerException e) {
 			// TODO Auto-generated catch block
-			// This had sure as hell better not be happening after all that code
-			// I wrote above.
+			// This had sure as Nether better not be happening after all that
+			// code I wrote above.
 			e.printStackTrace();
 			return;
 		} catch (UnnamedLyricsException e) {
@@ -365,9 +364,8 @@ public class BookPlayer {
 				LinkedList<String> chatMessageBuffer = ditty.getErrorMessages();
 
 				// NOTE: Removed setting to show all errors at once.
-				if (//MinetunesConfig.getBoolean("signs.firstErrorOnly")
-						true
-						&& chatMessageBuffer.size() > 0) {
+				if (// MinetunesConfig.getBoolean("signs.firstErrorOnly")
+				true && chatMessageBuffer.size() > 0) {
 					// If we only show the first, discard the rest and create a
 					// new
 					// buffer with just the first in it
@@ -388,11 +386,16 @@ public class BookPlayer {
 					if (MinetunesConfig.particlesEnabled) {
 						for (int m = 0; m < 9; m++) {
 							for (int i = 0; i < 5; i++) {
-								EntityClientPlayerMP p = Minecraft.getMinecraft().thePlayer;
-								Minetunes.requestParticle(new ParticleRequest(
-										new Point3D((int) p.posX + (m % 3 - 1),
-												(int) p.posY, (int) p.posZ
-														+ (m / 3 - 1)), "smoke"));
+								EntityClientPlayerMP p = Minecraft
+										.getMinecraft().thePlayer;
+								Minetunes
+										.requestParticle(new ParticleRequest(
+												new Point3D((int) p.posX
+														+ (m % 3 - 1),
+														(int) p.posY,
+														(int) p.posZ
+																+ (m / 3 - 1)),
+												"smoke"));
 							}
 						}
 					}

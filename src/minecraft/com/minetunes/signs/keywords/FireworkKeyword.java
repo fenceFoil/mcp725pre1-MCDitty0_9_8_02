@@ -26,12 +26,11 @@ package com.minetunes.signs.keywords;
 import java.util.LinkedList;
 import java.util.Random;
 
-import net.minecraft.src.Entity;
-import net.minecraft.src.EntityItemFrame;
 import net.minecraft.src.ItemStack;
 import net.minecraft.src.TileEntitySign;
 import net.minecraft.src.World;
 
+import com.minetunes.Minetunes;
 import com.minetunes.Point3D;
 import com.minetunes.ditty.Ditty;
 import com.minetunes.ditty.event.FireworkEvent;
@@ -94,23 +93,8 @@ public class FireworkKeyword extends SignTuneKeyword {
 			StringBuilder readMusicString) {
 
 		// Find nearby fireworks in frames
-		LinkedList<ItemStack> fireworks = new LinkedList<ItemStack>();
-		for (Object entityObj : world.loadedEntityList) {
-			Entity entity = (Entity) entityObj;
-			if (Math.abs(entity.posX - currSignPoint.x) <= 2
-					&& Math.abs(entity.posY - currSignPoint.y) <= 2
-					&& Math.abs(entity.posZ - currSignPoint.z) <= 2) {
-
-				if (entity instanceof EntityItemFrame) {
-					EntityItemFrame frame = (EntityItemFrame) entity;
-					ItemStack framedItem = frame.getDisplayedItem();
-
-					if (framedItem != null && framedItem.itemID == 401) {
-						fireworks.add(framedItem);
-					}
-				}
-			}
-		}
+		LinkedList<ItemStack> fireworks = Minetunes.getFramedItemsNearby(world,
+				currSignPoint, 2, 401);
 
 		if (fireworks.size() > 0) {
 			// Choose a firework
