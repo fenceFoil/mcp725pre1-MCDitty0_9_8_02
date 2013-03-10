@@ -120,6 +120,7 @@ import com.minetunes.ditty.event.SFXEvent;
 import com.minetunes.ditty.event.TempoDittyEvent;
 import com.minetunes.ditty.event.TimedDittyEvent;
 import com.minetunes.ditty.event.VolumeEvent;
+import com.minetunes.gui.BookEditorButton;
 import com.minetunes.gui.BookExportButton;
 import com.minetunes.gui.BookImportButton;
 import com.minetunes.gui.ChangelogGui;
@@ -2240,19 +2241,36 @@ public class Minetunes {
 		particleRequestQueue.add(r);
 	}
 
-	private static final BookImportButton BOOKGUI_IMPORT_BUTTON = new BookImportButton();
-	private static final BookExportButton BOOKGUI_EXPORT_BUTTON = new BookExportButton();
+	private static BookImportButton BOOKGUI_IMPORT_BUTTON;
+	private static BookExportButton BOOKGUI_EXPORT_BUTTON;
+	private static BookEditorButton BOOKGUI_EDITOR_BUTTON;
 
 	/**
 	 * Adds custom MineTunes buttons to the Book Editor.
 	 */
 	public static void updateBookEditorControls(GuiScreenBook gui,
 			List controlList) {
+		if (BOOKGUI_IMPORT_BUTTON == null) {
+			BOOKGUI_IMPORT_BUTTON = new BookImportButton();
+		}
+
+		if (BOOKGUI_EXPORT_BUTTON == null) {
+			BOOKGUI_EXPORT_BUTTON = new BookExportButton();
+		}
+
+		if (BOOKGUI_EDITOR_BUTTON == null) {
+			BOOKGUI_EDITOR_BUTTON = new BookEditorButton();
+		}
+
 		if (!controlList.contains(BOOKGUI_IMPORT_BUTTON)) {
 			BOOKGUI_IMPORT_BUTTON.setBookGui(gui);
 			controlList.add(BOOKGUI_IMPORT_BUTTON);
 			BOOKGUI_EXPORT_BUTTON.setBookGui(gui);
 			controlList.add(BOOKGUI_EXPORT_BUTTON);
+			if (!MinetunesConfig.CURRENT_VERSION.equals("0.9.12.00")) {
+				BOOKGUI_EDITOR_BUTTON.setBookGui(gui);
+				controlList.add(BOOKGUI_EDITOR_BUTTON);
+			}
 		}
 	}
 
@@ -2568,11 +2586,11 @@ public class Minetunes {
 			if (Math.abs(entity.posX - location.x) <= distance
 					&& Math.abs(entity.posY - location.y) <= distance
 					&& Math.abs(entity.posZ - location.z) <= distance) {
-	
+
 				if (entity instanceof EntityItemFrame) {
 					EntityItemFrame frame = (EntityItemFrame) entity;
 					ItemStack framedItem = frame.getDisplayedItem();
-	
+
 					if (framedItem != null) {
 						for (int i : item) {
 							if (i == framedItem.itemID) {
