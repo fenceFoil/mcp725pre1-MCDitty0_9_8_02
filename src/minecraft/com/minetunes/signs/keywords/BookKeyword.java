@@ -67,8 +67,6 @@ public class BookKeyword extends SignTuneKeyword {
 			TileEntitySign signTileEntity, Point3D nextSign, World world,
 			StringBuilder readMusicString) {
 
-		System.err.println("Book is currently unimplemented!");
-
 		LinkedList<ItemStack> nearbyBooks = Minetunes.getFramedItemsNearby(
 				world, location, 2, Item.writableBook.shiftedIndex,
 				Item.writtenBook.shiftedIndex);
