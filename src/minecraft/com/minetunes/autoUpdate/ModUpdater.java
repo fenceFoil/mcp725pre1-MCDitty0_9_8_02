@@ -42,7 +42,9 @@ import java.util.zip.ZipFile;
 import net.minecraft.client.Minecraft;
 
 /**
- * @author William
+ * Downloads new versions of your mod, and patches them into minecraft.jar<br>
+ * <br>
+ * This class should not be used for updating Forge mods installed in a \mods\ folder.
  * 
  */
 public class ModUpdater extends FileUpdater {
@@ -145,7 +147,7 @@ public class ModUpdater extends FileUpdater {
 	 * AutoUpdates your mod. Note that this method outputs messages to the chat,
 	 * and should be run in its own thread to avoid blocking Minecraft for a
 	 * very long time. (Upwards of 30 seconds assuming broadband internet and
-	 * small, ~1MB mod download + a moderately sized in terms of file count
+	 * small, ~1MB mod download + a moderately sized (in terms of file count)
 	 * minecraft.jar)
 	 * 
 	 * @param messagePrefix
@@ -414,7 +416,7 @@ public class ModUpdater extends FileUpdater {
 	public void setSpecialMode(String mode) {
 		clearCache();
 		clearStaticCache();
-		fileTitle= "mod." + mode;
+		fileTitle = "mod." + mode;
 		specialFileTitle = mode;
 	}
 

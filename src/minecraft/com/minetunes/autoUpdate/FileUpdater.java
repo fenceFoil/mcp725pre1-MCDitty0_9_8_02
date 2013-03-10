@@ -27,11 +27,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -39,10 +42,20 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-import com.minetunes.resources.ResourceManager;
-
 /**
- *
+ * Handles checking a file for updates from the Internet and downloading it. The
+ * file's current version is held in a java.util.Properties file at a given URL.
+ * The properties file is cached to ensure minimum downloads, ideally just one.
+ * This allows operations like getting the latest version and url to be nigh
+ * instant after the first call.<br>
+ * <br>
+ * You can attach a FileUpdaterListener to a FileUpdater, to get some progress
+ * messages as a file is updated.<br>
+ * <br>
+ * The properties file should be laid out like this: If you "fileName" is "mod":<br>
+ * mod.latest.mc.1.4.6=0.9.2
+ * mod.download.mc.1.4.6=http://dl.dropbox.com/gibberishgibbersih
+ * /MineTunes-0_9_2-MC1_4_6.zip
  */
 public class FileUpdater {
 
@@ -73,7 +86,12 @@ public class FileUpdater {
 	}
 
 	/**
-	 * @param versionInfo
+	 * Sets up a FileUpdater
+	 * 
+	 * @param versionInfoURL
+	 *            the url to the java.util.Properties file with update info
+	 * @param fileTitle
+	 *            the name of the file being updated
 	 */
 	public FileUpdater(String versionInfoURL, String fileTitle) {
 		this.versionInfoURL = versionInfoURL;
@@ -82,7 +100,9 @@ public class FileUpdater {
 
 	/**
 	 * Returns either versionInfos, or if it is null this downloads versionInfos
-	 * from the internet
+	 * from the internet. Instant after first call under most circumstances.
+	 * (failure to download Properties may result in download each call?) You
+	 * should only be calling this in a thread, so no problem, though.
 	 * 
 	 * @return
 	 */
@@ -98,8 +118,7 @@ public class FileUpdater {
 			if (cached == null) {
 				// No cached version yet. Download the properties, and add to
 				// the cache
-				versionInfos = ResourceManager
-						.downloadProperties(versionInfoURL);
+				versionInfos = FileUpdater.downloadProperties(versionInfoURL);
 				cachedProperties.put(versionInfoURL, versionInfos);
 			} else {
 				// Use the cached version
@@ -111,6 +130,12 @@ public class FileUpdater {
 		}
 	}
 
+	/**
+	 * Retrieves a list of ZipEntiries from a given file.
+	 * 
+	 * @param zipFile
+	 * @return a list, or null for failure
+	 */
 	public LinkedList<ZipEntry> loadZipEntries(File zipFile) {
 		LinkedList<ZipEntry> newVersionZipEntries = new LinkedList<ZipEntry>();
 		try {
@@ -142,6 +167,13 @@ public class FileUpdater {
 		return newVersionZipEntries;
 	}
 
+	/**
+	 * Downloads the latest version of the file for Minecraft version mcVersion
+	 * into destFile
+	 * 
+	 * @param destFile
+	 * @param mcVersion
+	 */
 	public void downloadToFile(File destFile, String mcVersion) {
 		fireFileUpdaterEvent(UpdateEventLevel.INFO, "Download", "Downloading "
 				+ destFile.getName());
@@ -157,23 +189,25 @@ public class FileUpdater {
 	}
 
 	/**
+	 * Instant given a successful download of the version info before. The
+	 * properties key looked at is [fileName].latest.mc.[mcVersion]
 	 * 
-	 * @return If successful, the version from the file. If not, it will return
-	 *         a string that starts with "§c"
+	 * @return If successful, the version from the file. If not found or not
+	 *         downloaded, null.
 	 */
 	public String getLatestVersion(String mcVersion) {
 		// Get the mod version for this version of Minecraft
-		String foundVersion = getVersionInfos().getProperty(
+		return getVersionInfos().getProperty(
 				fileTitle + ".latest.mc." + mcVersion);
-
-		if (foundVersion == null) {
-			// No version given for this version of MC
-			return null;
-		}
-
-		return foundVersion;
 	}
 
+	/**
+	 * Instant given a successful download of the version info before. The
+	 * properties key looked at is [fileName].download.mc.[mcVersion]
+	 * 
+	 * @return If successful, the url to this file. If not found or not
+	 *         downloaded, null.
+	 */
 	public String getLatestURL(String mcVersion) {
 		return getVersionInfos().getProperty(
 				fileTitle + ".download.mc." + mcVersion);
@@ -186,6 +220,10 @@ public class FileUpdater {
 	public void removeFileUpdaterListener(FileUpdaterListener l) {
 		listeners.remove(l);
 	}
+	
+	public void removeAllFileUpdaterListeners() {
+		listeners.clear();
+	}
 
 	protected void fireFileUpdaterEvent(UpdateEventLevel level, String stage,
 			String event) {
@@ -194,6 +232,55 @@ public class FileUpdater {
 		}
 	}
 
+	/**
+	 * Genearl method to download a Propeties file from a URL.
+	 * 
+	 * @param url
+	 * @return null if failed
+	 */
+	public static Properties downloadProperties(String url) {
+		InputStream propsIn = null;
+		try {
+			URL propsURL = new URL(url);
+			propsIn = propsURL.openStream();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			// Could not open props file
+			e.printStackTrace();
+			return null;
+		}
+
+		// Read a properties file from the internet stream
+		Properties prop = new Properties();
+		try {
+			prop.load(propsIn);
+			propsIn.close();
+		} catch (InvalidPropertiesFormatException e) {
+			e.printStackTrace();
+			try {
+				propsIn.close();
+			} catch (IOException e1) {
+			}
+			return null;
+		} catch (IOException e) {
+			e.printStackTrace();
+			try {
+				propsIn.close();
+			} catch (IOException e1) {
+			}
+			return null;
+		}
+		return prop;
+	}
+
+	/**
+	 * General method to download a file from a url
+	 * @param url
+	 * @param destFilename
+	 * @return
+	 */
 	public static File downloadFile(String url, String destFilename) {
 		// Download file
 		try {

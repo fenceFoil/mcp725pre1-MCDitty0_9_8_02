@@ -24,7 +24,18 @@
 package com.minetunes.autoUpdate;
 
 /**
- * @author William
+ * Most of the time, you'll want the following implementation of this interface
+ * (in whatever class is conveneint, or your mod's central class):<br>
+ * <br>
+ * onUpdaterEvent() {<br>
+ * if level is "info" { <br>
+ * show on the chat (possibly with [MineTunes] in front.)<br>
+ * } else if level is warning or error {<br>
+ * same as info, but with a yellow or red color code in front.<br>
+ * }}<br>
+ * <br>
+ * Another option is to write the messages into a gui (preferably the
+ * one where the user presses the "update" button)
  * 
  */
 public interface FileUpdaterListener {
@@ -36,5 +47,6 @@ public interface FileUpdaterListener {
 	 * @param stage
 	 * @param event
 	 */
-	public void onUpdaterEvent(UpdateEventLevel level, String stage, String event);
+	public void onUpdaterEvent(UpdateEventLevel level, String stage,
+			String event);
 }

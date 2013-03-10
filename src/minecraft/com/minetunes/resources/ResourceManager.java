@@ -30,12 +30,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
-import java.util.InvalidPropertiesFormatException;
-import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -174,47 +170,6 @@ public class ResourceManager {
 				destination.close();
 			}
 		}
-	}
-
-	/**
-	 * @param url
-	 * @return null if failed
-	 */
-	public static Properties downloadProperties(String url) {
-		InputStream propsIn = null;
-		try {
-			URL propsURL = new URL(url);
-			propsIn = propsURL.openStream();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			return null;
-		} catch (IOException e) {
-			// Could not open props file
-			e.printStackTrace();
-			return null;
-		}
-	
-		// Read a properties file from the internet stream
-		Properties prop = new Properties();
-		try {
-			prop.load(propsIn);
-			propsIn.close();
-		} catch (InvalidPropertiesFormatException e) {
-			e.printStackTrace();
-			try {
-				propsIn.close();
-			} catch (IOException e1) {
-			}
-			return null;
-		} catch (IOException e) {
-			e.printStackTrace();
-			try {
-				propsIn.close();
-			} catch (IOException e1) {
-			}
-			return null;
-		}
-		return prop;
 	}
 
 }

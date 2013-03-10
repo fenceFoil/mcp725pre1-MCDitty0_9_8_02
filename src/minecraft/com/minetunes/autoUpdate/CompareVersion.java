@@ -4,18 +4,18 @@ import com.minetunes.config.MinetunesConfig;
 
 /**
  * Code from:
- * http://ramakrsna.wordpress.com/2008/07/05/comparing-version-numbers/
+ * http://ramakrsna.wordpress.com/2008/07/05/comparing-version-numbers/ <br>
+ * A suite of methods for processing basic version numbers. Formats supported:
+ * ##.##.##.##, ##.##.##, ##.##, ##<br>
  * <br>
- * A suite of methods for processing MineTunes version numbers.<br>
- * <br>
- * No license given.
+ * No license given; code modified.
  */
 public class CompareVersion {
 
 	public final static int LESSER = -1; // versionA is lesser than versionB
 	public final static int EQUALS = 0; // versionA equal to versionB
 	public final static int GREATER = 1; // versionA is greater then versionB
-	
+
 	public static final int INVALID_ARGS = 0;
 
 	public static int compareVersions(String versionA, String versionB) {
@@ -23,7 +23,7 @@ public class CompareVersion {
 		if (!isVersionNumber(versionA) || !isVersionNumber(versionB)) {
 			return INVALID_ARGS;
 		}
-		
+
 		try {
 			String[] a = versionA.split("\\.");
 			String[] b = versionB.split("\\.");
@@ -47,7 +47,7 @@ public class CompareVersion {
 				return CompareVersion.EQUALS;
 			}
 		} catch (NumberFormatException e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			return INVALID_ARGS;
 		}
 	}
@@ -60,8 +60,8 @@ public class CompareVersion {
 		return part
 				.matches("^(?:(\\d+)\\.)?(?:(\\d+)\\.)?(?:(\\d+)\\.)?(\\*|\\d+)$");
 	}
-	
-	public static boolean isVersionNewerThanCurrent (String version) {
+
+	public static boolean isVersionNewerThanCurrent(String version) {
 		int result = compareVersions(version, MinetunesConfig.CURRENT_VERSION);
 		if (result == GREATER) {
 			return true;
@@ -69,8 +69,8 @@ public class CompareVersion {
 			return false;
 		}
 	}
-	
-	public static boolean isVersionOlderThanCurrent (String version) {
+
+	public static boolean isVersionOlderThanCurrent(String version) {
 		int result = compareVersions(version, MinetunesConfig.CURRENT_VERSION);
 		if (result == LESSER) {
 			return true;
