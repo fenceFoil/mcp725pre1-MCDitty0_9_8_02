@@ -33,7 +33,6 @@ import java.io.IOException;
 import javax.swing.JOptionPane;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreenBook;
 import net.minecraft.src.ItemStack;
 
@@ -47,13 +46,14 @@ import com.minetunes.books.BookWrapper;
  * into its controlList. No need to modify vanilla gui to do this!
  * 
  */
-public class BookExportButton extends GuiButton {
+public class BookExportButton extends GuiButtonL {
 
 	private GuiScreenBook bookGui;
 
 	public BookExportButton() {
 		// Arbitrary id number, not likely to conflict with vanilla gui
-		super(19089879, 5, 125, 70, 20, "Export .txt");
+		super("exportBook", 30, 100, 20, 20, BookImportButton.tex, 32 + 0);
+		id = 1398233128;
 		// this.bookGui = bookGui;
 	}
 
@@ -77,7 +77,8 @@ public class BookExportButton extends GuiButton {
 					if (exportFileName == null) {
 						return;
 					} else {
-						File exportFile = new File (d.getDirectory()+exportFileName);
+						File exportFile = new File(d.getDirectory()
+								+ exportFileName);
 
 						// First, get book to export
 						ItemStack editorBook = null;

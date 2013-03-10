@@ -30,21 +30,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.List;
-
-import javax.swing.JOptionPane;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.GuiButton;
-import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiScreenBook;
 import net.minecraft.src.ItemStack;
-import net.minecraft.src.StatCollector;
 
 import com.minetunes.Finder;
-import com.minetunes.Minetunes;
 import com.minetunes.books.BookWrapper;
 
 /**
@@ -53,13 +44,23 @@ import com.minetunes.books.BookWrapper;
  * into its controlList. No need to modify vanilla gui to do this!
  * 
  */
-public class BookImportButton extends GuiButton {
+public class BookImportButton extends GuiButtonL {
 
 	private GuiScreenBook bookGui;
+	public static final int tex = Minecraft.getMinecraft().renderEngine
+			.getTexture("/com/minetunes/resources/textures/signEditor1.png"); 
 
 	public BookImportButton() {
 		// Arbitrary id number, not likely to conflict with vanilla gui
-		super(190834533, 5, 100, 70, 20, "Import .txt");
+		super(
+				"importBook",
+				5,
+				100,
+				20,
+				20,
+				tex,
+				32 + 1);
+		id = 1398123128;
 		// this.bookGui = bookGui;
 	}
 
@@ -84,23 +85,26 @@ public class BookImportButton extends GuiButton {
 					if (importFileName == null) {
 						return;
 					} else {
-						File importFile = new File(d.getDirectory()+importFileName);
+						File importFile = new File(d.getDirectory()
+								+ importFileName);
 
 						// Ask user for more info
 						boolean overstuffPages = false;
-						
+
 						// Removed dialog
-//						String[] options = { "Normal", "Overstuffed", "Cancel" };
-//						int choice = JOptionPane.showOptionDialog(null,
-//								"How full should each page be?",
-//								"Importing Book", JOptionPane.OK_OPTION,
-//								JOptionPane.QUESTION_MESSAGE, null, options, 0);
-//						if (choice == JOptionPane.CLOSED_OPTION || choice == 2) {
-//							// Cancel
-//							return;
-//						} if (choice == 1) {
-//							overstuffPages = true;
-//						}
+						// String[] options = { "Normal", "Overstuffed",
+						// "Cancel" };
+						// int choice = JOptionPane.showOptionDialog(null,
+						// "How full should each page be?",
+						// "Importing Book", JOptionPane.OK_OPTION,
+						// JOptionPane.QUESTION_MESSAGE, null, options, 0);
+						// if (choice == JOptionPane.CLOSED_OPTION || choice ==
+						// 2) {
+						// // Cancel
+						// return;
+						// } if (choice == 1) {
+						// overstuffPages = true;
+						// }
 
 						// First, get book to fill
 						ItemStack editorBook = null;
@@ -158,12 +162,12 @@ public class BookImportButton extends GuiButton {
 							}
 						}
 						// Fill the wrapped book
-						book.fillWithText(txtFileBuffer.toString(), !overstuffPages,
-								false, true);
+						book.fillWithText(txtFileBuffer.toString(),
+								!overstuffPages, false, true);
 						// Save the imported book to the server
 						book.sendBookToServer(false);
 						// Reopen book gui
-						//MineTunes.reopenBookGui(bookGui, book);
+						// MineTunes.reopenBookGui(bookGui, book);
 					}
 				}
 
