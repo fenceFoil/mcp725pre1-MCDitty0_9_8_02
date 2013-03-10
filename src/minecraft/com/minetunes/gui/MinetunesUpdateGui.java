@@ -151,7 +151,7 @@ public class MinetunesUpdateGui extends GuiScreen implements
 			boolean isInstalledFromModsFolder = false;
 			File modsFolder2 = new File(Minecraft.getMinecraftDir(), "mods");
 			File[] modsInFolder = modsFolder2.listFiles();
-			if (modsFolder2 != null) {
+			if (modsFolder2 != null && modsInFolder != null) {
 				for (File f : modsInFolder) {
 					if (f.getName().toLowerCase().contains("minetunes")) {
 						isInstalledFromModsFolder = true;
@@ -203,7 +203,7 @@ public class MinetunesUpdateGui extends GuiScreen implements
 						if (!f.equals(destFile)
 								&& f.getName().toLowerCase()
 										.contains("minetunes")) {
-							f.delete();
+							f.deleteOnExit();
 							onUpdaterEvent(UpdateEventLevel.INFO, "Cleanup",
 									"Removed old MineTunes (" + f.getName()
 											+ ")");
